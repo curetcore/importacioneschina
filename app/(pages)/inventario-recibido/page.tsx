@@ -14,7 +14,7 @@ import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { bodegas } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, PackageCheck } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, PackageCheck, Inbox } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
@@ -162,20 +162,21 @@ export default function InventarioRecibidoPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Inventario Recibido</h1>
-            <p className="text-sm text-gray-500 mt-1">Gestión de recepción de mercancía</p>
-          </div>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Recepción
-          </Button>
-        </div>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Recepciones Registradas</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <Inbox size={18} />
+              Inventario ({inventario.length})
+            </CardTitle>
+            <Button
+              onClick={() => setFormOpen(true)}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs h-8"
+            >
+              <Plus size={14} />
+              Nuevo
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 mb-6">

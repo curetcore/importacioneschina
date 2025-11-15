@@ -160,20 +160,21 @@ export default function PagosChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Pagos</h1>
-            <p className="text-sm text-gray-500 mt-1">Gestión de pagos a proveedores</p>
-          </div>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Pago
-          </Button>
-        </div>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Pagos Realizados</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <DollarSign size={18} />
+              Pagos ({pagos.length})
+            </CardTitle>
+            <Button
+              onClick={() => setFormOpen(true)}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs h-8"
+            >
+              <Plus size={14} />
+              Nuevo
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 mb-6">

@@ -105,18 +105,6 @@ export default function OCChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Órdenes de Compra</h1>
-            <p className="text-gray-600 mt-1">Gestión de importaciones desde China</p>
-          </div>
-          <Button onClick={() => setShowNewDialog(true)} className="gap-2">
-            <Plus size={18} />
-            Nueva OC
-          </Button>
-        </div>
-
         {/* Filtros */}
         <Card>
           <CardContent className="pt-6">
@@ -142,11 +130,20 @@ export default function OCChinaPage() {
 
         {/* Tabla de OCs */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardList size={20} />
-              Órdenes Registradas ({ocs.length})
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <ClipboardList size={18} />
+              Órdenes ({ocs.length})
             </CardTitle>
+            <Button
+              onClick={() => setShowNewDialog(true)}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs h-8"
+            >
+              <Plus size={14} />
+              Nueva
+            </Button>
           </CardHeader>
           <CardContent>
             {ocs.length === 0 ? (
