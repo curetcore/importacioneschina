@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const ocs = await prisma.oCChina.findMany({
       include: {
+        items: true,
         pagosChina: true,
         gastosLogisticos: true,
         inventarioRecibido: true,
@@ -16,9 +17,13 @@ export async function GET() {
     });
 
     const ocsCalculadas = ocs.map((oc) => {
+      // Calcular valores desde items
+      const cantidadOrdenada = oc.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0;
+      const costoFOBTotalUSD = oc.items?.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0;
+
       const calculos = calcularOC({
-        costoFOBTotalUSD: oc.costoFOBTotalUSD,
-        cantidadOrdenada: oc.cantidadOrdenada,
+        costoFOBTotalUSD,
+        cantidadOrdenada,
         pagos: oc.pagosChina,
         gastos: oc.gastosLogisticos,
         inventario: oc.inventarioRecibido,
@@ -30,7 +35,7 @@ export async function GET() {
         proveedor: oc.proveedor,
         fechaOC: oc.fechaOC,
         categoriaPrincipal: oc.categoriaPrincipal,
-        cantidadOrdenada: oc.cantidadOrdenada,
+        cantidadOrdenada,
         ...calculos,
       };
     });
