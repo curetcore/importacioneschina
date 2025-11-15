@@ -4,12 +4,15 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectOption } from "@/components/ui/select"
 import { GastosLogisticosForm } from "@/components/forms/GastosLogisticosForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { tiposGasto } from "@/lib/validations"
+import { Plus, Edit, Trash2, Search, X } from "lucide-react"
 
 interface GastoLogistico {
   id: string
@@ -36,10 +39,27 @@ export default function GastosLogisticosPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [ocFilter, setOcFilter] = useState("")
+  const [tipoGastoFilter, setTipoGastoFilter] = useState("")
+  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
+
+  const tipoGastoOptions: SelectOption[] = [
+    { value: "", label: "Todos los tipos" },
+    ...tiposGasto.map(t => ({ value: t, label: t })),
+  ]
 
   const fetchGastos = (page = 1) => {
     setLoading(true)
-    fetch(`/api/gastos-logisticos?page=${page}&limit=20`)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "20",
+    })
+    if (searchQuery) params.append("search", searchQuery)
+    if (ocFilter) params.append("ocId", ocFilter)
+    if (tipoGastoFilter) params.append("tipoGasto", tipoGastoFilter)
+
+    fetch(`/api/gastos-logisticos?${params.toString()}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
@@ -51,6 +71,28 @@ export default function GastosLogisticosPage() {
       })
       .catch(() => setLoading(false))
   }
+
+  const fetchOCs = () => {
+    fetch("/api/oc-china")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          setOcsOptions([
+            { value: "", label: "Todas las OCs" },
+            ...result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
+          ])
+        }
+      })
+  }
+
+  useEffect(() => {
+    fetchOCs()
+  }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchGastos(1)
+  }, [searchQuery, ocFilter, tipoGastoFilter])
 
   useEffect(() => {
     fetchGastos(currentPage)
@@ -127,6 +169,45 @@ export default function GastosLogisticosPage() {
             <CardTitle>Gastos Registrados</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por ID de gasto..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="w-64">
+                <Select
+                  options={ocsOptions}
+                  value={ocFilter}
+                  onChange={setOcFilter}
+                  placeholder="Filtrar por OC"
+                />
+              </div>
+              <div className="w-48">
+                <Select
+                  options={tipoGastoOptions}
+                  value={tipoGastoFilter}
+                  onChange={setTipoGastoFilter}
+                  placeholder="Filtrar por tipo"
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

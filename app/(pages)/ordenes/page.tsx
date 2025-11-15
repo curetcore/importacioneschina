@@ -4,12 +4,14 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectOption } from "@/components/ui/select"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate } from "@/lib/utils"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X } from "lucide-react"
 
 interface OCChina {
   id: string
@@ -32,10 +34,20 @@ export default function OrdenesPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [proveedorFilter, setProveedorFilter] = useState("")
+  const [proveedoresOptions, setProveedoresOptions] = useState<SelectOption[]>([])
 
   const fetchOCs = (page = 1) => {
     setLoading(true)
-    fetch(`/api/oc-china?page=${page}&limit=20`)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "20",
+    })
+    if (searchQuery) params.append("search", searchQuery)
+    if (proveedorFilter) params.append("proveedor", proveedorFilter)
+
+    fetch(`/api/oc-china?${params.toString()}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
@@ -47,6 +59,29 @@ export default function OrdenesPage() {
       })
       .catch(() => setLoading(false))
   }
+
+  const fetchProveedores = () => {
+    fetch("/api/oc-china")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          const uniqueProveedores = Array.from(new Set(result.data.map((oc: OCChina) => oc.proveedor)))
+          setProveedoresOptions([
+            { value: "", label: "Todos los proveedores" },
+            ...uniqueProveedores.map((p) => ({ value: p as string, label: p as string })),
+          ])
+        }
+      })
+  }
+
+  useEffect(() => {
+    fetchProveedores()
+  }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchOCs(1)
+  }, [searchQuery, proveedorFilter])
 
   useEffect(() => {
     fetchOCs(currentPage)
@@ -123,6 +158,37 @@ export default function OrdenesPage() {
             <CardTitle>Órdenes de Compra</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por número de OC..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="w-64">
+                <Select
+                  options={proveedoresOptions}
+                  value={proveedorFilter}
+                  onChange={setProveedorFilter}
+                  placeholder="Filtrar por proveedor"
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

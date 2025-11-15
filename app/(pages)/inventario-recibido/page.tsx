@@ -4,12 +4,15 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectOption } from "@/components/ui/select"
 import { InventarioRecibidoForm } from "@/components/forms/InventarioRecibidoForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { bodegas } from "@/lib/validations"
+import { Plus, Edit, Trash2, Search, X } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
@@ -38,10 +41,27 @@ export default function InventarioRecibidoPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [ocFilter, setOcFilter] = useState("")
+  const [bodegaFilter, setBodegaFilter] = useState("")
+  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
+
+  const bodegaOptions: SelectOption[] = [
+    { value: "", label: "Todas las bodegas" },
+    ...bodegas.map(b => ({ value: b, label: b })),
+  ]
 
   const fetchInventarios = (page = 1) => {
     setLoading(true)
-    fetch(`/api/inventario-recibido?page=${page}&limit=20`)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "20",
+    })
+    if (searchQuery) params.append("search", searchQuery)
+    if (ocFilter) params.append("ocId", ocFilter)
+    if (bodegaFilter) params.append("bodega", bodegaFilter)
+
+    fetch(`/api/inventario-recibido?${params.toString()}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
@@ -53,6 +73,28 @@ export default function InventarioRecibidoPage() {
       })
       .catch(() => setLoading(false))
   }
+
+  const fetchOCs = () => {
+    fetch("/api/oc-china")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          setOcsOptions([
+            { value: "", label: "Todas las OCs" },
+            ...result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
+          ])
+        }
+      })
+  }
+
+  useEffect(() => {
+    fetchOCs()
+  }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchInventarios(1)
+  }, [searchQuery, ocFilter, bodegaFilter])
 
   useEffect(() => {
     fetchInventarios(currentPage)
@@ -129,6 +171,45 @@ export default function InventarioRecibidoPage() {
             <CardTitle>Recepciones Registradas</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por ID de recepción..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="w-64">
+                <Select
+                  options={ocsOptions}
+                  value={ocFilter}
+                  onChange={setOcFilter}
+                  placeholder="Filtrar por OC"
+                />
+              </div>
+              <div className="w-48">
+                <Select
+                  options={bodegaOptions}
+                  value={bodegaFilter}
+                  onChange={setBodegaFilter}
+                  placeholder="Filtrar por bodega"
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
