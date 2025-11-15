@@ -164,10 +164,9 @@ export default function GastosLogisticosPage() {
             <Button
               onClick={() => setFormOpen(true)}
               variant="outline"
-              className="gap-1.5 text-xs h-8 px-3"
+              className="h-8 w-8 p-0"
             >
-              <Plus size={14} />
-              Nuevo
+              <Plus size={16} />
             </Button>
           </CardHeader>
           <CardContent>
