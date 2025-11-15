@@ -1,0 +1,99 @@
+# ==========================================
+# CURET - Sistema de Importaciones China
+# Docker Compose para desarrollo local
+# ==========================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # PostgreSQL Database
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: curet-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: curet_admin
+      POSTGRES_PASSWORD: curet_password_dev
+      POSTGRES_DB: curet_importaciones
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U curet_admin -d curet_importaciones"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - curet-network
+
+  # ==========================================
+  # Next.js Application
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: curet-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://curet_admin:curet_password_dev@postgres:5432/curet_importaciones
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NODE_ENV=development
+    volumes:
+      # Hot reload para desarrollo
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - curet-network
+    command: sh -c "npx prisma generate && npx prisma db push && npm run dev"
+
+  # ==========================================
+  # Prisma Studio (Opcional - Gestión de BD)
+  # ==========================================
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: curet-prisma-studio
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://curet_admin:curet_password_dev@postgres:5432/curet_importaciones
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - curet-network
+    command: npx prisma studio
+    profiles:
+      - studio
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  curet-network:
+    driver: bridge
