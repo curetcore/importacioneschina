@@ -1,0 +1,112 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// TABLA 1: OC CHINA
+model OCChina {
+  id                    String   @id @default(cuid())
+  oc                    String   @unique
+  proveedor             String
+  fechaOC               DateTime @map("fecha_oc")
+  descripcionLote       String?  @map("descripcion_lote") @db.Text
+  categoriaPrincipal    String   @map("categoria_principal")
+  cantidadOrdenada      Int      @map("cantidad_ordenada")
+  costoFOBTotalUSD      Decimal  @map("costo_fob_total_usd") @db.Decimal(12, 2)
+  
+  // Relaciones
+  pagosChina            PagosChina[]
+  gastosLogisticos      GastosLogisticos[]
+  inventarioRecibido    InventarioRecibido[]
+  
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  @@map("oc_china")
+  @@index([proveedor])
+  @@index([fechaOC])
+}
+
+// TABLA 2: PAGOS CHINA
+model PagosChina {
+  id                    String   @id @default(cuid())
+  idPago                String   @unique @map("id_pago")
+  ocId                  String   @map("oc_id")
+  fechaPago             DateTime @map("fecha_pago")
+  tipoPago              String   @map("tipo_pago")
+  metodoPago            String   @map("metodo_pago")
+  moneda                String
+  montoOriginal         Decimal  @map("monto_original") @db.Decimal(12, 2)
+  tasaCambio            Decimal  @default(1) @map("tasa_cambio") @db.Decimal(8, 4)
+  comisionBancoRD       Decimal  @default(0) @map("comision_banco_rd") @db.Decimal(10, 2)
+  montoRD               Decimal? @map("monto_rd") @db.Decimal(12, 2)
+  montoRDNeto           Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
+  
+  // Relaciones
+  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  @@map("pagos_china")
+  @@index([ocId])
+  @@index([tipoPago])
+  @@index([fechaPago])
+}
+
+// TABLA 3: GASTOS LOGÍSTICOS
+model GastosLogisticos {
+  id                    String   @id @default(cuid())
+  idGasto               String   @unique @map("id_gasto")
+  ocId                  String   @map("oc_id")
+  fechaGasto            DateTime @map("fecha_gasto")
+  tipoGasto             String   @map("tipo_gasto")
+  proveedorServicio     String?  @map("proveedor_servicio")
+  montoRD               Decimal  @map("monto_rd") @db.Decimal(12, 2)
+  notas                 String?  @db.Text
+  
+  // Relaciones
+  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  @@map("gastos_logisticos")
+  @@index([ocId])
+  @@index([tipoGasto])
+  @@index([fechaGasto])
+}
+
+// TABLA 4: INVENTARIO RECIBIDO
+model InventarioRecibido {
+  id                        String   @id @default(cuid())
+  idRecepcion               String   @unique @map("id_recepcion")
+  ocId                      String   @map("oc_id")
+  fechaLlegada              DateTime @map("fecha_llegada")
+  bodegaInicial             String   @map("bodega_inicial")
+  cantidadRecibida          Int      @map("cantidad_recibida")
+  costoUnitarioFinalRD      Decimal? @map("costo_unitario_final_rd") @db.Decimal(12, 2)
+  costoTotalRecepcionRD     Decimal? @map("costo_total_recepcion_rd") @db.Decimal(12, 2)
+  notas                     String?  @db.Text
+  
+  // Relaciones
+  ocChina                   OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+  
+  @@map("inventario_recibido")
+  @@index([ocId])
+  @@index([bodegaInicial])
+  @@index([fechaLlegada])
+}
