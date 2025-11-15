@@ -166,7 +166,7 @@ export default function InventarioRecibidoPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Inbox size={18} />
-              Inventario ({inventario.length})
+              Inventario ({inventarios.length})
             </CardTitle>
             <Button
               onClick={() => setFormOpen(true)}
