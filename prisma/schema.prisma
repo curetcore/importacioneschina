@@ -17,21 +17,57 @@ model OCChina {
   fechaOC               DateTime @map("fecha_oc")
   descripcionLote       String?  @map("descripcion_lote") @db.Text
   categoriaPrincipal    String   @map("categoria_principal")
-  cantidadOrdenada      Int      @map("cantidad_ordenada")
-  costoFOBTotalUSD      Decimal  @map("costo_fob_total_usd") @db.Decimal(12, 2)
-  
+
+  // Campos calculados (ahora derivados de items)
+  // cantidadOrdenada = suma de items.cantidadTotal
+  // costoFOBTotalUSD = suma de items.subtotalUSD
+
   // Relaciones
+  items                 OCChinaItem[]
   pagosChina            PagosChina[]
   gastosLogisticos      GastosLogisticos[]
   inventarioRecibido    InventarioRecibido[]
-  
+
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
-  
+
   @@map("oc_china")
   @@index([proveedor])
   @@index([fechaOC])
+}
+
+// TABLA 1.5: ITEMS DE OC CHINA (productos individuales)
+model OCChinaItem {
+  id                    String   @id @default(cuid())
+  ocId                  String   @map("oc_id")
+
+  // Información del producto
+  sku                   String
+  nombre                String               // "men leather shoes", "backpack"
+  material              String?  @db.Text    // "COW LEATHER + EVA SOLE..."
+  color                 String?  @db.Text    // "brown leather + brown lace"
+  especificaciones      String?  @db.Text    // Notas adicionales
+
+  // Tallas y cantidades
+  tallaDistribucion     Json?                // {"38": 10, "39": 20, "40": 20}
+  cantidadTotal         Int                  // Suma de todas las tallas
+
+  // Precios
+  precioUnitarioUSD     Decimal  @db.Decimal(10, 4)
+  subtotalUSD           Decimal  @db.Decimal(12, 2)
+
+  // Relaciones
+  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  inventarioRecibido    InventarioRecibido[]
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("oc_china_items")
+  @@index([ocId])
+  @@index([sku])
 }
 
 // TABLA 2: PAGOS CHINA
@@ -91,22 +127,25 @@ model InventarioRecibido {
   id                        String   @id @default(cuid())
   idRecepcion               String   @unique @map("id_recepcion")
   ocId                      String   @map("oc_id")
+  itemId                    String?  @map("item_id")  // Nuevo: vincular a producto específico
   fechaLlegada              DateTime @map("fecha_llegada")
   bodegaInicial             String   @map("bodega_inicial")
   cantidadRecibida          Int      @map("cantidad_recibida")
   costoUnitarioFinalRD      Decimal? @map("costo_unitario_final_rd") @db.Decimal(12, 2)
   costoTotalRecepcionRD     Decimal? @map("costo_total_recepcion_rd") @db.Decimal(12, 2)
   notas                     String?  @db.Text
-  
+
   // Relaciones
-  ocChina                   OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
-  
+  ocChina                   OCChina      @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  item                      OCChinaItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
   // Timestamps
   createdAt                 DateTime @default(now()) @map("created_at")
   updatedAt                 DateTime @updatedAt @map("updated_at")
-  
+
   @@map("inventario_recibido")
   @@index([ocId])
+  @@index([itemId])
   @@index([bodegaInicial])
   @@index([fechaLlegada])
 }

@@ -13,11 +13,21 @@ export async function GET(
     const oc = await prisma.oCChina.findUnique({
       where: { id },
       include: {
+        items: {
+          orderBy: {
+            sku: 'asc',
+          },
+        },
         pagosChina: true,
         gastosLogisticos: true,
-        inventarioRecibido: true,
+        inventarioRecibido: {
+          include: {
+            item: true,
+          },
+        },
         _count: {
           select: {
+            items: true,
             pagosChina: true,
             gastosLogisticos: true,
             inventarioRecibido: true,
@@ -61,6 +71,15 @@ export async function PUT(
     const { id } = params;
     const body = await request.json();
 
+    const {
+      oc,
+      proveedor,
+      fechaOC,
+      descripcionLote,
+      categoriaPrincipal,
+      items,
+    } = body;
+
     // Verificar que la OC existe
     const existing = await prisma.oCChina.findUnique({
       where: { id },
@@ -76,13 +95,32 @@ export async function PUT(
       );
     }
 
-    // Validar datos con Zod
-    const validatedData = ocChinaSchema.parse(body);
+    // Validaciones básicas
+    if (!oc || !proveedor || !fechaOC || !categoriaPrincipal) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Faltan campos requeridos",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que haya al menos un item
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Debe agregar al menos un producto a la orden",
+        },
+        { status: 400 }
+      );
+    }
 
     // Si se está cambiando el código OC, verificar que no exista otro con ese código
-    if (validatedData.oc !== existing.oc) {
+    if (oc !== existing.oc) {
       const duplicate = await prisma.oCChina.findUnique({
-        where: { oc: validatedData.oc },
+        where: { oc },
       });
 
       if (duplicate) {
@@ -96,18 +134,53 @@ export async function PUT(
       }
     }
 
-    // Actualizar la OC
-    const updatedOC = await prisma.oCChina.update({
-      where: { id },
-      data: {
-        oc: validatedData.oc,
-        proveedor: validatedData.proveedor,
-        fechaOC: new Date(validatedData.fechaOC),
-        descripcionLote: validatedData.descripcionLote,
-        categoriaPrincipal: validatedData.categoriaPrincipal,
-        cantidadOrdenada: validatedData.cantidadOrdenada,
-        costoFOBTotalUSD: validatedData.costoFOBTotalUSD,
-      },
+    // Validar cada item
+    for (const item of items) {
+      if (!item.sku || !item.nombre || !item.cantidadTotal || !item.precioUnitarioUSD) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Cada producto debe tener SKU, nombre, cantidad y precio",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Actualizar OC y reemplazar items en una transacción
+    const updatedOC = await prisma.$transaction(async (tx) => {
+      // Eliminar items antiguos
+      await tx.oCChinaItem.deleteMany({
+        where: { ocId: id },
+      });
+
+      // Actualizar OC y crear nuevos items
+      return await tx.oCChina.update({
+        where: { id },
+        data: {
+          oc,
+          proveedor,
+          fechaOC: new Date(fechaOC),
+          descripcionLote,
+          categoriaPrincipal,
+          items: {
+            create: items.map((item: any) => ({
+              sku: item.sku,
+              nombre: item.nombre,
+              material: item.material || null,
+              color: item.color || null,
+              especificaciones: item.especificaciones || null,
+              tallaDistribucion: item.tallaDistribucion || null,
+              cantidadTotal: parseInt(item.cantidadTotal),
+              precioUnitarioUSD: parseFloat(item.precioUnitarioUSD),
+              subtotalUSD: parseFloat(item.precioUnitarioUSD) * parseInt(item.cantidadTotal),
+            })),
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
     });
 
     return NextResponse.json({
@@ -116,18 +189,6 @@ export async function PUT(
     });
   } catch (error: any) {
     console.error("Error en PUT /api/oc-china/[id]:", error);
-
-    // Errores de validación Zod
-    if (error.errors) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de entrada inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
 
     return NextResponse.json(
       {
@@ -153,6 +214,7 @@ export async function DELETE(
       include: {
         _count: {
           select: {
+            items: true,
             pagosChina: true,
             gastosLogisticos: true,
             inventarioRecibido: true,
@@ -188,7 +250,7 @@ export async function DELETE(
       );
     }
 
-    // Eliminar la OC
+    // Eliminar la OC (los items se eliminan automáticamente por CASCADE)
     await prisma.oCChina.delete({
       where: { id },
     });

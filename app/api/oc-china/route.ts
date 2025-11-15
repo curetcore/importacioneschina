@@ -33,8 +33,10 @@ export async function GET(request: NextRequest) {
           fechaOC: "desc",
         },
         include: {
+          items: true,
           _count: {
             select: {
+              items: true,
               pagosChina: true,
               gastosLogisticos: true,
               inventarioRecibido: true,
@@ -67,7 +69,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/oc-china - Crear nueva orden de compra
+// POST /api/oc-china - Crear nueva orden de compra con items
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -78,16 +80,26 @@ export async function POST(request: NextRequest) {
       fechaOC,
       descripcionLote,
       categoriaPrincipal,
-      cantidadOrdenada,
-      costoFOBTotalUSD,
+      items,
     } = body;
 
     // Validaciones básicas
-    if (!oc || !proveedor || !fechaOC || !categoriaPrincipal || !cantidadOrdenada || !costoFOBTotalUSD) {
+    if (!oc || !proveedor || !fechaOC || !categoriaPrincipal) {
       return NextResponse.json(
         {
           success: false,
           error: "Faltan campos requeridos",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que haya al menos un item
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Debe agregar al menos un producto a la orden",
         },
         { status: 400 }
       );
@@ -108,6 +120,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar cada item
+    for (const item of items) {
+      if (!item.sku || !item.nombre || !item.cantidadTotal || !item.precioUnitarioUSD) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Cada producto debe tener SKU, nombre, cantidad y precio",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Crear OC con items en una transacción
     const nuevaOC = await prisma.oCChina.create({
       data: {
         oc,
@@ -115,8 +141,22 @@ export async function POST(request: NextRequest) {
         fechaOC: new Date(fechaOC),
         descripcionLote,
         categoriaPrincipal,
-        cantidadOrdenada: parseInt(cantidadOrdenada),
-        costoFOBTotalUSD: parseFloat(costoFOBTotalUSD),
+        items: {
+          create: items.map((item: any) => ({
+            sku: item.sku,
+            nombre: item.nombre,
+            material: item.material || null,
+            color: item.color || null,
+            especificaciones: item.especificaciones || null,
+            tallaDistribucion: item.tallaDistribucion || null,
+            cantidadTotal: parseInt(item.cantidadTotal),
+            precioUnitarioUSD: parseFloat(item.precioUnitarioUSD),
+            subtotalUSD: parseFloat(item.precioUnitarioUSD) * parseInt(item.cantidadTotal),
+          })),
+        },
+      },
+      include: {
+        items: true,
       },
     });
 

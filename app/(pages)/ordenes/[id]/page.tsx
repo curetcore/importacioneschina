@@ -10,15 +10,27 @@ import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { ArrowLeft } from "lucide-react"
 
+interface OCChinaItem {
+  id: string
+  sku: string
+  nombre: string
+  material: string | null
+  color: string | null
+  especificaciones: string | null
+  tallaDistribucion: any
+  cantidadTotal: number
+  precioUnitarioUSD: number
+  subtotalUSD: number
+}
+
 interface OCDetail {
   id: string
   oc: string
   proveedor: string
   fechaOC: string
   categoriaPrincipal: string
-  cantidadOrdenada: number
-  costoFOBTotalUSD: number
   descripcionLote: string | null
+  items: OCChinaItem[]
   pagosChina: Array<{
     id: string
     idPago: string
@@ -50,6 +62,7 @@ interface OCDetail {
     costoUnitarioFinalRD: number | null
     costoTotalRecepcionRD: number | null
     notas: string | null
+    item: OCChinaItem | null
   }>
 }
 
@@ -90,10 +103,12 @@ export default function OCDetailPage() {
     )
   }
 
+  const cantidadOrdenada = oc.items.reduce((sum, item) => sum + item.cantidadTotal, 0)
+  const costoFOBTotalUSD = oc.items.reduce((sum, item) => sum + item.subtotalUSD, 0)
   const totalPagado = oc.pagosChina.reduce((sum, pago) => sum + pago.montoRDNeto, 0)
   const totalGastos = oc.gastosLogisticos.reduce((sum, gasto) => sum + gasto.montoRD, 0)
   const totalRecibido = oc.inventarioRecibido.reduce((sum, inv) => sum + inv.cantidadRecibida, 0)
-  const porcentajeRecibido = (totalRecibido / oc.cantidadOrdenada) * 100
+  const porcentajeRecibido = cantidadOrdenada > 0 ? (totalRecibido / cantidadOrdenada) * 100 : 0
 
   return (
     <MainLayout>
@@ -135,9 +150,18 @@ export default function OCDetailPage() {
 
           <Card>
             <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Cantidad Ordenada</div>
+              <div className="text-sm font-medium text-gray-500">Productos</div>
               <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {oc.cantidadOrdenada.toLocaleString()}
+                {oc.items.length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-sm font-medium text-gray-500">Unidades Totales</div>
+              <div className="text-2xl font-semibold text-gray-900 mt-1">
+                {cantidadOrdenada.toLocaleString()}
               </div>
             </CardContent>
           </Card>
@@ -146,11 +170,94 @@ export default function OCDetailPage() {
             <CardContent className="pt-6">
               <div className="text-sm font-medium text-gray-500">Costo FOB Total</div>
               <div className="text-2xl font-semibold text-gray-900 mt-1">
-                ${oc.costoFOBTotalUSD.toLocaleString()}
+                ${costoFOBTotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Tabla de Productos */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Productos ({oc.items.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {oc.items.length === 0 ? (
+              <div className="text-center py-8 text-sm text-gray-500">
+                No hay productos en esta orden
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">SKU</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Material</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Color</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cantidad</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Precio Unit.</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {oc.items.map((item) => (
+                      <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{item.sku}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          <div>{item.nombre}</div>
+                          {item.especificaciones && (
+                            <div className="text-xs text-gray-500 mt-1">{item.especificaciones.substring(0, 50)}{item.especificaciones.length > 50 ? '...' : ''}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {item.material ? (
+                            <div className="max-w-xs truncate" title={item.material}>{item.material}</div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {item.color ? (
+                            <div className="max-w-xs truncate" title={item.color}>{item.color}</div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                          {item.cantidadTotal.toLocaleString()}
+                          {item.tallaDistribucion && (
+                            <div className="text-xs text-gray-500 mt-1" title={JSON.stringify(item.tallaDistribucion)}>
+                              {Object.keys(item.tallaDistribucion).length} tallas
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm text-gray-900">
+                          ${item.precioUnitarioUSD.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                          ${item.subtotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-gray-50 font-semibold">
+                      <td colSpan={4} className="py-3 px-4 text-sm text-right text-gray-700">
+                        TOTALES:
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        {cantidadOrdenada.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4"></td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        ${costoFOBTotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Resumen Financiero */}
         <Card>
@@ -195,7 +302,7 @@ export default function OCDetailPage() {
                 <div className="text-2xl font-semibold text-gray-900 mt-1">
                   {totalRecibido.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">de {oc.cantidadOrdenada.toLocaleString()} ordenados</div>
+                <div className="text-xs text-gray-500 mt-1">de {cantidadOrdenada.toLocaleString()} ordenados</div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-500">Progreso de Recepción</div>
