@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/inventario-recibido - Crear nueva recepci髇
+// POST /api/inventario-recibido - Crear nueva recepci贸n
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el ID de recepci髇 sea 鷑ico
+    // Verificar que el ID de recepci贸n sea 煤nico
     const existingRecepcion = await prisma.inventarioRecibido.findUnique({
       where: { idRecepcion: validatedData.idRecepcion },
     });
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ya existe una recepci髇 con ese ID",
+          error: "Ya existe una recepci贸n con ese ID",
         },
         { status: 400 }
       );
@@ -128,14 +128,14 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    // Calcular cantidad total recibida (incluyendo esta nueva recepci髇)
+    // Calcular cantidad total recibida (incluyendo esta nueva recepci贸n)
     const cantidadPreviaRecibida = oc.inventarioRecibido.reduce(
       (sum, i) => sum + i.cantidadRecibida,
       0
     );
     const cantidadTotalRecibida = cantidadPreviaRecibida + validatedData.cantidadRecibida;
 
-    // Calcular inversi髇 total
+    // Calcular inversi贸n total
     const totalInversionRD = totalPagosRD + totalGastosRD;
 
     // Calcular costo unitario final
@@ -144,13 +144,13 @@ export async function POST(request: NextRequest) {
       cantidadTotalRecibida
     );
 
-    // Calcular costo total de esta recepci髇
+    // Calcular costo total de esta recepci贸n
     const costoTotalRecepcionRD = calcularCostoTotalRecepcion(
       validatedData.cantidadRecibida,
       costoUnitarioFinalRD
     );
 
-    // Crear la recepci髇
+    // Crear la recepci贸n
     const nuevaRecepcion = await prisma.inventarioRecibido.create({
       data: {
         idRecepcion: validatedData.idRecepcion,
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Datos de validaci髇 incorrectos",
+          error: "Datos de validaci贸n incorrectos",
           details: error,
         },
         { status: 400 }
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Error al crear recepci髇 de inventario",
+        error: "Error al crear recepci贸n de inventario",
       },
       { status: 500 }
     );

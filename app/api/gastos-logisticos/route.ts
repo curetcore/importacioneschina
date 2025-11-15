@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Error al obtener gastos logísticos",
+        error: "Error al obtener gastos logÃ­sticos",
       },
       { status: 500 }
     );
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el ID de gasto sea único
+    // Verificar que el ID de gasto sea Ãºnico
     const existingGasto = await prisma.gastosLogisticos.findUnique({
       where: { idGasto: validatedData.idGasto },
     });
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Datos de validación incorrectos",
+          error: "Datos de validaciÃ³n incorrectos",
           details: error,
         },
         { status: 400 }
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Error al crear gasto logístico",
+        error: "Error al crear gasto logÃ­stico",
       },
       { status: 500 }
     );
