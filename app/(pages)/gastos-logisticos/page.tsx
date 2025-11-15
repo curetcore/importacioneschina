@@ -14,7 +14,7 @@ import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { tiposGasto } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Truck } from "lucide-react"
 
 interface GastoLogistico {
   id: string
@@ -210,21 +210,36 @@ export default function GastosLogisticosPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Gasto</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Gasto</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
-                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$</th>
-                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {gastos.map((gasto) => (
+            {gastos.length === 0 ? (
+              <div className="text-center py-12">
+                <Truck size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay gastos logísticos</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  {searchQuery || ocFilter || tipoGastoFilter
+                    ? "No se encontraron resultados con los filtros aplicados"
+                    : "Comienza registrando tu primer gasto logístico"}
+                </p>
+                <Button onClick={() => setFormOpen(true)} className="gap-2">
+                  <Plus size={18} />
+                  Nuevo Gasto
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Gasto</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Gasto</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gastos.map((gasto) => (
                     <tr key={gasto.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 text-sm font-medium text-gray-900">{gasto.idGasto}</td>
                       <td className="py-3 px-4">
@@ -262,22 +277,19 @@ export default function GastosLogisticosPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {gastos.length === 0 && (
-              <div className="text-center py-12 text-sm text-gray-500">
-                No hay gastos registrados
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {gastos.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </CardContent>
         </Card>
 
