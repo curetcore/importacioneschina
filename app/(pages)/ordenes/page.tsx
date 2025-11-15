@@ -13,8 +13,8 @@ import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
-import { formatDate } from "@/lib/utils"
-import { Plus, Edit, Trash2, Search, X, Eye } from "lucide-react"
+import { formatDate, formatCurrency } from "@/lib/utils"
+import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList } from "lucide-react"
 
 interface OCChinaItem {
   id: string
@@ -157,20 +157,20 @@ export default function OrdenesPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Ordenes</h1>
-            <p className="text-sm text-gray-500 mt-1">Gestión de órdenes de compra</p>
-          </div>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Orden
-          </Button>
-        </div>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Órdenes de Compra</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <ClipboardList size={18} />
+              Órdenes ({ocs.length})
+            </CardTitle>
+            <Button
+              onClick={() => setFormOpen(true)}
+              variant="outline"
+              className="gap-1.5 text-xs h-8 px-3"
+            >
+              <Plus size={14} />
+              Nueva
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 mb-6">
