@@ -77,6 +77,7 @@ export async function PUT(
       descripcionLote,
       categoriaPrincipal,
       items,
+      adjuntos,
     } = body;
 
     // Verificar que la OC existe
@@ -229,6 +230,7 @@ export async function PUT(
           fechaOC: new Date(fechaOC),
           descripcionLote,
           categoriaPrincipal,
+          adjuntos: adjuntos || null,
           items: {
             create: itemsValidados,
           },

@@ -6,9 +6,18 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
+import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { pagosChinaSchema, PagosChinaInput, tiposPago, metodosPago, monedas } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface PagoChina {
   id: string
@@ -21,6 +30,7 @@ interface PagoChina {
   montoOriginal: number
   tasaCambio: number
   comisionBancoRD: number
+  adjuntos?: FileAttachment[]
 }
 
 interface PagosChinaFormProps {
@@ -65,6 +75,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     tasaCambio: 1,
     comisionBancoRD: 0,
   })
+  const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
 
   // Cálculos automáticos
   const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
@@ -104,6 +115,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         tasaCambio: pagoToEdit.tasaCambio,
         comisionBancoRD: pagoToEdit.comisionBancoRD,
       })
+      setAdjuntos(pagoToEdit.adjuntos || [])
     } else {
       setFormData({
         idPago: "",
@@ -116,6 +128,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         tasaCambio: 1,
         comisionBancoRD: 0,
       })
+      setAdjuntos([])
     }
     setErrors({})
   }, [pagoToEdit])
@@ -141,7 +154,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(validatedData),
+        body: JSON.stringify({
+          ...validatedData,
+          adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+        }),
       })
 
       const result = await response.json()
@@ -169,6 +185,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         tasaCambio: 1,
         comisionBancoRD: 0,
       })
+      setAdjuntos([])
 
       onOpenChange(false)
       onSuccess?.()
@@ -206,6 +223,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       tasaCambio: 1,
       comisionBancoRD: 0,
     })
+    setAdjuntos([])
     setErrors({})
     onOpenChange(false)
   }
@@ -396,6 +414,19 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Adjuntos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Adjuntos (Recibos de pago)
+              </label>
+              <FileUpload
+                module="pagos-china"
+                attachments={adjuntos}
+                onChange={setAdjuntos}
+                disabled={loading}
+              />
             </div>
           </div>
 

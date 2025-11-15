@@ -22,6 +22,9 @@ model OCChina {
   // cantidadOrdenada = suma de items.cantidadTotal
   // costoFOBTotalUSD = suma de items.subtotalUSD
 
+  // Adjuntos (fotos y PDFs)
+  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+
   // Relaciones
   items                 OCChinaItem[]
   pagosChina            PagosChina[]
@@ -84,14 +87,17 @@ model PagosChina {
   comisionBancoRD       Decimal  @default(0) @map("comision_banco_rd") @db.Decimal(10, 2)
   montoRD               Decimal? @map("monto_rd") @db.Decimal(12, 2)
   montoRDNeto           Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
-  
+
+  // Adjuntos (recibos de pago)
+  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+
   // Relaciones
   ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
-  
+
   @@map("pagos_china")
   @@index([ocId])
   @@index([tipoPago])
@@ -108,14 +114,17 @@ model GastosLogisticos {
   proveedorServicio     String?  @map("proveedor_servicio")
   montoRD               Decimal  @map("monto_rd") @db.Decimal(12, 2)
   notas                 String?  @db.Text
-  
+
+  // Adjuntos (facturas, recibos, documentos)
+  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+
   // Relaciones
   ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
-  
+
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
-  
+
   @@map("gastos_logisticos")
   @@index([ocId])
   @@index([tipoGasto])

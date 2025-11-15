@@ -73,6 +73,9 @@ export async function PUT(
 
     const validatedData = gastosLogisticosSchema.parse(body);
 
+    // Extraer adjuntos (no validado por Zod)
+    const { adjuntos } = body;
+
     const oc = await prisma.oCChina.findUnique({
       where: { id: validatedData.ocId },
     });
@@ -113,6 +116,7 @@ export async function PUT(
         proveedorServicio: validatedData.proveedorServicio,
         montoRD: validatedData.montoRD,
         notas: validatedData.notas,
+        adjuntos: adjuntos || null,
       },
     });
 

@@ -89,6 +89,9 @@ export async function POST(request: NextRequest) {
     // Validar con Zod (sin necesidad de idPago en el body)
     const validatedData = pagosChinaSchema.parse(body);
 
+    // Extraer adjuntos (no validado por Zod)
+    const { adjuntos } = body;
+
     // Verificar que la OC existe
     const oc = await prisma.oCChina.findUnique({
       where: { id: validatedData.ocId },
@@ -130,6 +133,7 @@ export async function POST(request: NextRequest) {
         comisionBancoRD: new Prisma.Decimal(validatedData.comisionBancoRD),
         montoRD: new Prisma.Decimal(montoRD),
         montoRDNeto: new Prisma.Decimal(montoRDNeto),
+        adjuntos: adjuntos || null,
       },
       include: {
         ocChina: {

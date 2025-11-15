@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       descripcionLote,
       categoriaPrincipal,
       items,
+      adjuntos,
     } = body;
 
     // Validaciones básicas
@@ -185,6 +186,7 @@ export async function POST(request: NextRequest) {
         fechaOC: new Date(fechaOC),
         descripcionLote,
         categoriaPrincipal,
+        adjuntos: adjuntos || null,
         items: {
           create: itemsValidados,
         },

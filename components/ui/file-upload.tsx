@@ -1,0 +1,262 @@
+"use client"
+
+import { useCallback, useState } from "react"
+import { Upload, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react"
+import { Button } from "./button"
+import { useToast } from "./toast"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
+
+interface FileUploadProps {
+  module: "oc-china" | "pagos-china" | "gastos-logisticos"
+  attachments: FileAttachment[]
+  onChange: (attachments: FileAttachment[]) => void
+  maxFiles?: number
+  disabled?: boolean
+}
+
+export function FileUpload({
+  module,
+  attachments,
+  onChange,
+  maxFiles = 5,
+  disabled = false,
+}: FileUploadProps) {
+  const { addToast } = useToast()
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]
+
+  const validateFile = (file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return "Solo se permiten archivos JPG, PNG y PDF"
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return "El archivo no debe exceder 10MB"
+    }
+    if (attachments.length >= maxFiles) {
+      return `Solo se permiten máximo ${maxFiles} archivos`
+    }
+    return null
+  }
+
+  const uploadFile = async (file: File) => {
+    const error = validateFile(file)
+    if (error) {
+      addToast({
+        type: "error",
+        title: "Error de validación",
+        description: error,
+      })
+      return
+    }
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("module", module)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al subir el archivo")
+      }
+
+      onChange([...attachments, result.data])
+
+      addToast({
+        type: "success",
+        title: "Archivo subido",
+        description: `${file.name} subido exitosamente`,
+      })
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al subir el archivo",
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    files.forEach(uploadFile)
+    e.target.value = "" // Reset input
+  }
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
+
+      if (disabled || uploading) return
+
+      const files = Array.from(e.dataTransfer.files)
+      files.forEach(uploadFile)
+    },
+    [disabled, uploading, attachments]
+  )
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }, [])
+
+  const removeFile = async (attachment: FileAttachment) => {
+    try {
+      const response = await fetch(`/api/upload/delete?url=${encodeURIComponent(attachment.url)}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar el archivo")
+      }
+
+      onChange(attachments.filter((a) => a.url !== attachment.url))
+
+      addToast({
+        type: "success",
+        title: "Archivo eliminado",
+        description: `${attachment.nombre} eliminado exitosamente`,
+      })
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al eliminar el archivo",
+      })
+    }
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i]
+  }
+
+  const getFileIcon = (tipo: string) => {
+    if (tipo.startsWith("image/")) {
+      return <ImageIcon size={16} className="text-blue-500" />
+    }
+    return <FileText size={16} className="text-red-500" />
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Drop zone */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`
+          border-2 border-dashed rounded-lg p-6 text-center transition-colors
+          ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}
+          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}
+        `}
+      >
+        <input
+          type="file"
+          id="file-upload"
+          className="hidden"
+          onChange={handleFileInput}
+          accept=".jpg,.jpeg,.png,.pdf"
+          multiple
+          disabled={disabled || uploading || attachments.length >= maxFiles}
+        />
+
+        <label
+          htmlFor="file-upload"
+          className={`flex flex-col items-center gap-2 ${
+            disabled || uploading ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
+        >
+          {uploading ? (
+            <Loader2 size={32} className="text-gray-400 animate-spin" />
+          ) : (
+            <Upload size={32} className="text-gray-400" />
+          )}
+          <div className="text-sm text-gray-600">
+            {uploading ? (
+              "Subiendo archivo..."
+            ) : (
+              <>
+                <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra archivos aquí
+              </>
+            )}
+          </div>
+          <div className="text-xs text-gray-500">
+            JPG, PNG o PDF (máx. 10MB) • Máximo {maxFiles} archivos
+          </div>
+        </label>
+      </div>
+
+      {/* Lista de archivos */}
+      {attachments.length > 0 && (
+        <div className="space-y-2">
+          {attachments.map((attachment, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {getFileIcon(attachment.tipo)}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {attachment.nombre}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {formatFileSize(attachment.size)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={attachment.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Ver
+                </a>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => removeFile(attachment)}
+                  disabled={disabled}
+                >
+                  <X size={14} />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
+import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { proveedores, categorias } from "@/lib/validations"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
 import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface OCChinaItem {
   id?: string
@@ -33,6 +42,7 @@ interface OCChina {
   categoriaPrincipal: string
   descripcionLote?: string | null
   items?: OCChinaItem[]
+  adjuntos?: FileAttachment[]
 }
 
 interface OCChinaFormProps {
@@ -67,6 +77,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
   const [items, setItems] = useState<OCChinaItem[]>([])
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
+  const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
 
   // Cargar datos cuando se abre en modo edición
   useEffect(() => {
@@ -79,6 +90,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         categoriaPrincipal: ocToEdit.categoriaPrincipal,
       })
       setItems(ocToEdit.items || [])
+      setAdjuntos(ocToEdit.adjuntos || [])
       setExpandedItems(new Set())
     } else {
       setFormData({
@@ -89,6 +101,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         categoriaPrincipal: "",
       })
       setItems([])
+      setAdjuntos([])
       setExpandedItems(new Set())
     }
   }, [ocToEdit, open])
@@ -203,6 +216,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           cantidadTotal: item.cantidadTotal,
           precioUnitarioUSD: item.precioUnitarioUSD,
         })),
+        adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
       }
 
       const result = isEditMode
@@ -524,6 +538,17 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                 </div>
               </div>
             )}
+
+            {/* SECCIÓN 4: Adjuntos */}
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <h3 className="font-semibold text-lg">Adjuntos</h3>
+              <FileUpload
+                module="oc-china"
+                attachments={adjuntos}
+                onChange={setAdjuntos}
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <DialogFooter>

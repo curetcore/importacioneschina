@@ -7,9 +7,18 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
+import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { gastosLogisticosSchema, GastosLogisticosInput, tiposGasto } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface GastoLogistico {
   id: string
@@ -20,6 +29,7 @@ interface GastoLogistico {
   proveedorServicio?: string | null
   montoRD: number
   notas?: string | null
+  adjuntos?: FileAttachment[]
 }
 
 interface GastosLogisticosFormProps {
@@ -52,6 +62,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
     montoRD: undefined,
     notas: "",
   })
+  const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
 
   useEffect(() => {
     if (open) {
@@ -79,6 +90,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         montoRD: gastoToEdit.montoRD,
         notas: gastoToEdit.notas || "",
       })
+      setAdjuntos(gastoToEdit.adjuntos || [])
     } else {
       setFormData({
         idGasto: "",
@@ -89,6 +101,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         montoRD: undefined,
         notas: "",
       })
+      setAdjuntos([])
     }
     setErrors({})
   }, [gastoToEdit])
@@ -109,7 +122,10 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedData),
+        body: JSON.stringify({
+          ...validatedData,
+          adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+        }),
       })
 
       const result = await response.json()
@@ -125,6 +141,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       })
 
       setFormData({ idGasto: "", ocId: "", fechaGasto: undefined, tipoGasto: "", proveedorServicio: "", montoRD: undefined, notas: "" })
+      setAdjuntos([])
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
@@ -144,6 +161,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
 
   const handleCancel = () => {
     setFormData({ idGasto: "", ocId: "", fechaGasto: undefined, tipoGasto: "", proveedorServicio: "", montoRD: undefined, notas: "" })
+    setAdjuntos([])
     setErrors({})
     onOpenChange(false)
   }
@@ -260,6 +278,19 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                 error={errors.notas}
                 placeholder="Notas adicionales..."
                 rows={3}
+                disabled={loading}
+              />
+            </div>
+
+            {/* Adjuntos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Adjuntos (Facturas, recibos, documentos)
+              </label>
+              <FileUpload
+                module="gastos-logisticos"
+                attachments={adjuntos}
+                onChange={setAdjuntos}
                 disabled={loading}
               />
             </div>
