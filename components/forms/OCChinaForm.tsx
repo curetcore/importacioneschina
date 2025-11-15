@@ -69,7 +69,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
       // Éxito
       addToast({
         type: "success",
-        message: `Orden ${validatedData.oc} creada exitosamente`,
+        title: "Orden creada",
+        description: `Orden ${validatedData.oc} creada exitosamente`,
       })
 
       // Resetear formulario
@@ -98,7 +99,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
         // Otros errores
         addToast({
           type: "error",
-          message: error.message || "Error al crear la orden",
+          title: "Error",
+          description: error.message || "Error al crear la orden",
         })
       }
     } finally {
