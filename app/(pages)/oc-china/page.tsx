@@ -160,19 +160,19 @@ export default function OCChinaPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full" style={{ minWidth: "1200px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Código OC</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoría</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Productos</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo FOB</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Código OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Proveedor</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Categoría</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Productos</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Unidades</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Costo FOB</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Estado</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -184,35 +184,35 @@ export default function OCChinaPage() {
 
                       return (
                         <tr key={oc.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 whitespace-nowrap">
                             <span className="font-medium text-gray-900">{oc.oc}</span>
                           </td>
-                          <td className="py-3 px-4 text-gray-700">{oc.proveedor}</td>
-                          <td className="py-3 px-4 text-gray-600 text-sm">{formatDate(oc.fechaOC)}</td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 text-gray-700 whitespace-nowrap">{oc.proveedor}</td>
+                          <td className="py-3 px-4 text-gray-600 text-sm whitespace-nowrap">{formatDate(oc.fechaOC)}</td>
+                          <td className="py-3 px-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                               {oc.categoriaPrincipal}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                               {oc._count.items}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right font-medium text-gray-900">
+                          <td className="py-3 px-4 text-right font-medium text-gray-900 whitespace-nowrap">
                             {cantidadTotal.toLocaleString()}
                           </td>
-                          <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                          <td className="py-3 px-4 text-right font-semibold text-gray-900 whitespace-nowrap">
                             {formatCurrency(costoFOBTotal)}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 whitespace-nowrap">
                             <div className="flex items-center justify-center gap-1">
                               <div className={`w-2 h-2 rounded-full ${hasPayments ? 'bg-green-500' : 'bg-gray-300'}`} title={hasPayments ? "Tiene pagos" : "Sin pagos"} />
                               <div className={`w-2 h-2 rounded-full ${hasExpenses ? 'bg-yellow-500' : 'bg-gray-300'}`} title={hasExpenses ? "Tiene gastos" : "Sin gastos"} />
                               <div className={`w-2 h-2 rounded-full ${hasInventory ? 'bg-blue-500' : 'bg-gray-300'}`} title={hasInventory ? "Tiene inventario" : "Sin inventario"} />
                             </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 whitespace-nowrap">
                             <div className="flex items-center justify-center gap-2">
                               <Button
                                 variant="ghost"

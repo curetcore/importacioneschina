@@ -239,42 +239,42 @@ export default function PagosChinaPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full" style={{ minWidth: "1400px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Pago</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Método</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Original</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tasa</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$ (Neto)</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>ID Pago</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Tipo</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Método</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Monto Original</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Tasa</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Monto RD$ (Neto)</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Adjuntos</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagos.map((pago) => (
                     <tr key={pago.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{pago.idPago}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{pago.idPago}</td>
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">{pago.ocChina.oc}</div>
                           <div className="text-gray-500 text-xs">{pago.ocChina.proveedor}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{formatDate(pago.fechaPago)}</td>
-                      <td className="py-3 px-4 text-sm text-gray-700">{pago.tipoPago}</td>
-                      <td className="py-3 px-4 text-sm text-gray-700">{pago.metodoPago}</td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(pago.fechaPago)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{pago.tipoPago}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{pago.metodoPago}</td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {formatCurrency(pago.montoOriginal, pago.moneda)}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-right text-gray-900">{pago.tasaCambio.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-sm text-right text-gray-900 whitespace-nowrap">{pago.tasaCambio.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">{formatCurrency(pago.montoRDNeto)}</div>
                           {pago.comisionBancoRD > 0 && (
@@ -284,10 +284,10 @@ export default function PagosChinaPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <AttachmentsList attachments={pago.adjuntos || []} compact />
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"

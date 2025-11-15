@@ -234,42 +234,42 @@ export default function GastosLogisticosPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full" style={{ minWidth: "1300px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Gasto</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Gasto</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>ID Gasto</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Tipo de Gasto</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Proveedor</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Monto RD$</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Adjuntos</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {gastos.map((gasto) => (
                     <tr key={gasto.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{gasto.idGasto}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{gasto.idGasto}</td>
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">{gasto.ocChina.oc}</div>
                           <div className="text-gray-500 text-xs">{gasto.ocChina.proveedor}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{formatDate(gasto.fechaGasto)}</td>
-                      <td className="py-3 px-4 text-sm text-gray-700">{gasto.tipoGasto}</td>
-                      <td className="py-3 px-4 text-sm text-gray-700">
+                      <td className="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(gasto.fechaGasto)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{gasto.tipoGasto}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">
                         {gasto.proveedorServicio || <span className="text-gray-400">-</span>}
                       </td>
-                      <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                      <td className="py-3 px-4 text-right text-sm font-medium text-gray-900 whitespace-nowrap">
                         {formatCurrency(gasto.montoRD)}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <AttachmentsList attachments={gasto.adjuntos || []} compact />
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
@@ -292,10 +292,10 @@ export default function GastosLogisticosPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={6}>
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700 whitespace-nowrap" colSpan={6}>
                         Total
                       </td>
-                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
                         {formatCurrency(gastos.reduce((sum, gasto) => sum + parseFloat(gasto.montoRD.toString()), 0))}
                       </td>
                       <td className="py-3 px-4"></td>
