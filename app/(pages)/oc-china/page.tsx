@@ -46,14 +46,14 @@ export default function OCChinaPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">OC China</h1>
-            <p className="text-gray-600 mt-1">Gestión de órdenes de compra</p>
+            <p className="text-gray-600 mt-1">Gestion de ordenes de compra</p>
           </div>
           <Button>+ Nueva OC</Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Órdenes de Compra</CardTitle>
+            <CardTitle>Ordenes de Compra</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -63,7 +63,7 @@ export default function OCChinaPage() {
                     <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Proveedor</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Categoría</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Categoria</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-700">Cantidad</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-700">Costo FOB</th>
                     <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
