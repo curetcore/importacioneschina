@@ -3,7 +3,7 @@
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  categoriasPrincipales,
+  categorias,
   tiposPago,
   metodosPago,
   bodegas,
@@ -15,7 +15,7 @@ export default function ConfiguracionPage() {
     {
       titulo: "Categorías Principales",
       descripcion: "Categorías disponibles para las órdenes de compra",
-      items: categoriasPrincipales,
+      items: categorias,
     },
     {
       titulo: "Tipos de Pago",
