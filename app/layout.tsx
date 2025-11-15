@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "CURET - Sistema de Importaciones China",
-  description: "Sistema de gestión de importaciones desde China con control financiero automático",
+  title: "Sistema de importacion",
+  description: "Sistema de importacion con control financiero automático",
 }
 
 export default function RootLayout({

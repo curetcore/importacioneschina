@@ -1,7 +1,7 @@
 {
-  "name": "curet-importaciones",
+  "name": "sistema-importacion",
   "version": "1.0.0",
-  "description": "Sistema de gestión de importaciones desde China con control financiero automático",
+  "description": "Sistema de importacion con control financiero automático",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

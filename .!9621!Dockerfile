@@ -1,0 +1,43 @@
+# ==========================================
+# Sistema de importacion
+# Dockerfile optimizado multi-stage
+# ==========================================
+
+# ==========================================
+# Stage 1: Dependencies
+# ==========================================
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
+
+# Instalar dependencias
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# ==========================================
+# Stage 2: Builder
+# ==========================================
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copiar dependencias del stage anterior
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Configurar variables de entorno para build
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
+# Generar cliente Prisma
+RUN npx prisma generate
+
+# Build de Next.js
+RUN npm run build
+
+# ==========================================

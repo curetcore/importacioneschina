@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚢 CURET - Sistema de Importaciones China
+# 🚢 Sistema de importacion
 
 ### Sistema web completo para gestionar importaciones desde China con control financiero automático
 
@@ -544,7 +544,7 @@ npm run db:seed
 
 ## 📄 Licencia
 
-Este proyecto es **privado** y pertenece a **CURET**.
+Este proyecto es **privado** y pertenece a **Sistema de importacion**.
 
 ---
 
@@ -558,14 +558,14 @@ Este proyecto es **privado** y pertenece a **CURET**.
 
 <div align="center">
 
-### 🎯 Desarrollado para CURET
+### 🎯 Desarrollado para Sistema de importacion
 
 **Sistema de Gestión de Importaciones desde China**
 
-[⬆ Volver arriba](#-curet---sistema-de-importaciones-china)
+[⬆ Volver arriba](#-sistema-de-importacion)
 
 ---
 
-**© 2025 CURET. Todos los derechos reservados.**
+**© 2025 Sistema de importacion. Todos los derechos reservados.**
 
 </div>
