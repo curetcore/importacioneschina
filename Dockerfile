@@ -15,7 +15,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
+# Instalar SOLO dependencias de producción
 RUN npm ci --only=production && \
     npm cache clean --force
 
@@ -26,8 +26,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copiar dependencias del stage anterior
-COPY --from=deps /app/node_modules ./node_modules
+# Copiar archivos para build
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
+
+# Instalar TODAS las dependencias (incluyendo devDependencies para Tailwind)
+RUN npm ci
+
+# Copiar código fuente
 COPY . .
 
 # Configurar variables de entorno para build
@@ -37,11 +43,11 @@ ENV NODE_ENV production
 # Generar cliente Prisma
 RUN npx prisma generate
 
-# Build de Next.js
+# Build de Next.js (ahora con Tailwind disponible)
 RUN npm run build
 
 # ==========================================
-# Stage 3: Runner (Producci�n)
+# Stage 3: Runner (Producci�n)
 # ==========================================
 FROM node:18-alpine AS production
 
