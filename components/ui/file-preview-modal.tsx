@@ -54,9 +54,8 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
               <span className="text-sm text-gray-500">{formatFileSize(file.size)}</span>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleDownload}
-                className="gap-2"
+                className="gap-2 px-3 py-1.5 text-sm"
               >
                 <Download size={16} />
                 Descargar
