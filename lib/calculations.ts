@@ -186,6 +186,9 @@ export function calcularTasaCambioPromedio(pagos: PagoChina[]): number {
     return sum + monto
   }, 0)
 
+  // Protección adicional: si totalMonto es 0, retornar 0
+  if (totalMonto === 0) return 0
+
   const tasaPonderada = pagosConTasa.reduce((sum, p) => {
     const monto = typeof p.montoOriginal === 'number' ? p.montoOriginal : parseFloat(p.montoOriginal.toString())
     const tasa = typeof p.tasaCambio === 'number' ? p.tasaCambio : parseFloat(p.tasaCambio.toString())
