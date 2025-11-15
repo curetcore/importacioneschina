@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,7 +12,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate } from "@/lib/utils"
-import { Plus, Edit, Trash2, Search, X } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Eye } from "lucide-react"
 
 interface OCChina {
   id: string
@@ -25,6 +26,7 @@ interface OCChina {
 }
 
 export default function OrdenesPage() {
+  const router = useRouter()
   const { addToast } = useToast()
   const [ocs, setOcs] = useState<OCChina[]>([])
   const [loading, setLoading] = useState(true)
@@ -213,6 +215,14 @@ export default function OrdenesPage() {
                       <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">${oc.costoFOBTotalUSD.toLocaleString()}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8"
+                            onClick={() => router.push(`/ordenes/${oc.id}`)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Ver
+                          </Button>
                           <Button
                             variant="ghost"
                             className="text-sm h-8"
