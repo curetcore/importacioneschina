@@ -5,6 +5,7 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { Plus } from "lucide-react"
 
 interface Pago {
   id: string
@@ -43,7 +44,7 @@ export default function PagosChinaPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="text-center py-12">Cargando...</div>
+        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
       </MainLayout>
     )
   }
@@ -51,12 +52,15 @@ export default function PagosChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pagos China</h1>
-            <p className="text-gray-600 mt-1">Gestión de pagos a proveedores</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Pagos</h1>
+            <p className="text-sm text-gray-500 mt-1">Gestión de pagos a proveedores</p>
           </div>
-          <Button>+ Nuevo Pago</Button>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Nuevo Pago
+          </Button>
         </div>
 
         <Card>
@@ -67,45 +71,41 @@ export default function PagosChinaPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">ID Pago</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Método</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Monto Original</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Tasa</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$ (Neto)</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Pago</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Método</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Original</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tasa</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$ (Neto)</th>
+                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pagos.map((pago) => (
-                    <tr key={pago.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{pago.idPago}</td>
+                    <tr key={pago.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{pago.idPago}</td>
                       <td className="py-3 px-4">
                         <div className="text-sm">
-                          <div className="font-medium">{pago.ocChina.oc}</div>
-                          <div className="text-gray-500">{pago.ocChina.proveedor}</div>
+                          <div className="font-medium text-gray-900">{pago.ocChina.oc}</div>
+                          <div className="text-gray-500 text-xs">{pago.ocChina.proveedor}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">{formatDate(pago.fechaPago)}</td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {pago.tipoPago}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">{pago.metodoPago}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{formatDate(pago.fechaPago)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{pago.tipoPago}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{pago.metodoPago}</td>
                       <td className="py-3 px-4 text-right">
                         <div className="text-sm">
-                          <div className="font-medium">{pago.montoOriginal.toLocaleString()}</div>
-                          <div className="text-gray-500">{pago.moneda}</div>
+                          <div className="font-medium text-gray-900">{pago.montoOriginal.toLocaleString()}</div>
+                          <div className="text-gray-500 text-xs">{pago.moneda}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right">{pago.tasaCambio.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-sm text-right text-gray-900">{pago.tasaCambio.toLocaleString()}</td>
                       <td className="py-3 px-4 text-right">
                         <div className="text-sm">
-                          <div className="font-medium">{formatCurrency(pago.montoRDNeto)}</div>
+                          <div className="font-medium text-gray-900">{formatCurrency(pago.montoRDNeto)}</div>
                           {pago.comisionBancoRD > 0 && (
                             <div className="text-gray-500 text-xs">
                               + {formatCurrency(pago.comisionBancoRD)} comisión
@@ -114,7 +114,7 @@ export default function PagosChinaPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <Button variant="ghost" className="text-sm">Ver</Button>
+                        <Button variant="ghost" className="text-sm h-8">Ver</Button>
                       </td>
                     </tr>
                   ))}
