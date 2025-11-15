@@ -40,8 +40,8 @@ RUN npm ci
 COPY . .
 
 # Configurar variables de entorno para build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
 # Generar cliente Prisma
 RUN npx prisma generate
@@ -67,8 +67,8 @@ COPY . .
 # Generar Prisma
 RUN npx prisma generate
 
-ENV NODE_ENV development
-ENV PORT 3000
+ENV NODE_ENV=development
+ENV PORT=3000
 
 EXPOSE 3000
 
@@ -99,10 +99,10 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Variables de entorno
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Cambiar a usuario no-root
 USER nextjs
