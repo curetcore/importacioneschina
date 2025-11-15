@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { pagosChinaSchema } from "@/lib/validations";
+import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
+import { Prisma } from "@prisma/client";
 
 // GET /api/pagos-china/[id] - Obtener un pago específico
 export async function GET(
@@ -107,7 +109,19 @@ export async function PUT(
       }
     }
 
-    // Actualizar el pago
+    // Recalcular montoRD y montoRDNeto (Problema #4)
+    const montoRD = calcularMontoRD(
+      validatedData.montoOriginal,
+      validatedData.moneda,
+      validatedData.tasaCambio
+    );
+
+    const montoRDNeto = calcularMontoRDNeto(
+      montoRD,
+      validatedData.comisionBancoRD
+    );
+
+    // Actualizar el pago con campos recalculados
     const updatedPago = await prisma.pagosChina.update({
       where: { id },
       data: {
@@ -120,6 +134,8 @@ export async function PUT(
         montoOriginal: validatedData.montoOriginal,
         tasaCambio: validatedData.tasaCambio,
         comisionBancoRD: validatedData.comisionBancoRD,
+        montoRD: new Prisma.Decimal(montoRD),
+        montoRDNeto: new Prisma.Decimal(montoRDNeto),
       },
     });
 

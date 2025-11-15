@@ -128,16 +128,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Si se especificó un itemId, validar que existe
+    // Si se especificó un itemId, validar que existe y sobre-recepción (Problema #5)
     if (validatedData.itemId) {
-      const itemExists = oc.items.find(item => item.id === validatedData.itemId);
-      if (!itemExists) {
+      const item = oc.items.find(i => i.id === validatedData.itemId);
+      if (!item) {
         return NextResponse.json(
           {
             success: false,
             error: "El producto especificado no pertenece a esta OC",
           },
           { status: 400 }
+        );
+      }
+
+      // Validar sobre-recepción
+      const cantidadYaRecibida = await prisma.inventarioRecibido.aggregate({
+        where: {
+          ocId: validatedData.ocId,
+          itemId: validatedData.itemId,
+        },
+        _sum: {
+          cantidadRecibida: true,
+        },
+      });
+
+      const totalRecibido = (cantidadYaRecibida._sum.cantidadRecibida || 0) + validatedData.cantidadRecibida;
+
+      // Bloquear sobre-recepción
+      if (totalRecibido > item.cantidadTotal) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Sobre-recepción detectada: ${item.nombre} (SKU: ${item.sku}). ` +
+                   `Ordenado: ${item.cantidadTotal}, Ya recibido: ${cantidadYaRecibida._sum.cantidadRecibida || 0}, ` +
+                   `Intentando recibir: ${validatedData.cantidadRecibida}, Total: ${totalRecibido}`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Warning si está cerca del límite (> 95%)
+      if (totalRecibido > item.cantidadTotal * 0.95) {
+        console.warn(
+          `⚠️ Recepción cerca del límite: ${item.sku} - ${totalRecibido}/${item.cantidadTotal}`
         );
       }
     }

@@ -120,20 +120,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar cada item
+    // Validar y normalizar cada item (Problemas #1 y #2)
+    const itemsValidados = [];
     for (const item of items) {
-      if (!item.sku || !item.nombre || !item.cantidadTotal || !item.precioUnitarioUSD) {
+      // Validaciones básicas
+      if (!item.sku || !item.nombre) {
         return NextResponse.json(
           {
             success: false,
-            error: "Cada producto debe tener SKU, nombre, cantidad y precio",
+            error: "Cada producto debe tener SKU y nombre",
           },
           { status: 400 }
         );
       }
+
+      // Validar cantidadTotal
+      const cantidad = parseInt(item.cantidadTotal);
+      if (isNaN(cantidad) || cantidad <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Cantidad inválida para ${item.sku}. Debe ser un número entero mayor a 0`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar precioUnitarioUSD
+      const precio = parseFloat(item.precioUnitarioUSD);
+      if (isNaN(precio) || precio <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Precio inválido para ${item.sku}. Debe ser un número mayor a 0`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Calcular subtotal
+      const subtotal = precio * cantidad;
+
+      // Validar overflow (máximo razonable: $999,999.99)
+      if (subtotal > 999999.99) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Subtotal excede límite máximo para ${item.sku}: $${subtotal.toFixed(2)}`,
+          },
+          { status: 400 }
+        );
+      }
+
+      itemsValidados.push({
+        sku: item.sku,
+        nombre: item.nombre,
+        material: item.material || null,
+        color: item.color || null,
+        especificaciones: item.especificaciones || null,
+        tallaDistribucion: item.tallaDistribucion || null,
+        cantidadTotal: cantidad,
+        precioUnitarioUSD: precio,
+        subtotalUSD: subtotal,
+      });
     }
 
-    // Crear OC con items en una transacción
+    // Crear OC con items validados
     const nuevaOC = await prisma.oCChina.create({
       data: {
         oc,
@@ -142,17 +194,7 @@ export async function POST(request: NextRequest) {
         descripcionLote,
         categoriaPrincipal,
         items: {
-          create: items.map((item: any) => ({
-            sku: item.sku,
-            nombre: item.nombre,
-            material: item.material || null,
-            color: item.color || null,
-            especificaciones: item.especificaciones || null,
-            tallaDistribucion: item.tallaDistribucion || null,
-            cantidadTotal: parseInt(item.cantidadTotal),
-            precioUnitarioUSD: parseFloat(item.precioUnitarioUSD),
-            subtotalUSD: parseFloat(item.precioUnitarioUSD) * parseInt(item.cantidadTotal),
-          })),
+          create: itemsValidados,
         },
       },
       include: {

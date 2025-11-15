@@ -12,6 +12,12 @@ export function calcularMontoRD(
     return monto;
   }
 
+  // Validar tasa de cambio (Problema #6)
+  if (tasa <= 0) {
+    console.error(`❌ Tasa de cambio inválida: ${tasa} para moneda ${moneda}`);
+    return 0;
+  }
+
   return monto * tasa;
 }
 
