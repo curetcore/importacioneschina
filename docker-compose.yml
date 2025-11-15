@@ -51,6 +51,8 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
+      # Volumen persistente para archivos subidos
+      - uploads_data:/app/public/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,7 +61,7 @@ services:
     command: sh -c "npx prisma generate && npx prisma db push && npm run dev"
 
   # ==========================================
-  # Prisma Studio (Opcional - Gestión de BD)
+  # Prisma Studio (Opcional - Gestiï¿½n de BD)
   # ==========================================
   prisma-studio:
     build:
@@ -89,6 +91,8 @@ services:
 # ==========================================
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local
 
 # ==========================================

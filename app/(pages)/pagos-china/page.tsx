@@ -239,7 +239,7 @@ export default function PagosChinaPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-6 px-6">
+              <div className="overflow-x-auto">
                 <table className="w-full" style={{ minWidth: "1400px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">

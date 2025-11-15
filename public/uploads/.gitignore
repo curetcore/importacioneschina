@@ -1,0 +1,13 @@
+# Ignorar archivos subidos pero mantener estructura
+*
+!.gitkeep
+!.gitignore
+!oc-china/
+!pagos-china/
+!gastos-logisticos/
+oc-china/*
+pagos-china/*
+gastos-logisticos/*
+!oc-china/.gitkeep
+!pagos-china/.gitkeep
+!gastos-logisticos/.gitkeep

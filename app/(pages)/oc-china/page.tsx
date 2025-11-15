@@ -160,7 +160,7 @@ export default function OCChinaPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-6 px-6">
+              <div className="overflow-x-auto">
                 <table className="w-full" style={{ minWidth: "1200px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">
