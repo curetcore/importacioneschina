@@ -220,9 +220,8 @@ export default function OCChinaPage() {
                             <div className="flex items-center justify-center gap-2">
                               <Button
                                 variant="ghost"
-                                size="sm"
                                 onClick={() => router.push(`/ordenes/${oc.id}`)}
-                                className="gap-1"
+                                className="gap-1 px-3 py-1.5 text-sm h-8"
                               >
                                 <Eye size={16} />
                                 Ver
