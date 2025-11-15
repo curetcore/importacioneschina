@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Search, Plus, Eye, Edit, Trash2, Package } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import OCChinaForm from "@/components/forms/OCChinaForm"
+import { Search, Plus, Eye, Package } from "lucide-react"
+import { OCChinaForm } from "@/components/forms/OCChinaForm"
 
 interface OCChina {
   id: string
@@ -238,14 +237,11 @@ export default function OCChinaPage() {
       </div>
 
       {/* Dialog para nueva OC */}
-      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nueva Orden de Compra</DialogTitle>
-          </DialogHeader>
-          <OCChinaForm onSuccess={handleOCCreated} />
-        </DialogContent>
-      </Dialog>
+      <OCChinaForm
+        open={showNewDialog}
+        onOpenChange={setShowNewDialog}
+        onSuccess={handleOCCreated}
+      />
     </MainLayout>
   )
 }
