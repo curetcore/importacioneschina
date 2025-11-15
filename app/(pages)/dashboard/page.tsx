@@ -5,6 +5,8 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
 
+export const dynamic = 'force-dynamic'
+
 interface DashboardData {
   kpis: {
     inversionTotal: number
