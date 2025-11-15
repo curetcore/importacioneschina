@@ -213,7 +213,7 @@ export default function GastosLogisticosPage() {
             {gastos.length === 0 ? (
               <div className="text-center py-12">
                 <Truck size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay gastos logísticos</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay gastos logísticos registrados</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {searchQuery || ocFilter || tipoGastoFilter
                     ? "No se encontraron resultados con los filtros aplicados"
