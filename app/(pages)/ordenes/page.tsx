@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { formatDate } from "@/lib/utils"
 import { Plus, Eye } from "lucide-react"
 
@@ -20,8 +21,10 @@ interface OCChina {
 export default function OrdenesPage() {
   const [ocs, setOcs] = useState<OCChina[]>([])
   const [loading, setLoading] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
 
-  useEffect(() => {
+  const fetchOCs = () => {
+    setLoading(true)
     fetch("/api/oc-china")
       .then((res) => res.json())
       .then((result) => {
@@ -31,6 +34,10 @@ export default function OrdenesPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchOCs()
   }, [])
 
   if (loading) {
@@ -49,7 +56,7 @@ export default function OrdenesPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Ordenes</h1>
             <p className="text-sm text-gray-500 mt-1">Gestión de órdenes de compra</p>
           </div>
-          <Button>
+          <Button onClick={() => setFormOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nueva Orden
           </Button>
@@ -95,6 +102,12 @@ export default function OrdenesPage() {
             </div>
           </CardContent>
         </Card>
+
+        <OCChinaForm
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          onSuccess={fetchOCs}
+        />
       </div>
     </MainLayout>
   )
