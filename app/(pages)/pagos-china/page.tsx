@@ -17,7 +17,7 @@ interface Pago {
   fechaPago: string
   tipoPago: string
   metodoPago: string
-  moneda: string
+  moneda: "USD" | "CNY" | "RD$"
   montoOriginal: number
   tasaCambio: number
   comisionBancoRD: number
