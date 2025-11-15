@@ -13,7 +13,7 @@ En Easypanel → Tu App → Pestaña "Terminal" o "Console"
 
 ### 2. Ejecuta el script de migración
 ```bash
-bash apply-migration.sh
+sh apply-migration.sh
 ```
 
 O ejecuta los comandos manualmente:
