@@ -294,6 +294,24 @@ export default function PagosChinaPage() {
                     </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={7}>
+                        Total
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(pagos.reduce((sum, pago) => sum + pago.montoRDNeto, 0))}
+                        </div>
+                        {pagos.reduce((sum, pago) => sum + pago.comisionBancoRD, 0) > 0 && (
+                          <div className="text-gray-600 text-xs">
+                            + {formatCurrency(pagos.reduce((sum, pago) => sum + pago.comisionBancoRD, 0))} comisión
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             )}

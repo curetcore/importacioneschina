@@ -261,6 +261,23 @@ export default function OrdenesPage() {
                     )
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={4}>
+                      Total
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                      {ocs.reduce((sum, oc) => sum + (oc.items?.length || 0), 0)}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                      {ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                      {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.subtotalUSD, 0) || 0), 0), "USD")}
+                    </td>
+                    <td className="py-3 px-4"></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 

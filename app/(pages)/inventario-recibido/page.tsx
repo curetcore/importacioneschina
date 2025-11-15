@@ -303,6 +303,23 @@ export default function InventarioRecibidoPage() {
                       )
                     })}
                   </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={4}>
+                        Total
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                        {inventarios.reduce((sum, inv) => sum + inv.cantidadRecibida, 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                        -
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                        {formatCurrency(inventarios.reduce((sum, inv) => sum + (inv.costoTotalRecepcionRD || 0), 0))}
+                      </td>
+                      <td className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             )}
