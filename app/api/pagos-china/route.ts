@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el ID de pago sea único
+    // Verificar que el ID de pago sea Ãºnico
     const existingPago = await prisma.pagosChina.findUnique({
       where: { idPago: validatedData.idPago },
     });
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Datos de validación incorrectos",
+          error: "Datos de validaciÃ³n incorrectos",
           details: error,
         },
         { status: 400 }

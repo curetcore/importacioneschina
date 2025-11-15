@@ -5,6 +5,7 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import OCChinaForm from "@/components/forms/OCChinaForm"
 
 interface OCChina {
   id: string
@@ -20,7 +21,8 @@ export default function OCChinaPage() {
   const [ocs, setOcs] = useState<OCChina[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const loadOCs = () => {
+    setLoading(true)
     fetch("/api/oc-china")
       .then((res) => res.json())
       .then((result) => {
@@ -30,6 +32,10 @@ export default function OCChinaPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadOCs()
   }, [])
 
   if (loading) {
@@ -48,7 +54,7 @@ export default function OCChinaPage() {
             <h1 className="text-3xl font-bold text-gray-900">OC China</h1>
             <p className="text-gray-600 mt-1">Gestion de ordenes de compra</p>
           </div>
-          <Button>+ Nueva OC</Button>
+          <OCChinaForm onSuccess={loadOCs} />
         </div>
 
         <Card>
