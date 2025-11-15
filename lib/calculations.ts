@@ -1,12 +1,5 @@
 import { Prisma } from "@prisma/client";
 
-// ==========================================
-// Funciones de Cálculo de Negocio
-// ==========================================
-
-/**
- * Calcula el monto en RD$ según la moneda
- */
 export function calcularMontoRD(
   montoOriginal: number | Prisma.Decimal,
   moneda: string,
@@ -22,9 +15,6 @@ export function calcularMontoRD(
   return monto * tasa;
 }
 
-/**
- * Calcula el monto RD neto (monto + comisión)
- */
 export function calcularMontoRDNeto(
   montoRD: number | Prisma.Decimal,
   comisionBancoRD: number | Prisma.Decimal
@@ -35,9 +25,6 @@ export function calcularMontoRDNeto(
   return monto + comision;
 }
 
-/**
- * Calcula el total de inversión de una OC
- */
 export function calcularTotalInversion(
   totalPagosRD: number,
   totalGastosRD: number
@@ -45,9 +32,6 @@ export function calcularTotalInversion(
   return totalPagosRD + totalGastosRD;
 }
 
-/**
- * Calcula el costo unitario final
- */
 export function calcularCostoUnitarioFinal(
   totalInversionRD: number,
   cantidadRecibida: number
@@ -56,9 +40,6 @@ export function calcularCostoUnitarioFinal(
   return Math.round((totalInversionRD / cantidadRecibida) * 100) / 100;
 }
 
-/**
- * Calcula la diferencia de unidades
- */
 export function calcularDiferenciaUnidades(
   cantidadOrdenada: number,
   cantidadRecibida: number
@@ -66,9 +47,6 @@ export function calcularDiferenciaUnidades(
   return cantidadOrdenada - cantidadRecibida;
 }
 
-/**
- * Calcula el porcentaje de recepción
- */
 export function calcularPorcentajeRecepcion(
   cantidadRecibida: number,
   cantidadOrdenada: number
@@ -77,9 +55,6 @@ export function calcularPorcentajeRecepcion(
   return Math.round((cantidadRecibida / cantidadOrdenada) * 100 * 100) / 100;
 }
 
-/**
- * Calcula el costo total de una recepción
- */
 export function calcularCostoTotalRecepcion(
   cantidadRecibida: number,
   costoUnitarioFinalRD: number
@@ -87,9 +62,6 @@ export function calcularCostoTotalRecepcion(
   return Math.round(cantidadRecibida * costoUnitarioFinalRD * 100) / 100;
 }
 
-/**
- * Calcula el costo FOB unitario
- */
 export function calcularCostoFOBUnitario(
   costoFOBTotal: number | Prisma.Decimal,
   cantidadOrdenada: number
@@ -99,9 +71,6 @@ export function calcularCostoFOBUnitario(
   return Math.round((total / cantidadOrdenada) * 100) / 100;
 }
 
-/**
- * Obtiene los cálculos completos de una OC
- */
 export interface OCCalculada {
   totalPagosRD: number;
   totalGastosRD: number;
@@ -113,9 +82,6 @@ export interface OCCalculada {
   porcentajeRecepcion: number;
 }
 
-/**
- * Calcula todos los valores para una OC
- */
 export function calcularOC(data: {
   costoFOBTotalUSD: number | Prisma.Decimal;
   cantidadOrdenada: number;
