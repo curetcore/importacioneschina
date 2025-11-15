@@ -4,12 +4,16 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { PagosChinaForm } from "@/components/forms/PagosChinaForm"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Plus } from "lucide-react"
+import { Plus, Edit, Trash2 } from "lucide-react"
 
 interface Pago {
   id: string
   idPago: string
+  ocId: string
   fechaPago: string
   tipoPago: string
   metodoPago: string
@@ -26,10 +30,16 @@ interface Pago {
 }
 
 export default function PagosChinaPage() {
+  const { addToast } = useToast()
   const [pagos, setPagos] = useState<Pago[]>([])
   const [loading, setLoading] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
+  const [pagoToEdit, setPagoToEdit] = useState<Pago | null>(null)
+  const [pagoToDelete, setPagoToDelete] = useState<Pago | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  useEffect(() => {
+  const fetchPagos = () => {
+    setLoading(true)
     fetch("/api/pagos-china")
       .then((res) => res.json())
       .then((result) => {
@@ -39,7 +49,55 @@ export default function PagosChinaPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchPagos()
   }, [])
+
+  const handleEdit = (pago: Pago) => {
+    setPagoToEdit(pago)
+    setFormOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!pagoToDelete) return
+
+    setDeleteLoading(true)
+    try {
+      const response = await fetch(`/api/pagos-china/${pagoToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar el pago")
+      }
+
+      addToast({
+        type: "success",
+        title: "Pago eliminado",
+        description: `Pago ${pagoToDelete.idPago} eliminado exitosamente`,
+      })
+
+      setPagoToDelete(null)
+      fetchPagos()
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al eliminar el pago",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  const handleFormClose = () => {
+    setFormOpen(false)
+    setPagoToEdit(null)
+  }
 
   if (loading) {
     return (
@@ -57,7 +115,7 @@ export default function PagosChinaPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Pagos</h1>
             <p className="text-sm text-gray-500 mt-1">Gestión de pagos a proveedores</p>
           </div>
-          <Button>
+          <Button onClick={() => setFormOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Pago
           </Button>
@@ -113,8 +171,25 @@ export default function PagosChinaPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <Button variant="ghost" className="text-sm h-8">Ver</Button>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8"
+                            onClick={() => handleEdit(pago)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setPagoToDelete(pago)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Eliminar
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -123,6 +198,28 @@ export default function PagosChinaPage() {
             </div>
           </CardContent>
         </Card>
+
+        <PagosChinaForm
+          open={formOpen}
+          onOpenChange={handleFormClose}
+          onSuccess={() => {
+            fetchPagos()
+            handleFormClose()
+          }}
+          pagoToEdit={pagoToEdit}
+        />
+
+        <ConfirmDialog
+          open={!!pagoToDelete}
+          onOpenChange={(open) => !open && setPagoToDelete(null)}
+          onConfirm={handleDelete}
+          title="Eliminar Pago"
+          description={`¿Estás seguro de eliminar el pago ${pagoToDelete?.idPago}? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
+          loading={deleteLoading}
+        />
       </div>
     </MainLayout>
   )
