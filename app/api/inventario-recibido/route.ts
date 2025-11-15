@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { inventarioRecibidoSchema } from "@/lib/validations";
-import { calcularCostoUnitarioFinal, calcularCostoTotalRecepcion } from "@/lib/calculations";
+import { distribuirGastosLogisticos } from "@/lib/calculations";
 import { Prisma } from "@prisma/client";
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
     // Validar con Zod
     const validatedData = inventarioRecibidoSchema.parse(body);
 
-    // Verificar que la OC existe
+    // Verificar que la OC existe y cargar todos los datos necesarios
     const oc = await prisma.oCChina.findUnique({
       where: { id: validatedData.ocId },
       include: {
+        items: true,
         pagosChina: true,
         gastosLogisticos: true,
-        inventarioRecibido: true,
       },
     });
 
@@ -117,44 +117,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calcular totales de pagos y gastos
-    const totalPagosRD = oc.pagosChina.reduce(
-      (sum, p) => sum + (p.montoRDNeto ? parseFloat(p.montoRDNeto.toString()) : 0),
-      0
+    // Validar que hay items en la OC
+    if (!oc.items || oc.items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "La OC no tiene productos registrados",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Si se especificó un itemId, validar que existe
+    if (validatedData.itemId) {
+      const itemExists = oc.items.find(item => item.id === validatedData.itemId);
+      if (!itemExists) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "El producto especificado no pertenece a esta OC",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Calcular costos distribuidos por producto
+    const itemsConCostos = distribuirGastosLogisticos(
+      oc.items,
+      oc.gastosLogisticos,
+      oc.pagosChina
     );
 
-    const totalGastosRD = oc.gastosLogisticos.reduce(
-      (sum, g) => sum + parseFloat(g.montoRD.toString()),
-      0
-    );
+    let costoUnitarioFinalRD: number;
+    let costoTotalRecepcionRD: number;
 
-    // Calcular cantidad total recibida (incluyendo esta nueva recepción)
-    const cantidadPreviaRecibida = oc.inventarioRecibido.reduce(
-      (sum, i) => sum + i.cantidadRecibida,
-      0
-    );
-    const cantidadTotalRecibida = cantidadPreviaRecibida + validatedData.cantidadRecibida;
+    if (validatedData.itemId) {
+      // Caso 1: Se especificó un producto - usar su costo exacto
+      const itemConCosto = itemsConCostos.find(item => item.id === validatedData.itemId);
 
-    // Calcular inversión total
-    const totalInversionRD = totalPagosRD + totalGastosRD;
+      if (!itemConCosto) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "No se pudo calcular el costo del producto",
+          },
+          { status: 500 }
+        );
+      }
 
-    // Calcular costo unitario final
-    const costoUnitarioFinalRD = calcularCostoUnitarioFinal(
-      totalInversionRD,
-      cantidadTotalRecibida
-    );
+      costoUnitarioFinalRD = itemConCosto.costoUnitarioRD;
+      costoTotalRecepcionRD = costoUnitarioFinalRD * validatedData.cantidadRecibida;
+    } else {
+      // Caso 2: No se especificó producto - calcular promedio ponderado de todos los items
+      // (Para compatibilidad con recepciones antiguas o de lotes mixtos)
+      const totalUnidades = itemsConCostos.reduce((sum, item) => sum + item.cantidadTotal, 0);
+      const totalCosto = itemsConCostos.reduce((sum, item) => sum + item.costoTotalRD, 0);
 
-    // Calcular costo total de esta recepción
-    const costoTotalRecepcionRD = calcularCostoTotalRecepcion(
-      validatedData.cantidadRecibida,
-      costoUnitarioFinalRD
-    );
+      costoUnitarioFinalRD = totalUnidades > 0 ? totalCosto / totalUnidades : 0;
+      costoTotalRecepcionRD = costoUnitarioFinalRD * validatedData.cantidadRecibida;
+    }
 
-    // Crear la recepción
+    // Crear la recepción con los costos calculados
     const nuevaRecepcion = await prisma.inventarioRecibido.create({
       data: {
         idRecepcion: validatedData.idRecepcion,
         ocId: validatedData.ocId,
+        itemId: validatedData.itemId || null,
         fechaLlegada: validatedData.fechaLlegada,
         bodegaInicial: validatedData.bodegaInicial,
         cantidadRecibida: validatedData.cantidadRecibida,
