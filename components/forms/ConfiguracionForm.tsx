@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
 import { useToast } from "@/components/ui/toast"
-import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
+import { apiPost, apiPut, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 import { Loader2 } from "lucide-react"
 
 interface Configuracion {
@@ -99,6 +99,7 @@ export function ConfiguracionForm({
         type: "error",
         title: "Error",
         description: getErrorMessage(error),
+        details: getErrorDetails(error),
       })
     } finally {
       setLoading(false)

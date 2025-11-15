@@ -12,6 +12,7 @@ export interface Toast {
   description?: string
   type: ToastType
   duration?: number
+  details?: string // Detalles técnicos para desarrollo
 }
 
 interface ToastContextType {
@@ -69,6 +70,9 @@ function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast:
 }
 
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const [showDetails, setShowDetails] = React.useState(false)
+  const isDev = process.env.NODE_ENV === 'development'
+
   const icons = {
     success: CheckCircle2,
     error: AlertCircle,
@@ -95,25 +99,44 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-4 rounded-lg border shadow-lg",
+        "flex flex-col gap-2 p-4 rounded-lg border shadow-lg",
         "animate-in slide-in-from-top-2 duration-300",
         styles[toast.type]
       )}
     >
-      <Icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", iconColors[toast.type])} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold">{toast.title}</p>
-        {toast.description && (
-          <p className="text-xs mt-1 opacity-90">{toast.description}</p>
-        )}
+      <div className="flex items-start gap-3">
+        <Icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", iconColors[toast.type])} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold">{toast.title}</p>
+          {toast.description && (
+            <p className="text-xs mt-1 opacity-90">{toast.description}</p>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="flex-shrink-0 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Cerrar</span>
+        </button>
       </div>
-      <button
-        onClick={onClose}
-        className="flex-shrink-0 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-      >
-        <X className="h-4 w-4" />
-        <span className="sr-only">Cerrar</span>
-      </button>
+
+      {/* Detalles técnicos en desarrollo */}
+      {isDev && toast.details && (
+        <div className="ml-8 border-t border-current opacity-20 pt-2">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-xs font-mono opacity-70 hover:opacity-100 transition-opacity"
+          >
+            {showDetails ? '▼' : '▶'} Detalles técnicos
+          </button>
+          {showDetails && (
+            <pre className="text-[10px] font-mono mt-2 p-2 bg-black bg-opacity-10 rounded overflow-x-auto max-h-40 overflow-y-auto">
+              {toast.details}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   )
 }

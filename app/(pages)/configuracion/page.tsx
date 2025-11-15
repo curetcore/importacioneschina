@@ -10,7 +10,7 @@ import { ConfiguracionForm } from "@/components/forms/ConfiguracionForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { apiDelete, getErrorMessage } from "@/lib/api-client"
+import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 
 interface Configuracion {
   id: string
@@ -74,10 +74,24 @@ export default function ConfiguracionPage() {
           items: items as Configuracion[],
         }))
         setConfiguraciones(grouped)
+      } else {
+        // Si la API retorna success: false, mostrar error
+        addToast({
+          type: "error",
+          title: "Error al cargar configuraciones",
+          description: result.error || "Error desconocido",
+          details: JSON.stringify(result, null, 2),
+        })
       }
       setLoading(false)
     } catch (error) {
       console.error("Error fetching configuraciones:", error)
+      addToast({
+        type: "error",
+        title: "Error al cargar configuraciones",
+        description: getErrorMessage(error),
+        details: getErrorDetails(error),
+      })
       setLoading(false)
     }
   }
@@ -122,6 +136,7 @@ export default function ConfiguracionPage() {
         type: "error",
         title: "Error",
         description: getErrorMessage(error),
+        details: getErrorDetails(error),
       })
     } finally {
       setDeleteLoading(false)

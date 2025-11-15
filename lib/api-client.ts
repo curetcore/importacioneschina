@@ -186,3 +186,31 @@ export function getErrorMessage(error: unknown): string {
 
   return 'Ha ocurrido un error inesperado. Por favor intenta de nuevo.'
 }
+
+/**
+ * Extrae detalles técnicos completos del error para debugging en desarrollo
+ */
+export function getErrorDetails(error: unknown): string | undefined {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'development') {
+    return undefined
+  }
+
+  const details: Record<string, any> = {}
+
+  if (error instanceof ApiError) {
+    details.type = 'ApiError'
+    details.message = error.message
+    details.status = error.status
+    details.details = error.details
+    details.stack = error.stack
+  } else if (error instanceof Error) {
+    details.type = error.name
+    details.message = error.message
+    details.stack = error.stack
+  } else {
+    details.type = 'Unknown'
+    details.raw = error
+  }
+
+  return JSON.stringify(details, null, 2)
+}
