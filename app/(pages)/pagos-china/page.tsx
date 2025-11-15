@@ -301,11 +301,11 @@ export default function PagosChinaPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(pagos.reduce((sum, pago) => sum + pago.montoRDNeto, 0))}
+                          {formatCurrency(pagos.reduce((sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0))}
                         </div>
-                        {pagos.reduce((sum, pago) => sum + pago.comisionBancoRD, 0) > 0 && (
+                        {pagos.reduce((sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0) > 0 && (
                           <div className="text-gray-600 text-xs">
-                            + {formatCurrency(pagos.reduce((sum, pago) => sum + pago.comisionBancoRD, 0))} comisión
+                            + {formatCurrency(pagos.reduce((sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0))} comisión
                           </div>
                         )}
                       </td>

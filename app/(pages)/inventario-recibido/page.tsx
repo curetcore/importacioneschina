@@ -315,7 +315,7 @@ export default function InventarioRecibidoPage() {
                         -
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
-                        {formatCurrency(inventarios.reduce((sum, inv) => sum + (inv.costoTotalRecepcionRD || 0), 0))}
+                        {formatCurrency(inventarios.reduce((sum, inv) => sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString()), 0))}
                       </td>
                       <td className="py-3 px-4"></td>
                     </tr>

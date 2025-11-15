@@ -282,7 +282,7 @@ export default function GastosLogisticosPage() {
                         Total
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
-                        {formatCurrency(gastos.reduce((sum, gasto) => sum + gasto.montoRD, 0))}
+                        {formatCurrency(gastos.reduce((sum, gasto) => sum + parseFloat(gasto.montoRD.toString()), 0))}
                       </td>
                       <td className="py-3 px-4"></td>
                     </tr>

@@ -274,7 +274,7 @@ export default function OrdenesPage() {
                       {ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
-                      {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.subtotalUSD, 0) || 0), 0), "USD")}
+                      {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
                     </td>
                     <td className="py-3 px-4"></td>
                   </tr>
