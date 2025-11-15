@@ -121,3 +121,184 @@ export function calcularOC(data: {
     porcentajeRecepcion,
   };
 }
+
+// =====================================================
+// CÁLCULOS POR PRODUCTO (Multi-Item)
+// =====================================================
+
+interface OCChinaItem {
+  id: string
+  sku: string
+  nombre: string
+  cantidadTotal: number
+  precioUnitarioUSD: number | Prisma.Decimal
+  subtotalUSD: number | Prisma.Decimal
+}
+
+interface GastoLogistico {
+  montoRD: number | Prisma.Decimal
+}
+
+interface PagoChina {
+  montoRDNeto: number | Prisma.Decimal | null
+  montoOriginal: number | Prisma.Decimal
+  moneda: string
+  tasaCambio: number | Prisma.Decimal
+}
+
+export interface ItemConCostos extends Omit<OCChinaItem, 'precioUnitarioUSD' | 'subtotalUSD'> {
+  precioUnitarioUSD: number
+  subtotalUSD: number
+
+  // Cálculos derivados
+  porcentajeFOB: number // % del total FOB que representa este item
+
+  // Gastos distribuidos
+  gastosLogisticosRD: number // Porción de gastos logísticos para este item
+
+  // Costos finales
+  costoFOBRD: number // Costo FOB en RD$ (usando tasa de cambio promedio)
+  costoTotalRD: number // FOB + gastos logísticos
+  costoUnitarioRD: number // Costo total / cantidad
+}
+
+/**
+ * Calcula la tasa de cambio promedio ponderada de los pagos
+ */
+export function calcularTasaCambioPromedio(pagos: PagoChina[]): number {
+  if (pagos.length === 0) return 0
+
+  // Filtrar solo pagos en USD/CNY que tienen tasa de cambio
+  const pagosConTasa = pagos.filter(p => {
+    const tasa = typeof p.tasaCambio === 'number' ? p.tasaCambio : parseFloat(p.tasaCambio.toString())
+    return (p.moneda === 'USD' || p.moneda === 'CNY') && tasa > 0
+  })
+
+  if (pagosConTasa.length === 0) return 0
+
+  // Calcular tasa promedio ponderada por monto
+  const totalMonto = pagosConTasa.reduce((sum, p) => {
+    const monto = typeof p.montoOriginal === 'number' ? p.montoOriginal : parseFloat(p.montoOriginal.toString())
+    return sum + monto
+  }, 0)
+
+  const tasaPonderada = pagosConTasa.reduce((sum, p) => {
+    const monto = typeof p.montoOriginal === 'number' ? p.montoOriginal : parseFloat(p.montoOriginal.toString())
+    const tasa = typeof p.tasaCambio === 'number' ? p.tasaCambio : parseFloat(p.tasaCambio.toString())
+    const peso = monto / totalMonto
+    return sum + (tasa * peso)
+  }, 0)
+
+  return tasaPonderada
+}
+
+/**
+ * Distribuye los gastos logísticos proporcionalmente entre los items según su costo FOB
+ */
+export function distribuirGastosLogisticos(
+  items: OCChinaItem[],
+  gastosLogisticos: GastoLogistico[],
+  pagosChina: PagoChina[]
+): ItemConCostos[] {
+  // Normalizar items a números
+  const itemsNormalizados = items.map(item => ({
+    ...item,
+    precioUnitarioUSD: typeof item.precioUnitarioUSD === 'number'
+      ? item.precioUnitarioUSD
+      : parseFloat(item.precioUnitarioUSD.toString()),
+    subtotalUSD: typeof item.subtotalUSD === 'number'
+      ? item.subtotalUSD
+      : parseFloat(item.subtotalUSD.toString()),
+  }))
+
+  // Calcular totales
+  const totalFOBUSD = itemsNormalizados.reduce((sum, item) => sum + item.subtotalUSD, 0)
+  const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    const monto = typeof gasto.montoRD === 'number' ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
+    return sum + monto
+  }, 0)
+  const tasaCambioPromedio = calcularTasaCambioPromedio(pagosChina)
+
+  // Si no hay items, retornar array vacío
+  if (itemsNormalizados.length === 0 || totalFOBUSD === 0) {
+    return []
+  }
+
+  // Calcular costos para cada item
+  return itemsNormalizados.map(item => {
+    // Porcentaje que representa este item del total FOB
+    const porcentajeFOB = (item.subtotalUSD / totalFOBUSD) * 100
+
+    // Gastos logísticos prorrateados para este item
+    const gastosLogisticosRD = (item.subtotalUSD / totalFOBUSD) * totalGastosRD
+
+    // Costo FOB en RD$ (usando tasa de cambio promedio)
+    const costoFOBRD = item.subtotalUSD * tasaCambioPromedio
+
+    // Costo total en RD$ (FOB + gastos logísticos)
+    const costoTotalRD = costoFOBRD + gastosLogisticosRD
+
+    // Costo unitario en RD$
+    const costoUnitarioRD = item.cantidadTotal > 0
+      ? costoTotalRD / item.cantidadTotal
+      : 0
+
+    return {
+      ...item,
+      porcentajeFOB: Math.round(porcentajeFOB * 100) / 100,
+      gastosLogisticosRD: Math.round(gastosLogisticosRD * 100) / 100,
+      costoFOBRD: Math.round(costoFOBRD * 100) / 100,
+      costoTotalRD: Math.round(costoTotalRD * 100) / 100,
+      costoUnitarioRD: Math.round(costoUnitarioRD * 100) / 100,
+    }
+  })
+}
+
+/**
+ * Calcula el resumen financiero de una orden con múltiples items
+ */
+export function calcularResumenFinanciero(
+  items: OCChinaItem[],
+  pagosChina: PagoChina[],
+  gastosLogisticos: GastoLogistico[]
+) {
+  const itemsNormalizados = items.map(item => ({
+    cantidadTotal: item.cantidadTotal,
+    subtotalUSD: typeof item.subtotalUSD === 'number'
+      ? item.subtotalUSD
+      : parseFloat(item.subtotalUSD.toString()),
+  }))
+
+  const totalUnidades = itemsNormalizados.reduce((sum, item) => sum + item.cantidadTotal, 0)
+  const totalFOBUSD = itemsNormalizados.reduce((sum, item) => sum + item.subtotalUSD, 0)
+
+  const totalPagadoRD = pagosChina.reduce((sum, pago) => {
+    if (!pago.montoRDNeto) return sum
+    const monto = typeof pago.montoRDNeto === 'number'
+      ? pago.montoRDNeto
+      : parseFloat(pago.montoRDNeto.toString())
+    return sum + monto
+  }, 0)
+
+  const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    const monto = typeof gasto.montoRD === 'number'
+      ? gasto.montoRD
+      : parseFloat(gasto.montoRD.toString())
+    return sum + monto
+  }, 0)
+
+  const totalCostoRD = totalPagadoRD + totalGastosRD
+  const tasaCambioPromedio = calcularTasaCambioPromedio(pagosChina)
+
+  return {
+    totalUnidades,
+    totalFOBUSD: Math.round(totalFOBUSD * 100) / 100,
+    totalPagadoRD: Math.round(totalPagadoRD * 100) / 100,
+    totalGastosRD: Math.round(totalGastosRD * 100) / 100,
+    totalCostoRD: Math.round(totalCostoRD * 100) / 100,
+    tasaCambioPromedio: Math.round(tasaCambioPromedio * 100) / 100,
+    costoUnitarioPromedioRD: totalUnidades > 0
+      ? Math.round((totalCostoRD / totalUnidades) * 100) / 100
+      : 0,
+  }
+}

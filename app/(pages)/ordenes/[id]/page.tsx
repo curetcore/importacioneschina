@@ -8,6 +8,7 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { distribuirGastosLogisticos, calcularResumenFinanciero } from "@/lib/calculations"
 import { ArrowLeft } from "lucide-react"
 
 interface OCChinaItem {
@@ -103,10 +104,24 @@ export default function OCDetailPage() {
     )
   }
 
-  const cantidadOrdenada = oc.items.reduce((sum, item) => sum + item.cantidadTotal, 0)
-  const costoFOBTotalUSD = oc.items.reduce((sum, item) => sum + item.subtotalUSD, 0)
-  const totalPagado = oc.pagosChina.reduce((sum, pago) => sum + pago.montoRDNeto, 0)
-  const totalGastos = oc.gastosLogisticos.reduce((sum, gasto) => sum + gasto.montoRD, 0)
+  // Calcular distribución de costos por producto
+  const itemsConCostos = distribuirGastosLogisticos(
+    oc.items,
+    oc.gastosLogisticos,
+    oc.pagosChina
+  )
+
+  // Calcular resumen financiero
+  const resumen = calcularResumenFinanciero(
+    oc.items,
+    oc.pagosChina,
+    oc.gastosLogisticos
+  )
+
+  const cantidadOrdenada = resumen.totalUnidades
+  const costoFOBTotalUSD = resumen.totalFOBUSD
+  const totalPagado = resumen.totalPagadoRD
+  const totalGastos = resumen.totalGastosRD
   const totalRecibido = oc.inventarioRecibido.reduce((sum, inv) => sum + inv.cantidadRecibida, 0)
   const porcentajeRecibido = cantidadOrdenada > 0 ? (totalRecibido / cantidadOrdenada) * 100 : 0
 
@@ -176,13 +191,20 @@ export default function OCDetailPage() {
           </Card>
         </div>
 
-        {/* Tabla de Productos */}
+        {/* Tabla de Productos con Costos Distribuidos */}
         <Card>
           <CardHeader>
-            <CardTitle>Productos ({oc.items.length})</CardTitle>
+            <CardTitle>
+              Productos con Costos Distribuidos ({oc.items.length})
+              {resumen.tasaCambioPromedio > 0 && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (Tasa promedio: {formatCurrency(resumen.tasaCambioPromedio)} / USD)
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {oc.items.length === 0 ? (
+            {itemsConCostos.length === 0 ? (
               <div className="text-center py-8 text-sm text-gray-500">
                 No hay productos en esta orden
               </div>
@@ -192,64 +214,75 @@ export default function OCDetailPage() {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">SKU</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Material</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Color</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cantidad</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Precio Unit.</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Subtotal</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Producto</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cant.</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">FOB USD</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">% FOB</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">FOB RD$</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Gastos RD$</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Total RD$</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide bg-blue-50">Costo Unit.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {oc.items.map((item) => (
+                    {itemsConCostos.map((item) => (
                       <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="py-3 px-4 text-sm font-medium text-gray-900">{item.sku}</td>
                         <td className="py-3 px-4 text-sm text-gray-700">
-                          <div>{item.nombre}</div>
-                          {item.especificaciones && (
-                            <div className="text-xs text-gray-500 mt-1">{item.especificaciones.substring(0, 50)}{item.especificaciones.length > 50 ? '...' : ''}</div>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {item.material ? (
-                            <div className="max-w-xs truncate" title={item.material}>{item.material}</div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {item.color ? (
-                            <div className="max-w-xs truncate" title={item.color}>{item.color}</div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
-                          {item.cantidadTotal.toLocaleString()}
+                          <div className="font-medium">{item.nombre}</div>
                           {item.tallaDistribucion && (
                             <div className="text-xs text-gray-500 mt-1" title={JSON.stringify(item.tallaDistribucion)}>
                               {Object.keys(item.tallaDistribucion).length} tallas
                             </div>
                           )}
                         </td>
+                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                          {item.cantidadTotal.toLocaleString()}
+                        </td>
                         <td className="py-3 px-4 text-right text-sm text-gray-900">
-                          ${item.precioUnitarioUSD.toFixed(2)}
+                          ${item.subtotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm text-gray-600">
+                          {item.porcentajeFOB.toFixed(1)}%
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm text-gray-900">
+                          {formatCurrency(item.costoFOBRD)}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm text-gray-700">
+                          {formatCurrency(item.gastosLogisticosRD)}
                         </td>
                         <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
-                          ${item.subtotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          {formatCurrency(item.costoTotalRD)}
+                        </td>
+                        <td className="py-3 px-4 text-right text-sm font-semibold text-blue-600 bg-blue-50">
+                          {formatCurrency(item.costoUnitarioRD)}
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-gray-50 font-semibold">
-                      <td colSpan={4} className="py-3 px-4 text-sm text-right text-gray-700">
+                    <tr className="bg-gray-100 font-semibold">
+                      <td colSpan={2} className="py-3 px-4 text-sm text-right text-gray-700">
                         TOTALES:
                       </td>
                       <td className="py-3 px-4 text-right text-sm text-gray-900">
                         {cantidadOrdenada.toLocaleString()}
                       </td>
-                      <td className="py-3 px-4"></td>
                       <td className="py-3 px-4 text-right text-sm text-gray-900">
                         ${costoFOBTotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-600">
+                        100%
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        {formatCurrency(resumen.totalPagadoRD)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        {formatCurrency(resumen.totalGastosRD)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        {formatCurrency(resumen.totalCostoRD)}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-blue-600 bg-blue-50">
+                        {formatCurrency(resumen.costoUnitarioPromedioRD)}
                       </td>
                     </tr>
                   </tbody>
