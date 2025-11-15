@@ -179,7 +179,7 @@ export default function GastosLogisticosPage() {
               <Plus size={16} />
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">

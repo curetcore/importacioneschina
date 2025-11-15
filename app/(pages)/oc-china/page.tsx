@@ -144,7 +144,7 @@ export default function OCChinaPage() {
               Nueva
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             {ocs.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardList size={48} className="mx-auto text-gray-300 mb-4" />
