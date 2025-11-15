@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
 import { proveedores, categorias } from "@/lib/validations"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
-import { Loader2, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react"
+import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus } from "lucide-react"
 
 interface OCChinaItem {
   id?: string
@@ -324,22 +324,22 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
             {/* SECCIÓN 2: Productos */}
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">Productos ({items.length})</h3>
+                <h3 className="font-semibold text-base">Productos ({items.length})</h3>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={addNewItem}
                   disabled={loading}
-                  className="px-3 py-1.5 text-sm"
+                  className="gap-1.5 text-xs h-8 px-3"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Agregar Producto
+                  <PackagePlus size={14} />
+                  Agregar
                 </Button>
               </div>
 
               {items.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  No hay productos. Haz clic en "Agregar Producto" para empezar.
+                  No hay productos. Haz clic en "Agregar" para empezar.
                 </div>
               ) : (
                 <div className="space-y-3">
