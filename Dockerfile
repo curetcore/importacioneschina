@@ -50,32 +50,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # ==========================================
-# Stage 3: Development (Opcional)
-# ==========================================
-FROM node:18-alpine AS development
-
-WORKDIR /app
-
-# Instalar dependencias de desarrollo
-RUN apk add --no-cache libc6-compat openssl
-
-COPY package.json package-lock.json* ./
-RUN npm install
-
-COPY . .
-
-# Generar Prisma
-RUN npx prisma generate
-
-ENV NODE_ENV=development
-ENV PORT=3000
-
-EXPOSE 3000
-
-CMD ["npm", "run", "dev"]
-
-# ==========================================
-# Stage 4: Production (DEFAULT)
+# Stage 3: Production (ÚNICO STAGE DISPONIBLE)
 # ==========================================
 FROM node:18-alpine AS production
 
