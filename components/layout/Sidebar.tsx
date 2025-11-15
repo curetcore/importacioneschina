@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
-  Home,
   LayoutDashboard,
   Package,
   DollarSign,
@@ -13,7 +12,6 @@ import {
 } from "lucide-react"
 
 const menuItems = [
-  { href: "/", label: "Inicio", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/oc-china", label: "OC China", icon: Package },
   { href: "/pagos-china", label: "Pagos", icon: DollarSign },
