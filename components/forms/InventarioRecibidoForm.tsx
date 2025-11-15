@@ -8,13 +8,15 @@ import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
-import { inventarioRecibidoSchema, InventarioRecibidoInput, bodegas } from "@/lib/validations"
+import { bodegas } from "@/lib/validations"
+import { distribuirGastosLogisticos } from "@/lib/calculations"
 import { Loader2 } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
   idRecepcion: string
   ocId: string
+  itemId?: string | null
   fechaLlegada: string
   bodegaInicial: string
   cantidadRecibida: number
@@ -33,33 +35,26 @@ const bodegasOptions: SelectOption[] = bodegas.map(b => ({ value: b, label: b })
 export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventarioToEdit }: InventarioRecibidoFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<Partial<Record<keyof InventarioRecibidoInput, string>>>({})
   const isEditMode = !!inventarioToEdit
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [loadingOcs, setLoadingOcs] = useState(false)
-  const [selectedOcData, setSelectedOcData] = useState<{
-    totalPagado: number
-    totalGastos: number
-    cantidadOrdenada: number
-  } | null>(null)
 
-  const [formData, setFormData] = useState<Partial<InventarioRecibidoInput>>({
+  const [itemsOptions, setItemsOptions] = useState<SelectOption[]>([])
+  const [selectedOcData, setSelectedOcData] = useState<any>(null)
+  const [selectedItemData, setSelectedItemData] = useState<any>(null)
+
+  const [formData, setFormData] = useState({
     idRecepcion: "",
     ocId: "",
-    fechaLlegada: undefined,
+    itemId: "",
+    fechaLlegada: undefined as Date | undefined,
     bodegaInicial: "",
-    cantidadRecibida: undefined,
+    cantidadRecibida: undefined as number | undefined,
     notas: "",
   })
 
-  // Cálculos automáticos
-  const costoTotalOC = (selectedOcData?.totalPagado ?? 0) + (selectedOcData?.totalGastos ?? 0)
-  const costoUnitarioFinalRD = selectedOcData?.cantidadOrdenada
-    ? costoTotalOC / selectedOcData.cantidadOrdenada
-    : 0
-  const costoTotalRecepcionRD = costoUnitarioFinalRD * (formData.cantidadRecibida ?? 0)
-
+  // Cargar lista de OCs
   useEffect(() => {
     if (open) {
       setLoadingOcs(true)
@@ -67,7 +62,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
         .then((res) => res.json())
         .then((result) => {
           if (result.success) {
-            setOcsOptions(result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })))
+            setOcsOptions(result.data.map((oc: any) => ({
+              value: oc.id,
+              label: `${oc.oc} - ${oc.proveedor}`
+            })))
           }
           setLoadingOcs(false)
         })
@@ -75,7 +73,7 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
     }
   }, [open])
 
-  // Cargar datos de la OC cuando se selecciona
+  // Cargar datos de la OC y sus items cuando se selecciona
   useEffect(() => {
     if (formData.ocId) {
       fetch(`/api/oc-china/${formData.ocId}`)
@@ -83,26 +81,62 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
         .then((result) => {
           if (result.success) {
             const oc = result.data
-            const totalPagado = oc.pagosChina?.reduce((sum: number, p: any) => sum + (p.montoRDNeto || 0), 0) || 0
-            const totalGastos = oc.gastosLogisticos?.reduce((sum: number, g: any) => sum + (g.montoRD || 0), 0) || 0
-            setSelectedOcData({
-              totalPagado,
-              totalGastos,
-              cantidadOrdenada: oc.cantidadOrdenada
-            })
+            setSelectedOcData(oc)
+
+            // Crear opciones de items
+            if (oc.items && oc.items.length > 0) {
+              const itemOptions = oc.items.map((item: any) => ({
+                value: item.id,
+                label: `${item.sku} - ${item.nombre} (${item.cantidadTotal} unidades)`
+              }))
+              setItemsOptions(itemOptions)
+            } else {
+              setItemsOptions([])
+            }
           }
         })
-        .catch(() => setSelectedOcData(null))
+        .catch(() => {
+          setSelectedOcData(null)
+          setItemsOptions([])
+        })
     } else {
       setSelectedOcData(null)
+      setItemsOptions([])
+      setFormData(prev => ({ ...prev, itemId: "" }))
     }
   }, [formData.ocId])
+
+  // Calcular costos cuando se selecciona un item
+  useEffect(() => {
+    if (selectedOcData && formData.itemId) {
+      const item = selectedOcData.items?.find((i: any) => i.id === formData.itemId)
+      if (item) {
+        // Calcular distribución de gastos para obtener costo unitario
+        const itemsConCostos = distribuirGastosLogisticos(
+          selectedOcData.items,
+          selectedOcData.gastosLogisticos || [],
+          selectedOcData.pagosChina || []
+        )
+        const itemConCosto = itemsConCostos.find(i => i.id === formData.itemId)
+        setSelectedItemData(itemConCosto || null)
+      } else {
+        setSelectedItemData(null)
+      }
+    } else {
+      setSelectedItemData(null)
+    }
+  }, [selectedOcData, formData.itemId])
+
+  // Calculos
+  const costoUnitarioRD = selectedItemData?.costoUnitarioRD || 0
+  const costoTotalRecepcionRD = costoUnitarioRD * (formData.cantidadRecibida || 0)
 
   useEffect(() => {
     if (inventarioToEdit) {
       setFormData({
         idRecepcion: inventarioToEdit.idRecepcion,
         ocId: inventarioToEdit.ocId,
+        itemId: inventarioToEdit.itemId || "",
         fechaLlegada: new Date(inventarioToEdit.fechaLlegada),
         bodegaInicial: inventarioToEdit.bodegaInicial,
         cantidadRecibida: inventarioToEdit.cantidadRecibida,
@@ -112,30 +146,47 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       setFormData({
         idRecepcion: "",
         ocId: "",
+        itemId: "",
         fechaLlegada: undefined,
         bodegaInicial: "",
         cantidadRecibida: undefined,
         notas: "",
       })
     }
-    setErrors({})
-  }, [inventarioToEdit])
+  }, [inventarioToEdit, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrors({})
     setLoading(true)
 
     try {
-      const validatedData = inventarioRecibidoSchema.parse(formData)
+      // Validaciones
+      if (!formData.idRecepcion || !formData.ocId || !formData.fechaLlegada ||
+          !formData.bodegaInicial || !formData.cantidadRecibida) {
+        throw new Error("Por favor completa todos los campos requeridos")
+      }
 
-      const url = isEditMode ? `/api/inventario-recibido/${inventarioToEdit.id}` : "/api/inventario-recibido"
+      const payload = {
+        idRecepcion: formData.idRecepcion,
+        ocId: formData.ocId,
+        itemId: formData.itemId || null,
+        fechaLlegada: formData.fechaLlegada,
+        bodegaInicial: formData.bodegaInicial,
+        cantidadRecibida: formData.cantidadRecibida,
+        costoUnitarioFinalRD: costoUnitarioRD,
+        costoTotalRecepcionRD: costoTotalRecepcionRD,
+        notas: formData.notas || null,
+      }
+
+      const url = isEditMode
+        ? `/api/inventario-recibido/${inventarioToEdit.id}`
+        : "/api/inventario-recibido"
       const method = isEditMode ? "PUT" : "POST"
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedData),
+        body: JSON.stringify(payload),
       })
 
       const result = await response.json()
@@ -147,30 +198,23 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       addToast({
         type: "success",
         title: isEditMode ? "Inventario actualizado" : "Inventario creado",
-        description: `Recepción ${validatedData.idRecepcion} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
+        description: `Recepción ${formData.idRecepcion} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
       })
 
-      setFormData({ idRecepcion: "", ocId: "", fechaLlegada: undefined, bodegaInicial: "", cantidadRecibida: undefined, notas: "" })
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
-      if (error.errors) {
-        const validationErrors: Partial<Record<keyof InventarioRecibidoInput, string>> = {}
-        error.errors.forEach((err: any) => {
-          validationErrors[err.path[0] as keyof InventarioRecibidoInput] = err.message
-        })
-        setErrors(validationErrors)
-      } else {
-        addToast({ type: "error", title: "Error", description: error.message || "Error al procesar el inventario" })
-      }
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al procesar el inventario"
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const handleCancel = () => {
-    setFormData({ idRecepcion: "", ocId: "", fechaLlegada: undefined, bodegaInicial: "", cantidadRecibida: undefined, notas: "" })
-    setErrors({})
     onOpenChange(false)
   }
 
@@ -192,7 +236,6 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 id="idRecepcion"
                 value={formData.idRecepcion}
                 onChange={(e) => setFormData({ ...formData, idRecepcion: e.target.value })}
-                error={errors.idRecepcion}
                 placeholder="Ej: REC-2024-001"
                 disabled={loading}
               />
@@ -205,12 +248,33 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
               <Select
                 options={ocsOptions}
                 value={formData.ocId || ""}
-                onChange={(value) => setFormData({ ...formData, ocId: value })}
-                error={errors.ocId}
+                onChange={(value) => setFormData({ ...formData, ocId: value, itemId: "" })}
                 placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
                 disabled={loading || loadingOcs}
               />
             </div>
+
+            {/* Selector de Producto/Item */}
+            {formData.ocId && itemsOptions.length > 0 && (
+              <div>
+                <label htmlFor="itemId" className="block text-sm font-medium text-gray-700 mb-1">
+                  Producto (opcional)
+                </label>
+                <Select
+                  options={[
+                    { value: "", label: "Todos los productos de la orden" },
+                    ...itemsOptions
+                  ]}
+                  value={formData.itemId || ""}
+                  onChange={(value) => setFormData({ ...formData, itemId: value })}
+                  placeholder="Selecciona un producto específico"
+                  disabled={loading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Si seleccionas un producto, el costo se calculará específicamente para ese producto
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -221,7 +285,6 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                   id="fechaLlegada"
                   value={formData.fechaLlegada}
                   onChange={(date) => setFormData({ ...formData, fechaLlegada: date || undefined })}
-                  error={errors.fechaLlegada}
                   disabled={loading}
                 />
               </div>
@@ -234,7 +297,6 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                   options={bodegasOptions}
                   value={formData.bodegaInicial || ""}
                   onChange={(value) => setFormData({ ...formData, bodegaInicial: value })}
-                  error={errors.bodegaInicial}
                   placeholder="Selecciona bodega"
                   disabled={loading}
                 />
@@ -252,26 +314,38 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 step="1"
                 value={formData.cantidadRecibida ?? ""}
                 onChange={(e) => setFormData({ ...formData, cantidadRecibida: e.target.value ? parseInt(e.target.value) : undefined })}
-                error={errors.cantidadRecibida}
                 placeholder="Ej: 500"
                 disabled={loading}
               />
             </div>
 
             {/* Cálculos Automáticos */}
-            {selectedOcData && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-                <h4 className="text-sm font-medium text-gray-700">Cálculos de Costos</h4>
+            {selectedItemData && formData.itemId && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Costos del Producto: {selectedItemData.sku}
+                </h4>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
-                      Costo Total OC
+                      Costo FOB RD$
                     </label>
                     <div className="text-base font-semibold text-gray-900">
-                      RD$ {costoTotalOC.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      RD$ {selectedItemData.costoFOBRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Pagos + Gastos
+                      Total del lote
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Gastos Distribuidos
+                    </label>
+                    <div className="text-base font-semibold text-gray-900">
+                      RD$ {selectedItemData.gastosLogisticosRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {selectedItemData.porcentajeFOB.toFixed(1)}% del total
                     </p>
                   </div>
                   <div>
@@ -279,24 +353,37 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                       Costo Unitario
                     </label>
                     <div className="text-base font-semibold text-blue-700">
-                      RD$ {costoUnitarioFinalRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      RD$ {costoUnitarioRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Por unidad
                     </p>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      Costo Esta Recepción
-                    </label>
-                    <div className="text-base font-semibold text-green-700">
-                      RD$ {costoTotalRecepcionRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                {formData.cantidadRecibida && formData.cantidadRecibida > 0 && (
+                  <div className="pt-3 border-t border-blue-200">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium text-gray-700">
+                        Costo Total de Esta Recepción:
+                      </label>
+                      <div className="text-lg font-bold text-green-700">
+                        RD$ {costoTotalRecepcionRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {formData.cantidadRecibida || 0} × Unitario
+                      {formData.cantidadRecibida} unidades × RD$ {costoUnitarioRD.toFixed(2)}
                     </p>
                   </div>
-                </div>
+                )}
+              </div>
+            )}
+
+            {/* Mensaje cuando no hay item seleccionado */}
+            {formData.ocId && !formData.itemId && selectedOcData && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm text-yellow-800">
+                  No has seleccionado un producto específico. El costo se calculará como promedio de toda la orden.
+                </p>
               </div>
             )}
 
@@ -308,7 +395,6 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 id="notas"
                 value={formData.notas || ""}
                 onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                error={errors.notas}
                 placeholder="Notas adicionales sobre la recepción..."
                 rows={3}
                 disabled={loading}
