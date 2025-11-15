@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectOption } from "@/components/ui/select"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate, formatCurrency } from "@/lib/utils"
@@ -112,7 +113,7 @@ export default function OrdenesPage() {
 
     setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/oc-china/${ocToDelete.id}`, {
+      const response = await fetch(`/api/oc-china/${ocToDelete.id}?cascade=true`, {
         method: "DELETE",
       })
 
@@ -125,7 +126,7 @@ export default function OrdenesPage() {
       addToast({
         type: "success",
         title: "Orden eliminada",
-        description: `Orden ${ocToDelete.oc} eliminada exitosamente`,
+        description: result.message || `Orden ${ocToDelete.oc} eliminada exitosamente`,
       })
 
       setOcToDelete(null)
@@ -299,15 +300,12 @@ export default function OrdenesPage() {
           ocToEdit={ocToEdit}
         />
 
-        <ConfirmDialog
+        <CascadeDeleteDialog
           open={!!ocToDelete}
           onOpenChange={(open) => !open && setOcToDelete(null)}
           onConfirm={handleDelete}
-          title="Eliminar Orden"
-          description={`¿Estás seguro de eliminar la orden ${ocToDelete?.oc}? Esta acción no se puede deshacer.`}
-          confirmText="Eliminar"
-          cancelText="Cancelar"
-          variant="danger"
+          ocId={ocToDelete?.id || ""}
+          ocNumber={ocToDelete?.oc || ""}
           loading={deleteLoading}
         />
       </div>

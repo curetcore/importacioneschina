@@ -257,17 +257,44 @@ export async function PUT(
 }
 
 // DELETE /api/oc-china/[id] - Eliminar una orden de compra
+// Query params:
+//   - cascade=true: Eliminar todos los datos relacionados también
+//   - preview=true: Solo mostrar qué se eliminará sin borrar
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params;
+    const { searchParams } = new URL(request.url);
+    const cascade = searchParams.get("cascade") === "true";
+    const preview = searchParams.get("preview") === "true";
 
-    // Verificar que la OC existe
+    // Verificar que la OC existe y obtener datos relacionados
     const existing = await prisma.oCChina.findUnique({
       where: { id },
       include: {
+        pagosChina: {
+          select: {
+            id: true,
+            idPago: true,
+            montoRDNeto: true,
+          },
+        },
+        gastosLogisticos: {
+          select: {
+            id: true,
+            idGasto: true,
+            montoRD: true,
+          },
+        },
+        inventarioRecibido: {
+          select: {
+            id: true,
+            idRecepcion: true,
+            cantidadRecibida: true,
+          },
+        },
         _count: {
           select: {
             items: true,
@@ -295,25 +322,94 @@ export async function DELETE(
       existing._count.gastosLogisticos > 0 ||
       existing._count.inventarioRecibido > 0;
 
-    if (hasRelatedData) {
+    // Si es preview, devolver lo que se va a eliminar
+    if (preview) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          oc: existing.oc,
+          hasRelatedData,
+          counts: {
+            items: existing._count.items,
+            pagos: existing._count.pagosChina,
+            gastos: existing._count.gastosLogisticos,
+            inventario: existing._count.inventarioRecibido,
+          },
+          details: {
+            pagos: existing.pagosChina.map((p) => ({
+              id: p.idPago,
+              monto: parseFloat(p.montoRDNeto?.toString() || "0"),
+            })),
+            gastos: existing.gastosLogisticos.map((g) => ({
+              id: g.idGasto,
+              monto: parseFloat(g.montoRD.toString()),
+            })),
+            inventario: existing.inventarioRecibido.map((i) => ({
+              id: i.idRecepcion,
+              cantidad: i.cantidadRecibida,
+            })),
+          },
+        },
+      });
+    }
+
+    // Si tiene datos relacionados y no se pidió cascade, rechazar
+    if (hasRelatedData && !cascade) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "No se puede eliminar la OC porque tiene pagos, gastos o inventario asociado",
+          error: "No se puede eliminar la OC porque tiene pagos, gastos o inventario asociado",
+          counts: {
+            pagos: existing._count.pagosChina,
+            gastos: existing._count.gastosLogisticos,
+            inventario: existing._count.inventarioRecibido,
+          },
         },
         { status: 400 }
       );
     }
 
-    // Eliminar la OC (los items se eliminan automáticamente por CASCADE)
-    await prisma.oCChina.delete({
-      where: { id },
-    });
+    // Si se pidió cascade, eliminar todo en orden
+    if (cascade && hasRelatedData) {
+      await prisma.$transaction(async (tx) => {
+        // 1. Eliminar inventario recibido
+        if (existing._count.inventarioRecibido > 0) {
+          await tx.inventarioRecibido.deleteMany({
+            where: { ocId: id },
+          });
+        }
+
+        // 2. Eliminar gastos logísticos
+        if (existing._count.gastosLogisticos > 0) {
+          await tx.gastosLogisticos.deleteMany({
+            where: { ocId: id },
+          });
+        }
+
+        // 3. Eliminar pagos
+        if (existing._count.pagosChina > 0) {
+          await tx.pagosChina.deleteMany({
+            where: { ocId: id },
+          });
+        }
+
+        // 4. Eliminar la OC (los items se eliminan automáticamente por CASCADE)
+        await tx.oCChina.delete({
+          where: { id },
+        });
+      });
+    } else {
+      // Eliminar solo la OC (sin datos relacionados)
+      await prisma.oCChina.delete({
+        where: { id },
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Orden de compra eliminada exitosamente",
+      message: cascade
+        ? "Orden de compra y todos sus datos relacionados eliminados exitosamente"
+        : "Orden de compra eliminada exitosamente",
     });
   } catch (error) {
     console.error("Error en DELETE /api/oc-china/[id]:", error);
