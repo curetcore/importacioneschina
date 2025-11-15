@@ -136,6 +136,7 @@ export async function PUT(
         comisionBancoRD: validatedData.comisionBancoRD,
         montoRD: new Prisma.Decimal(montoRD),
         montoRDNeto: new Prisma.Decimal(montoRDNeto),
+        archivoComprobante: (validatedData as any).archivoComprobante || null,
       },
     });
 

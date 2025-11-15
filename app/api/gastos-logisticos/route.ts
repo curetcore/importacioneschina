@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
         proveedorServicio: validatedData.proveedorServicio,
         montoRD: new Prisma.Decimal(validatedData.montoRD),
         notas: validatedData.notas,
+        archivoRecibo: (validatedData as any).archivoRecibo || null,
       },
       include: {
         ocChina: {

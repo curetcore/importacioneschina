@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
         comisionBancoRD: new Prisma.Decimal(validatedData.comisionBancoRD),
         montoRD: new Prisma.Decimal(montoRD),
         montoRDNeto: new Prisma.Decimal(montoRDNeto),
+        archivoComprobante: (validatedData as any).archivoComprobante || null,
       },
       include: {
         ocChina: {

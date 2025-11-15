@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       fechaOC,
       descripcionLote,
       categoriaPrincipal,
+      archivoFactura,
       items,
     } = body;
 
@@ -185,6 +186,7 @@ export async function POST(request: NextRequest) {
         fechaOC: new Date(fechaOC),
         descripcionLote,
         categoriaPrincipal,
+        archivoFactura: archivoFactura || null,
         items: {
           create: itemsValidados,
         },

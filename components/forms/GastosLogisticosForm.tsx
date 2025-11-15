@@ -9,7 +9,7 @@ import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
 import { gastosLogisticosSchema, GastosLogisticosInput, tiposGasto } from "@/lib/validations"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, FileText, X } from "lucide-react"
 
 interface GastoLogistico {
   id: string
@@ -20,6 +20,7 @@ interface GastoLogistico {
   proveedorServicio?: string | null
   montoRD: number
   notas?: string | null
+  archivoRecibo?: string | null
 }
 
 interface GastosLogisticosFormProps {
@@ -51,7 +52,11 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
     proveedorServicio: "",
     montoRD: undefined,
     notas: "",
+    archivoRecibo: "",
   })
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadingFile, setUploadingFile] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -78,7 +83,9 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         proveedorServicio: gastoToEdit.proveedorServicio || "",
         montoRD: gastoToEdit.montoRD,
         notas: gastoToEdit.notas || "",
+        archivoRecibo: gastoToEdit.archivoRecibo || "",
       })
+      setSelectedFile(null)
     } else {
       setFormData({
         idGasto: "",
@@ -88,10 +95,72 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         proveedorServicio: "",
         montoRD: undefined,
         notas: "",
+        archivoRecibo: "",
       })
+      setSelectedFile(null)
     }
     setErrors({})
   }, [gastoToEdit])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        addToast({
+          type: "error",
+          title: "Tipo de archivo no válido",
+          description: "Solo se permiten archivos PDF e imágenes (JPG, PNG, WEBP)",
+        })
+        return
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        addToast({
+          type: "error",
+          title: "Archivo muy grande",
+          description: "El archivo no debe exceder 10MB",
+        })
+        return
+      }
+      setSelectedFile(file)
+    }
+  }
+
+  const removeFile = () => {
+    setSelectedFile(null)
+    setFormData({ ...formData, archivoRecibo: "" })
+  }
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    try {
+      setUploadingFile(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('tipo', 'gastos-logisticos')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al subir el archivo')
+      }
+
+      const data = await response.json()
+      return data.filePath
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      addToast({
+        type: "error",
+        title: "Error al subir archivo",
+        description: "No se pudo subir el archivo. Intenta de nuevo.",
+      })
+      return null
+    } finally {
+      setUploadingFile(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,8 +168,17 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
     setLoading(true)
 
     try {
+      // Subir archivo si hay uno seleccionado
+      let archivoReciboPath = formData.archivoRecibo
+      if (selectedFile) {
+        const uploadedPath = await uploadFile(selectedFile)
+        if (uploadedPath) {
+          archivoReciboPath = uploadedPath
+        }
+      }
+
       // En modo creación, remover idGasto antes de validar (se genera automáticamente)
-      const dataToValidate = isEditMode ? formData : { ...formData, idGasto: undefined }
+      const dataToValidate = isEditMode ? { ...formData, archivoRecibo: archivoReciboPath } : { ...formData, idGasto: undefined, archivoRecibo: archivoReciboPath }
       const validatedData = gastosLogisticosSchema.parse(dataToValidate)
 
       const url = isEditMode ? `/api/gastos-logisticos/${gastoToEdit.id}` : "/api/gastos-logisticos"
@@ -262,6 +340,53 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                 rows={3}
                 disabled={loading}
               />
+            </div>
+
+            {/* Adjuntar Recibo */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Recibo (PDF o imagen)
+              </label>
+              {!selectedFile && !formData.archivoRecibo ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept=".pdf,image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    disabled={loading || uploadingFile}
+                    className="flex-1"
+                  />
+                  <Upload className="w-5 h-5 text-gray-400" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <span className="flex-1 text-sm truncate">
+                    {selectedFile?.name || formData.archivoRecibo?.split('/').pop()}
+                  </span>
+                  {formData.archivoRecibo && !selectedFile && (
+                    <a
+                      href={`/api/files/${formData.archivoRecibo.replace('uploads/', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 text-sm"
+                    >
+                      Ver
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    disabled={loading || uploadingFile}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Formatos permitidos: PDF, JPG, PNG, WEBP (máx. 10MB)
+              </p>
             </div>
           </div>
 

@@ -76,6 +76,7 @@ export async function PUT(
       fechaOC,
       descripcionLote,
       categoriaPrincipal,
+      archivoFactura,
       items,
     } = body;
 
@@ -229,6 +230,7 @@ export async function PUT(
           fechaOC: new Date(fechaOC),
           descripcionLote,
           categoriaPrincipal,
+          archivoFactura: archivoFactura || null,
           items: {
             create: itemsValidados,
           },

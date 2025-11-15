@@ -8,7 +8,7 @@ import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { useToast } from "@/components/ui/toast"
 import { pagosChinaSchema, PagosChinaInput, tiposPago, metodosPago, monedas } from "@/lib/validations"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, FileText, X } from "lucide-react"
 
 interface PagoChina {
   id: string
@@ -21,6 +21,7 @@ interface PagoChina {
   montoOriginal: number
   tasaCambio: number
   comisionBancoRD: number
+  archivoComprobante?: string | null
 }
 
 interface PagosChinaFormProps {
@@ -64,7 +65,11 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     montoOriginal: undefined,
     tasaCambio: 1,
     comisionBancoRD: 0,
+    archivoComprobante: "",
   })
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadingFile, setUploadingFile] = useState(false)
 
   // Cálculos automáticos
   const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
@@ -103,7 +108,9 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         montoOriginal: pagoToEdit.montoOriginal,
         tasaCambio: pagoToEdit.tasaCambio,
         comisionBancoRD: pagoToEdit.comisionBancoRD,
+        archivoComprobante: pagoToEdit.archivoComprobante || "",
       })
+      setSelectedFile(null)
     } else {
       setFormData({
         idPago: "",
@@ -115,10 +122,72 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         montoOriginal: undefined,
         tasaCambio: 1,
         comisionBancoRD: 0,
+        archivoComprobante: "",
       })
+      setSelectedFile(null)
     }
     setErrors({})
   }, [pagoToEdit])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        addToast({
+          type: "error",
+          title: "Tipo de archivo no válido",
+          description: "Solo se permiten archivos PDF e imágenes (JPG, PNG, WEBP)",
+        })
+        return
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        addToast({
+          type: "error",
+          title: "Archivo muy grande",
+          description: "El archivo no debe exceder 10MB",
+        })
+        return
+      }
+      setSelectedFile(file)
+    }
+  }
+
+  const removeFile = () => {
+    setSelectedFile(null)
+    setFormData({ ...formData, archivoComprobante: "" })
+  }
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    try {
+      setUploadingFile(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('tipo', 'pagos-china')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al subir el archivo')
+      }
+
+      const data = await response.json()
+      return data.filePath
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      addToast({
+        type: "error",
+        title: "Error al subir archivo",
+        description: "No se pudo subir el archivo. Intenta de nuevo.",
+      })
+      return null
+    } finally {
+      setUploadingFile(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,8 +195,17 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     setLoading(true)
 
     try {
+      // Subir archivo si hay uno seleccionado
+      let archivoComprobantePath = formData.archivoComprobante
+      if (selectedFile) {
+        const uploadedPath = await uploadFile(selectedFile)
+        if (uploadedPath) {
+          archivoComprobantePath = uploadedPath
+        }
+      }
+
       // En modo creación, remover idPago antes de validar (se genera automáticamente)
-      const dataToValidate = isEditMode ? formData : { ...formData, idPago: undefined }
+      const dataToValidate = isEditMode ? { ...formData, archivoComprobante: archivoComprobantePath } : { ...formData, idPago: undefined, archivoComprobante: archivoComprobantePath }
 
       // Validar con Zod
       const validatedData = pagosChinaSchema.parse(dataToValidate)
@@ -396,6 +474,53 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Adjuntar Comprobante */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Comprobante de Pago (PDF o imagen)
+              </label>
+              {!selectedFile && !formData.archivoComprobante ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept=".pdf,image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    disabled={loading || uploadingFile}
+                    className="flex-1"
+                  />
+                  <Upload className="w-5 h-5 text-gray-400" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <span className="flex-1 text-sm truncate">
+                    {selectedFile?.name || formData.archivoComprobante?.split('/').pop()}
+                  </span>
+                  {formData.archivoComprobante && !selectedFile && (
+                    <a
+                      href={`/api/files/${formData.archivoComprobante.replace('uploads/', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 text-sm"
+                    >
+                      Ver
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    disabled={loading || uploadingFile}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Formatos permitidos: PDF, JPG, PNG, WEBP (máx. 10MB)
+              </p>
             </div>
           </div>
 

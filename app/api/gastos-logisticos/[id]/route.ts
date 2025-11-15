@@ -113,6 +113,7 @@ export async function PUT(
         proveedorServicio: validatedData.proveedorServicio,
         montoRD: validatedData.montoRD,
         notas: validatedData.notas,
+        archivoRecibo: (validatedData as any).archivoRecibo || null,
       },
     });
 
