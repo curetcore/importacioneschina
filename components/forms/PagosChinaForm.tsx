@@ -66,6 +66,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     comisionBancoRD: 0,
   })
 
+  // Cálculos automáticos
+  const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
+  const montoRDNeto = montoRD - (formData.comisionBancoRD ?? 0)
+
   // Cargar OCs disponibles
   useEffect(() => {
     if (open) {
@@ -359,6 +363,35 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   placeholder="Ej: 500.00"
                   disabled={loading}
                 />
+              </div>
+            </div>
+
+            {/* Cálculos Automáticos */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+              <h4 className="text-sm font-medium text-gray-700">Cálculos Automáticos</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Monto en RD$
+                  </label>
+                  <div className="text-lg font-semibold text-gray-900">
+                    RD$ {montoRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.montoOriginal?.toLocaleString() || '0'} × {formData.tasaCambio || '1'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Monto Neto (RD$)
+                  </label>
+                  <div className="text-lg font-semibold text-green-700">
+                    RD$ {montoRDNeto.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Monto RD$ - Comisión
+                  </p>
+                </div>
               </div>
             </div>
           </div>

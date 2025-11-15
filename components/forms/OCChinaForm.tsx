@@ -9,6 +9,7 @@ import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
 import { ocChinaSchema, OCChinaInput, proveedores, categorias } from "@/lib/validations"
+import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
 import { Loader2 } from "lucide-react"
 
 interface OCChina {
@@ -90,19 +91,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       // Validar con Zod
       const validatedData = ocChinaSchema.parse(formData)
 
-      // Enviar al API
-      const url = isEditMode ? `/api/oc-china/${ocToEdit.id}` : "/api/oc-china"
-      const method = isEditMode ? "PUT" : "POST"
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(validatedData),
-      })
-
-      const result = await response.json()
+      // Enviar al API con manejo mejorado de errores
+      const result = isEditMode
+        ? await apiPut(`/api/oc-china/${ocToEdit.id}`, validatedData, { timeout: 15000 })
+        : await apiPost("/api/oc-china", validatedData, { timeout: 15000 })
 
       if (!result.success) {
         throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la orden`)
@@ -138,11 +130,11 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         })
         setErrors(validationErrors)
       } else {
-        // Otros errores
+        // Otros errores (red, timeout, API, etc.)
         addToast({
           type: "error",
           title: "Error",
-          description: error.message || "Error al crear la orden",
+          description: getErrorMessage(error),
         })
       }
     } finally {

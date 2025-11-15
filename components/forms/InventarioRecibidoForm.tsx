@@ -38,6 +38,11 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [loadingOcs, setLoadingOcs] = useState(false)
+  const [selectedOcData, setSelectedOcData] = useState<{
+    totalPagado: number
+    totalGastos: number
+    cantidadOrdenada: number
+  } | null>(null)
 
   const [formData, setFormData] = useState<Partial<InventarioRecibidoInput>>({
     idRecepcion: "",
@@ -47,6 +52,13 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
     cantidadRecibida: undefined,
     notas: "",
   })
+
+  // Cálculos automáticos
+  const costoTotalOC = (selectedOcData?.totalPagado ?? 0) + (selectedOcData?.totalGastos ?? 0)
+  const costoUnitarioFinalRD = selectedOcData?.cantidadOrdenada
+    ? costoTotalOC / selectedOcData.cantidadOrdenada
+    : 0
+  const costoTotalRecepcionRD = costoUnitarioFinalRD * (formData.cantidadRecibida ?? 0)
 
   useEffect(() => {
     if (open) {
@@ -62,6 +74,29 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
         .catch(() => setLoadingOcs(false))
     }
   }, [open])
+
+  // Cargar datos de la OC cuando se selecciona
+  useEffect(() => {
+    if (formData.ocId) {
+      fetch(`/api/oc-china/${formData.ocId}`)
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            const oc = result.data
+            const totalPagado = oc.pagosChina?.reduce((sum: number, p: any) => sum + (p.montoRDNeto || 0), 0) || 0
+            const totalGastos = oc.gastosLogisticos?.reduce((sum: number, g: any) => sum + (g.montoRD || 0), 0) || 0
+            setSelectedOcData({
+              totalPagado,
+              totalGastos,
+              cantidadOrdenada: oc.cantidadOrdenada
+            })
+          }
+        })
+        .catch(() => setSelectedOcData(null))
+    } else {
+      setSelectedOcData(null)
+    }
+  }, [formData.ocId])
 
   useEffect(() => {
     if (inventarioToEdit) {
@@ -222,6 +257,48 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 disabled={loading}
               />
             </div>
+
+            {/* Cálculos Automáticos */}
+            {selectedOcData && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">Cálculos de Costos</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Costo Total OC
+                    </label>
+                    <div className="text-base font-semibold text-gray-900">
+                      RD$ {costoTotalOC.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Pagos + Gastos
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Costo Unitario
+                    </label>
+                    <div className="text-base font-semibold text-blue-700">
+                      RD$ {costoUnitarioFinalRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Por unidad
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Costo Esta Recepción
+                    </label>
+                    <div className="text-base font-semibold text-green-700">
+                      RD$ {costoTotalRecepcionRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.cantidadRecibida || 0} × Unitario
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <label htmlFor="notas" className="block text-sm font-medium text-gray-700 mb-1">
