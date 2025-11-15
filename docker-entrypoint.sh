@@ -17,6 +17,9 @@ if [ -z "$DATABASE_URL" ]; then
   echo "WARNING: DATABASE_URL no está configurada"
 fi
 
+echo "Ejecutando migraciones de base de datos..."
+npx prisma migrate deploy
+
 echo "Iniciando servidor de producción..."
 echo "NODE_ENV: $NODE_ENV"
 echo "PORT: $PORT"
