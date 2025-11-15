@@ -138,8 +138,7 @@ export default function OCChinaPage() {
             <Button
               onClick={() => setShowNewDialog(true)}
               variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs h-8"
+              className="gap-1.5 text-xs h-8 px-3"
             >
               <Plus size={14} />
               Nueva
