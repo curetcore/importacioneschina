@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { GastosLogisticosForm } from "@/components/forms/GastosLogisticosForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Plus, Edit, Trash2 } from "lucide-react"
@@ -33,14 +34,18 @@ export default function GastosLogisticosPage() {
   const [gastoToEdit, setGastoToEdit] = useState<GastoLogistico | null>(null)
   const [gastoToDelete, setGastoToDelete] = useState<GastoLogistico | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const fetchGastos = () => {
+  const fetchGastos = (page = 1) => {
     setLoading(true)
-    fetch("/api/gastos-logisticos")
+    fetch(`/api/gastos-logisticos?page=${page}&limit=20`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setGastos(result.data)
+          setTotalPages(result.pagination.pages)
+          setCurrentPage(result.pagination.page)
         }
         setLoading(false)
       })
@@ -48,8 +53,8 @@ export default function GastosLogisticosPage() {
   }
 
   useEffect(() => {
-    fetchGastos()
-  }, [])
+    fetchGastos(currentPage)
+  }, [currentPage])
 
   const handleEdit = (gasto: GastoLogistico) => {
     setGastoToEdit(gasto)
@@ -78,7 +83,7 @@ export default function GastosLogisticosPage() {
       })
 
       setGastoToDelete(null)
-      fetchGastos()
+      fetchGastos(currentPage)
     } catch (error: any) {
       addToast({
         type: "error",
@@ -184,6 +189,12 @@ export default function GastosLogisticosPage() {
                 No hay gastos registrados
               </div>
             )}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
 
@@ -191,7 +202,7 @@ export default function GastosLogisticosPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchGastos()
+            fetchGastos(currentPage)
             handleFormClose()
           }}
           gastoToEdit={gastoToEdit}

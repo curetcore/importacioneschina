@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { InventarioRecibidoForm } from "@/components/forms/InventarioRecibidoForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Plus, Edit, Trash2 } from "lucide-react"
@@ -35,14 +36,18 @@ export default function InventarioRecibidoPage() {
   const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
   const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const fetchInventarios = () => {
+  const fetchInventarios = (page = 1) => {
     setLoading(true)
-    fetch("/api/inventario-recibido")
+    fetch(`/api/inventario-recibido?page=${page}&limit=20`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setInventarios(result.data)
+          setTotalPages(result.pagination.pages)
+          setCurrentPage(result.pagination.page)
         }
         setLoading(false)
       })
@@ -50,8 +55,8 @@ export default function InventarioRecibidoPage() {
   }
 
   useEffect(() => {
-    fetchInventarios()
-  }, [])
+    fetchInventarios(currentPage)
+  }, [currentPage])
 
   const handleEdit = (inventario: InventarioRecibido) => {
     setInventarioToEdit(inventario)
@@ -80,7 +85,7 @@ export default function InventarioRecibidoPage() {
       })
 
       setInventarioToDelete(null)
-      fetchInventarios()
+      fetchInventarios(currentPage)
     } catch (error: any) {
       addToast({
         type: "error",
@@ -204,6 +209,12 @@ export default function InventarioRecibidoPage() {
                 No hay recepciones registradas
               </div>
             )}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
 
@@ -211,7 +222,7 @@ export default function InventarioRecibidoPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchInventarios()
+            fetchInventarios(currentPage)
             handleFormClose()
           }}
           inventarioToEdit={inventarioToEdit}

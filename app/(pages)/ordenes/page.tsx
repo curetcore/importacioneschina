@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate } from "@/lib/utils"
 import { Plus, Edit, Trash2 } from "lucide-react"
@@ -29,14 +30,18 @@ export default function OrdenesPage() {
   const [ocToEdit, setOcToEdit] = useState<OCChina | null>(null)
   const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const fetchOCs = () => {
+  const fetchOCs = (page = 1) => {
     setLoading(true)
-    fetch("/api/oc-china")
+    fetch(`/api/oc-china?page=${page}&limit=20`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setOcs(result.data)
+          setTotalPages(result.pagination.pages)
+          setCurrentPage(result.pagination.page)
         }
         setLoading(false)
       })
@@ -44,8 +49,8 @@ export default function OrdenesPage() {
   }
 
   useEffect(() => {
-    fetchOCs()
-  }, [])
+    fetchOCs(currentPage)
+  }, [currentPage])
 
   const handleEdit = (oc: OCChina) => {
     setOcToEdit(oc)
@@ -74,7 +79,7 @@ export default function OrdenesPage() {
       })
 
       setOcToDelete(null)
-      fetchOCs()
+      fetchOCs(currentPage)
     } catch (error: any) {
       addToast({
         type: "error",
@@ -165,6 +170,12 @@ export default function OrdenesPage() {
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
 
@@ -172,7 +183,7 @@ export default function OrdenesPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchOCs()
+            fetchOCs(currentPage)
             handleFormClose()
           }}
           ocToEdit={ocToEdit}

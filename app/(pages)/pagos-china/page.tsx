@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PagosChinaForm } from "@/components/forms/PagosChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Plus, Edit, Trash2 } from "lucide-react"
@@ -37,14 +38,18 @@ export default function PagosChinaPage() {
   const [pagoToEdit, setPagoToEdit] = useState<Pago | null>(null)
   const [pagoToDelete, setPagoToDelete] = useState<Pago | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const fetchPagos = () => {
+  const fetchPagos = (page = 1) => {
     setLoading(true)
-    fetch("/api/pagos-china")
+    fetch(`/api/pagos-china?page=${page}&limit=20`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setPagos(result.data)
+          setTotalPages(result.pagination.pages)
+          setCurrentPage(result.pagination.page)
         }
         setLoading(false)
       })
@@ -52,8 +57,8 @@ export default function PagosChinaPage() {
   }
 
   useEffect(() => {
-    fetchPagos()
-  }, [])
+    fetchPagos(currentPage)
+  }, [currentPage])
 
   const handleEdit = (pago: Pago) => {
     setPagoToEdit(pago)
@@ -82,7 +87,7 @@ export default function PagosChinaPage() {
       })
 
       setPagoToDelete(null)
-      fetchPagos()
+      fetchPagos(currentPage)
     } catch (error: any) {
       addToast({
         type: "error",
@@ -196,6 +201,12 @@ export default function PagosChinaPage() {
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
 
@@ -203,7 +214,7 @@ export default function PagosChinaPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchPagos()
+            fetchPagos(currentPage)
             handleFormClose()
           }}
           pagoToEdit={pagoToEdit}
