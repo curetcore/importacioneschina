@@ -3,48 +3,76 @@ import { PrismaClient, Prisma } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("<1 Iniciando seed data...");
+  console.log("ðŸŒ± Iniciando seed data...");
 
   // Limpiar BD
-  console.log("=Ñ  Limpiando base de datos...");
+  console.log("ðŸ§¹ Limpiando base de datos...");
   await prisma.inventarioRecibido.deleteMany();
   await prisma.gastosLogisticos.deleteMany();
   await prisma.pagosChina.deleteMany();
+  await prisma.oCChinaItem.deleteMany();
   await prisma.oCChina.deleteMany();
 
-  // Crear 10 OCs de ejemplo
-  console.log("=æ Creando órdenes de compra...");
-  const proveedores = ["China 1", "China 2", "Fábrica X"];
+  // Crear 10 OCs de ejemplo con items
+  console.log("ðŸ“¦ Creando Ã³rdenes de compra con productos...");
+  const proveedores = ["China 1", "China 2", "FÃ¡brica X"];
   const categorias = ["Zapatos", "Carteras", "Cinturones", "Accesorios"];
+  const skuPrefixes = ["ZAP", "CAR", "CIN", "ACC"];
 
   const ocs = [];
   for (let i = 1; i <= 10; i++) {
-    const cantidad = Math.floor(400 + Math.random() * 800); // 400-1200 unidades
-    const costoFOB = new Prisma.Decimal(cantidad * (8 + Math.random() * 12)); // $8-20 por unidad
+    const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+    const skuPrefix = skuPrefixes[categorias.indexOf(categoria)];
+
+    // Crear entre 2-5 items por OC
+    const numItems = 2 + Math.floor(Math.random() * 4);
+    const items = [];
+
+    for (let j = 0; j < numItems; j++) {
+      const cantidadTotal = Math.floor(100 + Math.random() * 300); // 100-400 unidades
+      const precioUnitarioUSD = 8 + Math.random() * 12; // $8-20 por unidad
+      const subtotalUSD = cantidadTotal * precioUnitarioUSD;
+
+      items.push({
+        sku: `${skuPrefix}-${String(i).padStart(3, "0")}-${String(j + 1).padStart(2, "0")}`,
+        nombre: `${categoria} Modelo ${i}-${j + 1}`,
+        material: j % 2 === 0 ? "Cuero sintÃ©tico" : "Cuero natural",
+        color: ["Negro", "CafÃ©", "Beige", "Rojo"][Math.floor(Math.random() * 4)],
+        especificaciones: `Producto de alta calidad importado de China`,
+        tallaDistribucion: j === 0 ? { "S": 30, "M": 40, "L": 30 } : null,
+        cantidadTotal,
+        precioUnitarioUSD: new Prisma.Decimal(precioUnitarioUSD.toFixed(4)),
+        subtotalUSD: new Prisma.Decimal(subtotalUSD.toFixed(2)),
+      });
+    }
 
     const oc = await prisma.oCChina.create({
       data: {
         oc: `OC-2025-${String(i).padStart(3, "0")}`,
         proveedor: proveedores[Math.floor(Math.random() * proveedores.length)],
-        fechaOC: new Date(2025, 0, i * 3), // Cada 3 días
-        descripcionLote: `Lote de importación #${i} - Mix de productos`,
-        categoriaPrincipal: categorias[Math.floor(Math.random() * categorias.length)],
-        cantidadOrdenada: cantidad,
-        costoFOBTotalUSD: costoFOB,
+        fechaOC: new Date(2025, 0, i * 3), // Cada 3 dÃ­as
+        descripcionLote: `Lote de importaciÃ³n #${i} - Mix de ${categoria}`,
+        categoriaPrincipal: categoria,
+        items: {
+          create: items,
+        },
+      },
+      include: {
+        items: true,
       },
     });
     ocs.push(oc);
   }
-  console.log(` ${ocs.length} órdenes de compra creadas`);
+  console.log(`âœ… ${ocs.length} Ã³rdenes de compra creadas con ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`);
 
   // Crear pagos para cada OC
-  console.log("=° Creando pagos...");
+  console.log("ðŸ’° Creando pagos...");
   let pagoCount = 0;
   for (const oc of ocs) {
-    const costoFOB = parseFloat(oc.costoFOBTotalUSD.toString());
+    const costoFOBTotal = oc.items.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0);
 
     // Pago 1: Anticipo 50% en USD
-    const montoAnticipo = new Prisma.Decimal(costoFOB * 0.5);
+    const montoAnticipo = new Prisma.Decimal(costoFOBTotal * 0.5);
     const tasaUSD = new Prisma.Decimal(58.5);
     const montoRD1 = new Prisma.Decimal(parseFloat(montoAnticipo.toString()) * 58.5);
     const comision1 = new Prisma.Decimal(500);
@@ -67,7 +95,7 @@ async function main() {
     pagoCount++;
 
     // Pago 2: Pago final 50% en CNY
-    const montoCNY = new Prisma.Decimal((costoFOB * 0.5) * 7.3); // USD a CNY
+    const montoCNY = new Prisma.Decimal((costoFOBTotal * 0.5) * 7.3); // USD a CNY
     const tasaCNY = new Prisma.Decimal(8.2);
     const montoRD2 = new Prisma.Decimal(parseFloat(montoCNY.toString()) * 8.2);
     const comision2 = new Prisma.Decimal(250);
@@ -76,9 +104,9 @@ async function main() {
       data: {
         idPago: `PAG-${oc.oc}-002`,
         ocId: oc.id,
-        fechaPago: new Date(oc.fechaOC.getTime() + 10 * 24 * 60 * 60 * 1000), // +10 días
+        fechaPago: new Date(oc.fechaOC.getTime() + 10 * 24 * 60 * 60 * 1000), // +10 dÃ­as
         tipoPago: "Pago final",
-        metodoPago: "Tarjeta de crédito",
+        metodoPago: "Tarjeta de crÃ©dito",
         moneda: "CNY",
         montoOriginal: montoCNY,
         tasaCambio: tasaCNY,
@@ -89,10 +117,10 @@ async function main() {
     });
     pagoCount++;
   }
-  console.log(` ${pagoCount} pagos creados`);
+  console.log(`âœ… ${pagoCount} pagos creados`);
 
-  // Crear gastos logísticos
-  console.log("=Ë Creando gastos logísticos...");
+  // Crear gastos logÃ­sticos
+  console.log("ðŸšš Creando gastos logÃ­sticos...");
   const tiposGasto = [
     "Flete internacional",
     "Seguro",
@@ -114,48 +142,57 @@ async function main() {
           ocId: oc.id,
           fechaGasto: new Date(oc.fechaOC.getTime() + (j + 1) * 5 * 24 * 60 * 60 * 1000),
           tipoGasto: tiposGasto[Math.floor(Math.random() * tiposGasto.length)],
-          proveedorServicio: "Proveedor Logístico",
+          proveedorServicio: "Proveedor LogÃ­stico",
           montoRD: new Prisma.Decimal(3000 + Math.random() * 12000), // RD$ 3,000-15,000
-          notas: `Gasto logístico ${j + 1} para ${oc.oc}`,
+          notas: `Gasto logÃ­stico ${j + 1} para ${oc.oc}`,
         },
       });
       gastoCount++;
     }
   }
-  console.log(` ${gastoCount} gastos logísticos creados`);
+  console.log(`âœ… ${gastoCount} gastos logÃ­sticos creados`);
 
-  // Crear recepciones de inventario
-  console.log("=å Creando recepciones de inventario...");
-  const bodegas = ["Bóveda", "Piantini", "Villa Mella", "Oficina"];
+  // Crear recepciones de inventario (vinculadas a items especÃ­ficos)
+  console.log("ðŸ“¥ Creando recepciones de inventario...");
+  const bodegas = ["BÃ³veda", "Piantini", "Villa Mella", "Oficina"];
+  let recepcionCount = 0;
 
   for (const oc of ocs) {
-    // Simular que recibimos 95-98% de lo ordenado
-    const cantidadRecibida = Math.floor(oc.cantidadOrdenada * (0.95 + Math.random() * 0.03));
+    // Para cada item, recibir entre 90-100% de lo ordenado
+    for (let itemIndex = 0; itemIndex < oc.items.length; itemIndex++) {
+      const item = oc.items[itemIndex];
+      const cantidadRecibida = Math.floor(item.cantidadTotal * (0.90 + Math.random() * 0.10));
 
-    await prisma.inventarioRecibido.create({
-      data: {
-        idRecepcion: `REC-${oc.oc}-001`,
-        ocId: oc.id,
-        fechaLlegada: new Date(oc.fechaOC.getTime() + 25 * 24 * 60 * 60 * 1000), // +25 días
-        bodegaInicial: bodegas[Math.floor(Math.random() * bodegas.length)],
-        cantidadRecibida: cantidadRecibida,
-        notas: `Recepción inicial de ${cantidadRecibida} unidades`,
-      },
-    });
+      await prisma.inventarioRecibido.create({
+        data: {
+          idRecepcion: `REC-${oc.oc}-${String(itemIndex + 1).padStart(3, "0")}`,
+          ocId: oc.id,
+          itemId: item.id,
+          fechaLlegada: new Date(oc.fechaOC.getTime() + 25 * 24 * 60 * 60 * 1000), // +25 dÃ­as
+          bodegaInicial: bodegas[Math.floor(Math.random() * bodegas.length)],
+          cantidadRecibida: cantidadRecibida,
+          costoUnitarioFinalRD: new Prisma.Decimal(0), // Se calcularÃ¡ en tiempo real
+          costoTotalRecepcionRD: new Prisma.Decimal(0), // Se calcularÃ¡ en tiempo real
+          notas: `RecepciÃ³n de ${item.nombre} - ${cantidadRecibida} unidades`,
+        },
+      });
+      recepcionCount++;
+    }
   }
-  console.log(` ${ocs.length} recepciones de inventario creadas`);
+  console.log(`âœ… ${recepcionCount} recepciones de inventario creadas`);
 
-  console.log("\n<‰ Seed data completado exitosamente!");
-  console.log(`\n=Ê Resumen:`);
-  console.log(`   - ${ocs.length} órdenes de compra`);
+  console.log("\nâœ¨ Seed data completado exitosamente!");
+  console.log(`\nðŸ“Š Resumen:`);
+  console.log(`   - ${ocs.length} Ã³rdenes de compra`);
+  console.log(`   - ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`);
   console.log(`   - ${pagoCount} pagos`);
-  console.log(`   - ${gastoCount} gastos logísticos`);
-  console.log(`   - ${ocs.length} recepciones de inventario`);
+  console.log(`   - ${gastoCount} gastos logÃ­sticos`);
+  console.log(`   - ${recepcionCount} recepciones de inventario`);
 }
 
 main()
   .catch((e) => {
-    console.error("L Error en seed:", e);
+    console.error("âŒ Error en seed:", e);
     process.exit(1);
   })
   .finally(async () => {
