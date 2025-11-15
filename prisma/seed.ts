@@ -33,17 +33,23 @@ async function main() {
       const precioUnitarioUSD = 8 + Math.random() * 12; // $8-20 por unidad
       const subtotalUSD = cantidadTotal * precioUnitarioUSD;
 
-      items.push({
+      const itemData: any = {
         sku: `${skuPrefix}-${String(i).padStart(3, "0")}-${String(j + 1).padStart(2, "0")}`,
         nombre: `${categoria} Modelo ${i}-${j + 1}`,
         material: j % 2 === 0 ? "Cuero sintético" : "Cuero natural",
         color: ["Negro", "Café", "Beige", "Rojo"][Math.floor(Math.random() * 4)],
         especificaciones: `Producto de alta calidad importado de China`,
-        tallaDistribucion: j === 0 ? { "S": 30, "M": 40, "L": 30 } : null,
         cantidadTotal,
         precioUnitarioUSD: new Prisma.Decimal(precioUnitarioUSD.toFixed(4)),
         subtotalUSD: new Prisma.Decimal(subtotalUSD.toFixed(2)),
-      });
+      };
+
+      // Solo agregar tallaDistribucion si es el primer item (como ejemplo)
+      if (j === 0) {
+        itemData.tallaDistribucion = { "S": 30, "M": 40, "L": 30 };
+      }
+
+      items.push(itemData);
     }
 
     const oc = await prisma.oCChina.create({
