@@ -279,19 +279,17 @@ export default function PagosChinaPage() {
                         <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
-                            className="text-sm h-8"
+                            className="h-8 w-8 p-0"
                             onClick={() => handleEdit(pago)}
                           >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Editar
+                            <Edit className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
-                            className="text-sm h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => setPagoToDelete(pago)}
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Eliminar
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>
