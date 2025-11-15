@@ -321,9 +321,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={addNewItem}
                   disabled={loading}
+                  className="px-3 py-1.5 text-sm"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Agregar Producto
@@ -366,10 +366,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={() => removeItem(index)}
                           disabled={loading}
-                          className="text-red-600 hover:text-red-700"
+                          className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
