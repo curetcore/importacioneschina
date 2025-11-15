@@ -13,7 +13,16 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { AttachmentsList } from "@/components/ui/attachments-list"
 import { Plus, Edit, Trash2, Search, X, DollarSign } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface Pago {
   id: string
@@ -28,6 +37,7 @@ interface Pago {
   comisionBancoRD: number
   montoRD: number
   montoRDNeto: number
+  adjuntos?: FileAttachment[]
   ocChina: {
     oc: string
     proveedor: string
@@ -241,6 +251,7 @@ export default function PagosChinaPage() {
                       <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Original</th>
                       <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tasa</th>
                       <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$ (Neto)</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
                       <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                     </tr>
                   </thead>
@@ -274,6 +285,9 @@ export default function PagosChinaPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4">
+                        <AttachmentsList attachments={pago.adjuntos || []} compact />
+                      </td>
+                      <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
@@ -296,7 +310,7 @@ export default function PagosChinaPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={7}>
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={8}>
                         Total
                       </td>
                       <td className="py-3 px-4 text-right">

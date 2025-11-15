@@ -15,7 +15,16 @@ import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate, formatCurrency } from "@/lib/utils"
+import { AttachmentsList } from "@/components/ui/attachments-list"
 import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface OCChinaItem {
   id: string
@@ -34,6 +43,7 @@ interface OCChina {
   categoriaPrincipal: string
   descripcionLote?: string | null
   items?: OCChinaItem[]
+  adjuntos?: FileAttachment[]
   _count?: {
     items: number
   }
@@ -215,6 +225,7 @@ export default function OrdenesPage() {
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Productos</th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades</th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo FOB</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
                     <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
@@ -233,6 +244,9 @@ export default function OrdenesPage() {
                         <td className="py-3 px-4 text-sm text-right text-gray-900">{numProductos}</td>
                         <td className="py-3 px-4 text-sm text-right text-gray-900">{totalUnidades.toLocaleString()}</td>
                         <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">{formatCurrency(totalFOB, "USD")}</td>
+                        <td className="py-3 px-4">
+                          <AttachmentsList attachments={oc.adjuntos || []} compact />
+                        </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center justify-center gap-2">
                             <Button
@@ -276,6 +290,7 @@ export default function OrdenesPage() {
                     <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
                       {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
                     </td>
+                    <td className="py-3 px-4"></td>
                     <td className="py-3 px-4"></td>
                   </tr>
                 </tfoot>

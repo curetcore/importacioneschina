@@ -13,8 +13,17 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { AttachmentsList } from "@/components/ui/attachments-list"
 import { tiposGasto } from "@/lib/validations"
 import { Plus, Edit, Trash2, Search, X, Truck, FileText } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface GastoLogistico {
   id: string
@@ -25,6 +34,7 @@ interface GastoLogistico {
   proveedorServicio: string | null
   montoRD: number
   notas: string | null
+  adjuntos?: FileAttachment[]
   ocChina: {
     oc: string
     proveedor: string
@@ -234,6 +244,7 @@ export default function GastosLogisticosPage() {
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Gasto</th>
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
                       <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
                       <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                     </tr>
                   </thead>
@@ -254,6 +265,9 @@ export default function GastosLogisticosPage() {
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
                         {formatCurrency(gasto.montoRD)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <AttachmentsList attachments={gasto.adjuntos || []} compact />
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">
@@ -278,7 +292,7 @@ export default function GastosLogisticosPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={5}>
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={6}>
                         Total
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
