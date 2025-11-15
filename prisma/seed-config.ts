@@ -55,10 +55,9 @@ async function main() {
   const count = await prisma.configuracion.count();
 
   if (count > 0) {
-    console.log(`⚠️  Ya existen ${count} configuraciones en la base de datos.`);
-    console.log("   ¿Deseas continuar? Esto podría crear duplicados.");
-    console.log("   Presiona Ctrl+C para cancelar o espera 5 segundos para continuar...");
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    console.log(`✓ Ya existen ${count} configuraciones en la base de datos.`);
+    console.log("  Saltando migración para evitar duplicados.");
+    return;
   }
 
   let created = 0;
