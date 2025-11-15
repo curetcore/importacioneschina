@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { calcularOC } from "@/lib/calculations";
 
-// GET /api/dashboard - Obtener métricas del dashboard
 export async function GET() {
   try {
-    // Obtener todas las OCs con sus relaciones
     const ocs = await prisma.oCChina.findMany({
       include: {
         pagosChina: true,
@@ -17,7 +15,6 @@ export async function GET() {
       },
     });
 
-    // Calcular métricas para cada OC
     const ocsCalculadas = ocs.map((oc) => {
       const calculos = calcularOC({
         costoFOBTotalUSD: oc.costoFOBTotalUSD,
@@ -38,7 +35,6 @@ export async function GET() {
       };
     });
 
-    // KPIs globales
     const inversionTotal = ocsCalculadas.reduce((sum, oc) => sum + oc.totalInversionRD, 0);
     const unidadesOrdenadas = ocsCalculadas.reduce((sum, oc) => sum + oc.cantidadOrdenada, 0);
     const unidadesRecibidas = ocsCalculadas.reduce((sum, oc) => sum + oc.cantidadRecibida, 0);
@@ -47,7 +43,6 @@ export async function GET() {
     const ocsActivas = ocsCalculadas.filter((oc) => oc.cantidadRecibida < oc.cantidadOrdenada).length;
     const ocsCompletadas = ocsCalculadas.filter((oc) => oc.cantidadRecibida >= oc.cantidadOrdenada).length;
 
-    // Agrupación por proveedor
     const inversionPorProveedor = ocsCalculadas.reduce((acc, oc) => {
       const existente = acc.find((item) => item.proveedor === oc.proveedor);
       if (existente) {
@@ -61,7 +56,6 @@ export async function GET() {
       return acc;
     }, [] as Array<{ proveedor: string; total: number }>);
 
-    // Gastos por tipo
     const gastos = await prisma.gastosLogisticos.findMany();
     const gastosPorTipo = gastos.reduce((acc, gasto) => {
       const existente = acc.find((item) => item.tipo === gasto.tipoGasto);
@@ -77,7 +71,6 @@ export async function GET() {
       return acc;
     }, [] as Array<{ tipo: string; total: number }>);
 
-    // Top 5 OCs por inversión
     const topOCs = [...ocsCalculadas]
       .sort((a, b) => b.totalInversionRD - a.totalInversionRD)
       .slice(0, 5)
@@ -89,7 +82,6 @@ export async function GET() {
         costoUnitario: oc.costoUnitarioFinalRD,
       }));
 
-    // Últimas 10 transacciones (pagos + gastos)
     const pagosRecientes = await prisma.pagosChina.findMany({
       take: 5,
       orderBy: { fechaPago: "desc" },
