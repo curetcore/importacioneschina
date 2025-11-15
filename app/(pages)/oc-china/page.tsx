@@ -67,6 +67,12 @@ export default function OCChinaPage() {
     }
   }
 
+  // Opciones para el select de proveedores
+  const proveedorOptions = [
+    { value: "", label: "Todos los proveedores" },
+    ...proveedores.map(prov => ({ value: prov, label: prov }))
+  ]
+
   useEffect(() => {
     loadOCs()
   }, [searchTerm, proveedorFilter])
@@ -125,14 +131,11 @@ export default function OCChinaPage() {
                 />
               </div>
               <Select
+                options={proveedorOptions}
                 value={proveedorFilter}
-                onValueChange={setProveedorFilter}
-              >
-                <option value="">Todos los proveedores</option>
-                {proveedores.map((prov) => (
-                  <option key={prov} value={prov}>{prov}</option>
-                ))}
-              </Select>
+                onChange={setProveedorFilter}
+                placeholder="Todos los proveedores"
+              />
             </div>
           </CardContent>
         </Card>
