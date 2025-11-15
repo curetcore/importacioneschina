@@ -144,7 +144,7 @@ export default function OCChinaPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package size={20} />
+              <ClipboardList size={20} />
               Órdenes Registradas ({ocs.length})
             </CardTitle>
           </CardHeader>
