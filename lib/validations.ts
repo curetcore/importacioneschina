@@ -9,6 +9,7 @@ export const ocChinaSchema = z.object({
   }),
   descripcionLote: z.string().optional(),
   categoriaPrincipal: z.string().min(1, "La categoria es requerida"),
+  archivoFactura: z.string().optional(),
 });
 
 export type OCChinaInput = z.infer<typeof ocChinaSchema>;
@@ -35,6 +36,7 @@ export const pagosChinaSchema = z.object({
     .number()
     .nonnegative("La comision no puede ser negativa")
     .default(0),
+  archivoComprobante: z.string().optional(),
 });
 
 export type PagosChinaInput = z.infer<typeof pagosChinaSchema>;
@@ -51,6 +53,7 @@ export const gastosLogisticosSchema = z.object({
     .number()
     .positive("El monto debe ser mayor a 0"),
   notas: z.string().optional(),
+  archivoRecibo: z.string().optional(),
 });
 
 export type GastosLogisticosInput = z.infer<typeof gastosLogisticosSchema>;
