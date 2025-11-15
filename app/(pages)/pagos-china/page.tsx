@@ -11,10 +11,17 @@ interface Pago {
   idPago: string
   fechaPago: string
   tipoPago: string
+  metodoPago: string
   moneda: string
   montoOriginal: number
+  tasaCambio: number
+  comisionBancoRD: number
+  montoRD: number
   montoRDNeto: number
-  ocChina: { oc: string }
+  ocChina: {
+    oc: string
+    proveedor: string
+  }
 }
 
 export default function PagosChinaPage() {
@@ -65,25 +72,50 @@ export default function PagosChinaPage() {
                     <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-700">Moneda</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Método</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-700">Monto Original</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$ Neto</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-700">Tasa</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$ (Neto)</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pagos.map((pago) => (
                     <tr key={pago.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4 font-medium">{pago.idPago}</td>
-                      <td className="py-3 px-4">{pago.ocChina.oc}</td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm">
+                          <div className="font-medium">{pago.ocChina.oc}</div>
+                          <div className="text-gray-500">{pago.ocChina.proveedor}</div>
+                        </div>
+                      </td>
                       <td className="py-3 px-4">{formatDate(pago.fechaPago)}</td>
-                      <td className="py-3 px-4">{pago.tipoPago}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                          {pago.moneda}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {pago.tipoPago}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right">{pago.montoOriginal.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right font-medium">{formatCurrency(pago.montoRDNeto)}</td>
+                      <td className="py-3 px-4">{pago.metodoPago}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="text-sm">
+                          <div className="font-medium">{pago.montoOriginal.toLocaleString()}</div>
+                          <div className="text-gray-500">{pago.moneda}</div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right">{pago.tasaCambio.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="text-sm">
+                          <div className="font-medium">{formatCurrency(pago.montoRDNeto)}</div>
+                          {pago.comisionBancoRD > 0 && (
+                            <div className="text-gray-500 text-xs">
+                              + {formatCurrency(pago.comisionBancoRD)} comisión
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Button variant="ghost" className="text-sm">Ver</Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
