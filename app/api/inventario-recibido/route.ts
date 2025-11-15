@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
             select: {
               oc: true,
               proveedor: true,
-              cantidadOrdenada: true,
             },
           },
+          item: true,
         },
       }),
       prisma.inventarioRecibido.count({ where }),
@@ -167,9 +167,9 @@ export async function POST(request: NextRequest) {
           select: {
             oc: true,
             proveedor: true,
-            cantidadOrdenada: true,
           },
         },
+        item: true,
       },
     });
 

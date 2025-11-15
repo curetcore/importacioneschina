@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ocChinaSchema } from "@/lib/validations";
 
 // GET /api/oc-china/[id] - Obtener una orden de compra específica
 export async function GET(

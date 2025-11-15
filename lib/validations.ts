@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Schema base para OC (sin items, cantidadOrdenada y costoFOBTotalUSD se calculan desde items)
 export const ocChinaSchema = z.object({
   oc: z.string().min(1, "El codigo OC es requerido"),
   proveedor: z.string().min(1, "El proveedor es requerido"),
@@ -8,13 +9,6 @@ export const ocChinaSchema = z.object({
   }),
   descripcionLote: z.string().optional(),
   categoriaPrincipal: z.string().min(1, "La categoria es requerida"),
-  cantidadOrdenada: z.coerce
-    .number()
-    .int()
-    .positive("La cantidad debe ser mayor a 0"),
-  costoFOBTotalUSD: z.coerce
-    .number()
-    .positive("El costo FOB debe ser mayor a 0"),
 });
 
 export type OCChinaInput = z.infer<typeof ocChinaSchema>;
@@ -64,6 +58,7 @@ export type GastosLogisticosInput = z.infer<typeof gastosLogisticosSchema>;
 export const inventarioRecibidoSchema = z.object({
   idRecepcion: z.string().min(1, "El ID de recepcion es requerido"),
   ocId: z.string().min(1, "La OC es requerida"),
+  itemId: z.string().optional(), // Vincular a producto específico (opcional)
   fechaLlegada: z.coerce.date({
     required_error: "La fecha de llegada es requerida",
   }),
