@@ -259,9 +259,8 @@ export default function PagosChinaPage() {
                       <td className="py-3 px-4 text-sm text-gray-700">{pago.tipoPago}</td>
                       <td className="py-3 px-4 text-sm text-gray-700">{pago.metodoPago}</td>
                       <td className="py-3 px-4 text-right">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">{pago.montoOriginal.toLocaleString()}</div>
-                          <div className="text-gray-500 text-xs">{pago.moneda}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatCurrency(pago.montoOriginal, pago.moneda)}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-sm text-right text-gray-900">{pago.tasaCambio.toLocaleString()}</td>

@@ -232,7 +232,7 @@ export default function OrdenesPage() {
                         <td className="py-3 px-4 text-sm text-gray-700">{oc.categoriaPrincipal}</td>
                         <td className="py-3 px-4 text-sm text-right text-gray-900">{numProductos}</td>
                         <td className="py-3 px-4 text-sm text-right text-gray-900">{totalUnidades.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">${totalFOB.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">{formatCurrency(totalFOB, "USD")}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center justify-center gap-2">
                             <Button

@@ -185,7 +185,7 @@ export default function OCDetailPage() {
             <CardContent className="pt-6">
               <div className="text-sm font-medium text-gray-500">Costo FOB Total</div>
               <div className="text-2xl font-semibold text-gray-900 mt-1">
-                ${costoFOBTotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                {formatCurrency(costoFOBTotalUSD, "USD")}
               </div>
             </CardContent>
           </Card>
@@ -240,7 +240,7 @@ export default function OCDetailPage() {
                           {item.cantidadTotal.toLocaleString()}
                         </td>
                         <td className="py-3 px-4 text-right text-sm text-gray-900">
-                          ${item.subtotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          {formatCurrency(item.subtotalUSD, "USD")}
                         </td>
                         <td className="py-3 px-4 text-right text-sm text-gray-600">
                           {item.porcentajeFOB.toFixed(1)}%
@@ -267,7 +267,7 @@ export default function OCDetailPage() {
                         {cantidadOrdenada.toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-right text-sm text-gray-900">
-                        ${costoFOBTotalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        {formatCurrency(costoFOBTotalUSD, "USD")}
                       </td>
                       <td className="py-3 px-4 text-right text-sm text-gray-600">
                         100%

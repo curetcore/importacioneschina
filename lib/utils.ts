@@ -5,14 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number | string): string {
+export function formatCurrency(amount: number | string, currency: string = "DOP"): string {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("es-DO", {
-    style: "currency",
-    currency: "DOP",
+
+  // Mapeo de monedas a sus símbolos personalizados
+  const currencySymbols: Record<string, string> = {
+    "USD": "US$",
+    "CNY": "CNY¥",
+    "DOP": "RD$",
+    "RD$": "RD$",
+  };
+
+  const symbol = currencySymbols[currency] || currency;
+
+  // Formatear el número con separadores de miles y decimales
+  const formattedNumber = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(num);
+
+  return `${symbol}${formattedNumber}`;
 }
 
 export function formatNumber(num: number | string): string {
