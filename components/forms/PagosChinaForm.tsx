@@ -298,7 +298,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 <Select
                   options={monedasOptions}
                   value={formData.moneda || ""}
-                  onChange={(value) => setFormData({ ...formData, moneda: value })}
+                  onChange={(value) => setFormData({ ...formData, moneda: value as "USD" | "CNY" | "RD$" })}
                   error={errors.moneda}
                   placeholder="Selecciona moneda"
                   disabled={loading}
