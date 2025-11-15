@@ -152,11 +152,11 @@ export default function OCChinaPage() {
             {ocs.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardList size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes de compra</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes de compra registradas</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {searchTerm || proveedorFilter
                     ? "No se encontraron resultados con los filtros aplicados"
-                    : "Comienza creando tu primera orden de compra"}
+                    : "Comienza registrando tu primera orden de compra"}
                 </p>
                 <Button onClick={() => setShowNewDialog(true)} className="gap-2">
                   <Plus size={18} />
