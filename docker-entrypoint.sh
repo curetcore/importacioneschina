@@ -18,7 +18,7 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 echo "Ejecutando migraciones de base de datos..."
-npx prisma migrate deploy
+npx prisma migrate deploy || echo "ADVERTENCIA: Migraciones no aplicadas, continuando..."
 
 echo "Iniciando servidor de producción..."
 echo "NODE_ENV: $NODE_ENV"
