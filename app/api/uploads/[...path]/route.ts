@@ -5,14 +5,20 @@ import { existsSync } from "fs"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ) {
   try {
+    // Await params (Next.js 14+)
+    const params = await context.params
+
     // Construir la ruta del archivo
     const filePath = join(process.cwd(), "public", "uploads", ...params.path)
 
+    console.log("Serving file:", filePath)
+
     // Verificar que el archivo existe
     if (!existsSync(filePath)) {
+      console.log("File not found:", filePath)
       return new NextResponse("Archivo no encontrado", { status: 404 })
     }
 
@@ -32,6 +38,8 @@ export async function GET(
 
     const contentType = contentTypes[extension || ''] || 'application/octet-stream'
 
+    console.log("Serving file with content-type:", contentType)
+
     // Retornar el archivo
     return new NextResponse(fileBuffer, {
       headers: {
@@ -41,6 +49,6 @@ export async function GET(
     })
   } catch (error) {
     console.error("Error serving file:", error)
-    return new NextResponse("Error al servir el archivo", { status: 500 })
+    return new NextResponse("Error al servir el archivo: " + (error as Error).message, { status: 500 })
   }
 }
