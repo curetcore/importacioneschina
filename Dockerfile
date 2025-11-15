@@ -68,6 +68,9 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copiar script de entrypoint
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
+
 # Copiar Prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
@@ -89,5 +92,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Comando de inicio
-CMD ["node", "server.js"]
+# ENTRYPOINT fuerza ejecución de producción (no puede ser sobrescrito fácilmente)
+ENTRYPOINT ["./docker-entrypoint.sh"]
