@@ -27,8 +27,8 @@ export function formatDate(date: Date | string): string {
   const dateObj = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("es-DO", {
     year: "numeric",
-    month: "long",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).format(dateObj);
 }
 
