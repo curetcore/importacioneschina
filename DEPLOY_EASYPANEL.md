@@ -10,16 +10,14 @@ prisma generate    # Genera el cliente de Prisma
 next build        # Construye la app Next.js
 ```
 
-### 2️⃣ Post-Build (automático después del build)
+### 2️⃣ Start (`npm start`) - Ejecuta automáticamente al arrancar el contenedor
 ```bash
 prisma migrate deploy          # Aplica las migraciones (crea la tabla configuracion)
-tsx prisma/seed-config.ts     # Carga los 39 valores iniciales
+tsx prisma/seed-config.ts     # Carga los 39 valores iniciales (solo si tabla vacía)
+next start                     # Inicia el servidor Next.js
 ```
 
-### 3️⃣ Start
-```bash
-npm start         # Inicia el servidor
-```
+**IMPORTANTE:** Las migraciones se ejecutan al **inicio del contenedor**, no durante el build. Esto es porque la base de datos solo está disponible cuando el contenedor está corriendo.
 
 ---
 
