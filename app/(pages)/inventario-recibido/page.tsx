@@ -20,6 +20,7 @@ interface InventarioRecibido {
   id: string
   idRecepcion: string
   ocId: string
+  itemId: string | null
   fechaLlegada: string
   bodegaInicial: string
   cantidadRecibida: number
@@ -29,8 +30,12 @@ interface InventarioRecibido {
   ocChina: {
     oc: string
     proveedor: string
-    cantidadOrdenada: number
   }
+  item: {
+    sku: string
+    nombre: string
+    cantidadTotal: number
+  } | null
 }
 
 export default function InventarioRecibidoPage() {
@@ -228,16 +233,16 @@ export default function InventarioRecibidoPage() {
                 </thead>
                 <tbody>
                   {inventarios.map((inventario) => {
-                    const porcentajeRecibido = (inventario.cantidadRecibida / inventario.ocChina.cantidadOrdenada) * 100
-                    const isCompleto = porcentajeRecibido >= 100
-
                     return (
                       <tr key={inventario.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="py-3 px-4 text-sm font-medium text-gray-900">{inventario.idRecepcion}</td>
                         <td className="py-3 px-4">
                           <div className="text-sm">
                             <div className="font-medium text-gray-900">{inventario.ocChina.oc}</div>
-                            <div className="text-gray-500 text-xs">{inventario.ocChina.proveedor}</div>
+                            <div className="text-gray-500 text-xs">
+                              {inventario.ocChina.proveedor}
+                              {inventario.item && ` · ${inventario.item.sku}`}
+                            </div>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-500">{formatDate(inventario.fechaLlegada)}</td>
@@ -245,9 +250,11 @@ export default function InventarioRecibidoPage() {
                         <td className="py-3 px-4 text-right">
                           <div className="text-sm">
                             <div className="font-medium text-gray-900">{inventario.cantidadRecibida.toLocaleString()}</div>
-                            <div className="text-gray-500 text-xs">
-                              {porcentajeRecibido.toFixed(0)}% de {inventario.ocChina.cantidadOrdenada.toLocaleString()}
-                            </div>
+                            {inventario.item && (
+                              <div className="text-gray-500 text-xs">
+                                {inventario.item.nombre}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right text-sm text-gray-900">
