@@ -56,7 +56,7 @@ export default function OCChinaPage() {
       if (result.success) {
         setOcs(result.data)
         // Extraer proveedores únicos
-        const uniqueProveedores = Array.from(new Set(result.data.map((oc: OCChina) => oc.proveedor)))
+        const uniqueProveedores = Array.from(new Set(result.data.map((oc: OCChina) => oc.proveedor))) as string[]
         setProveedores(uniqueProveedores)
       }
     } catch (error) {
