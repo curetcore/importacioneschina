@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar y normalizar cada item (Problemas #1 y #2)
-    const itemsValidados = [];
+    const itemsValidados: any[] = [];
     for (const item of items) {
       // Validaciones básicas
       if (!item.sku || !item.nombre) {
