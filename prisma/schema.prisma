@@ -176,3 +176,22 @@ model Configuracion {
   @@index([categoria])
   @@index([activo])
 }
+
+// TABLA 6: USUARIOS DEL SISTEMA
+model User {
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  name                  String
+  password              String   // Hashed con bcrypt
+  role                  String   @default("user") // "admin" | "user"
+  activo                Boolean  @default(true)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  lastLogin             DateTime? @map("last_login")
+
+  @@map("users")
+  @@index([email])
+  @@index([activo])
+}

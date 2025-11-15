@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import { ToastProvider } from "@/components/ui/toast"
+import { Providers } from "./providers"
 
 export const metadata: Metadata = {
   title: "Sistema de importacion",
@@ -15,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
-        <ToastProvider>
+        <Providers>
           {children}
-        </ToastProvider>
+        </Providers>
       </body>
     </html>
   )
