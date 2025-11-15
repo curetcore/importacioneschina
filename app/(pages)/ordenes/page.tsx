@@ -5,8 +5,10 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { useToast } from "@/components/ui/toast"
 import { formatDate } from "@/lib/utils"
-import { Plus, Eye } from "lucide-react"
+import { Plus, Edit, Trash2 } from "lucide-react"
 
 interface OCChina {
   id: string
@@ -16,12 +18,17 @@ interface OCChina {
   categoriaPrincipal: string
   cantidadOrdenada: number
   costoFOBTotalUSD: number
+  descripcionLote?: string | null
 }
 
 export default function OrdenesPage() {
+  const { addToast } = useToast()
   const [ocs, setOcs] = useState<OCChina[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
+  const [ocToEdit, setOcToEdit] = useState<OCChina | null>(null)
+  const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const fetchOCs = () => {
     setLoading(true)
@@ -39,6 +46,50 @@ export default function OrdenesPage() {
   useEffect(() => {
     fetchOCs()
   }, [])
+
+  const handleEdit = (oc: OCChina) => {
+    setOcToEdit(oc)
+    setFormOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!ocToDelete) return
+
+    setDeleteLoading(true)
+    try {
+      const response = await fetch(`/api/oc-china/${ocToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar la orden")
+      }
+
+      addToast({
+        type: "success",
+        title: "Orden eliminada",
+        description: `Orden ${ocToDelete.oc} eliminada exitosamente`,
+      })
+
+      setOcToDelete(null)
+      fetchOCs()
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al eliminar la orden",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  const handleFormClose = () => {
+    setFormOpen(false)
+    setOcToEdit(null)
+  }
 
   if (loading) {
     return (
@@ -89,11 +140,25 @@ export default function OrdenesPage() {
                       <td className="py-3 px-4 text-sm text-gray-700">{oc.categoriaPrincipal}</td>
                       <td className="py-3 px-4 text-sm text-right text-gray-900">{oc.cantidadOrdenada.toLocaleString()}</td>
                       <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">${oc.costoFOBTotalUSD.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-center">
-                        <Button variant="ghost" className="text-sm h-8">
-                          <Eye className="w-4 h-4 mr-1" />
-                          Ver
-                        </Button>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8"
+                            onClick={() => handleEdit(oc)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setOcToDelete(oc)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Eliminar
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -105,8 +170,24 @@ export default function OrdenesPage() {
 
         <OCChinaForm
           open={formOpen}
-          onOpenChange={setFormOpen}
-          onSuccess={fetchOCs}
+          onOpenChange={handleFormClose}
+          onSuccess={() => {
+            fetchOCs()
+            handleFormClose()
+          }}
+          ocToEdit={ocToEdit}
+        />
+
+        <ConfirmDialog
+          open={!!ocToDelete}
+          onOpenChange={(open) => !open && setOcToDelete(null)}
+          onConfirm={handleDelete}
+          title="Eliminar Orden"
+          description={`¿Estás seguro de eliminar la orden ${ocToDelete?.oc}? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
+          loading={deleteLoading}
         />
       </div>
     </MainLayout>

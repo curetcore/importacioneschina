@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,10 +11,22 @@ import { useToast } from "@/components/ui/toast"
 import { ocChinaSchema, OCChinaInput, proveedores, categorias } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
+interface OCChina {
+  id: string
+  oc: string
+  proveedor: string
+  fechaOC: string
+  categoriaPrincipal: string
+  cantidadOrdenada: number
+  costoFOBTotalUSD: number
+  descripcionLote?: string | null
+}
+
 interface OCChinaFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  ocToEdit?: OCChina | null
 }
 
 const proveedorOptions: SelectOption[] = proveedores.map(p => ({
@@ -27,10 +39,11 @@ const categoriaOptions: SelectOption[] = categorias.map(c => ({
   label: c
 }))
 
-export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps) {
+export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChinaFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof OCChinaInput, string>>>({})
+  const isEditMode = !!ocToEdit
 
   const [formData, setFormData] = useState<Partial<OCChinaInput>>({
     oc: "",
@@ -42,6 +55,32 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
     costoFOBTotalUSD: undefined,
   })
 
+  // Cargar datos cuando se abre en modo edición
+  useEffect(() => {
+    if (ocToEdit) {
+      setFormData({
+        oc: ocToEdit.oc,
+        proveedor: ocToEdit.proveedor,
+        fechaOC: new Date(ocToEdit.fechaOC),
+        descripcionLote: ocToEdit.descripcionLote || "",
+        categoriaPrincipal: ocToEdit.categoriaPrincipal,
+        cantidadOrdenada: ocToEdit.cantidadOrdenada,
+        costoFOBTotalUSD: ocToEdit.costoFOBTotalUSD,
+      })
+    } else {
+      setFormData({
+        oc: "",
+        proveedor: "",
+        fechaOC: undefined,
+        descripcionLote: "",
+        categoriaPrincipal: "",
+        cantidadOrdenada: undefined,
+        costoFOBTotalUSD: undefined,
+      })
+    }
+    setErrors({})
+  }, [ocToEdit])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
@@ -52,8 +91,11 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
       const validatedData = ocChinaSchema.parse(formData)
 
       // Enviar al API
-      const response = await fetch("/api/oc-china", {
-        method: "POST",
+      const url = isEditMode ? `/api/oc-china/${ocToEdit.id}` : "/api/oc-china"
+      const method = isEditMode ? "PUT" : "POST"
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -63,14 +105,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || "Error al crear la orden")
+        throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la orden`)
       }
 
       // Éxito
       addToast({
         type: "success",
-        title: "Orden creada",
-        description: `Orden ${validatedData.oc} creada exitosamente`,
+        title: isEditMode ? "Orden actualizada" : "Orden creada",
+        description: `Orden ${validatedData.oc} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
       })
 
       // Resetear formulario
@@ -127,7 +169,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
       <DialogContent className="max-w-2xl">
         <DialogClose onClose={handleCancel} />
         <DialogHeader>
-          <DialogTitle>Nueva Orden de Compra</DialogTitle>
+          <DialogTitle>{isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -257,10 +299,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess }: OCChinaFormProps)
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creando...
+                  {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
               ) : (
-                "Crear Orden"
+                isEditMode ? "Actualizar Orden" : "Crear Orden"
               )}
             </Button>
           </DialogFooter>
