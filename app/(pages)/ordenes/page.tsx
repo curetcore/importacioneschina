@@ -182,7 +182,7 @@ export default function OrdenesPage() {
               <Plus size={16} />
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
@@ -215,18 +215,18 @@ export default function OrdenesPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full" style={{ minWidth: "1400px" }}>
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoría</th>
-                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Productos</th>
-                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades</th>
-                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo FOB</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Adjuntos</th>
-                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>OC</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Proveedor</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Categoría</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Productos</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Unidades</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Costo FOB</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Adjuntos</th>
+                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -237,17 +237,17 @@ export default function OrdenesPage() {
 
                     return (
                       <tr key={oc.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{oc.oc}</td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{oc.proveedor}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(oc.fechaOC)}</td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{oc.categoriaPrincipal}</td>
-                        <td className="py-3 px-4 text-sm text-right text-gray-900">{numProductos}</td>
-                        <td className="py-3 px-4 text-sm text-right text-gray-900">{totalUnidades.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-sm text-right font-medium text-gray-900">{formatCurrency(totalFOB, "USD")}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{oc.oc}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{oc.proveedor}</td>
+                        <td className="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(oc.fechaOC)}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{oc.categoriaPrincipal}</td>
+                        <td className="py-3 px-4 text-sm text-right text-gray-900 whitespace-nowrap">{numProductos}</td>
+                        <td className="py-3 px-4 text-sm text-right text-gray-900 whitespace-nowrap">{totalUnidades.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-sm text-right font-medium text-gray-900 whitespace-nowrap">{formatCurrency(totalFOB, "USD")}</td>
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <AttachmentsList attachments={oc.adjuntos || []} compact />
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               variant="ghost"
@@ -278,20 +278,20 @@ export default function OrdenesPage() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-gray-50 border-t-2 border-gray-200">
-                    <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={4}>
+                    <td className="py-3 px-4 text-sm font-semibold text-gray-700 whitespace-nowrap" colSpan={4}>
                       Total
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
                       {ocs.reduce((sum, oc) => sum + (oc.items?.length || 0), 0)}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
                       {ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
                       {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
                     </td>
-                    <td className="py-3 px-4"></td>
-                    <td className="py-3 px-4"></td>
+                    <td className="py-3 px-4 whitespace-nowrap"></td>
+                    <td className="py-3 px-4 whitespace-nowrap"></td>
                   </tr>
                 </tfoot>
               </table>

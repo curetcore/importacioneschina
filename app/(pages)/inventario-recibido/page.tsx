@@ -176,7 +176,7 @@ export default function InventarioRecibidoPage() {
               <Plus size={16} />
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
@@ -232,25 +232,25 @@ export default function InventarioRecibidoPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full" style={{ minWidth: "1300px" }}>
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Recepción</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Llegada</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Bodega</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cantidad</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Unitario</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Total</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>ID Recepción</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "180px" }}>OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Fecha Llegada</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Bodega</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Cantidad</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Costo Unitario</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Costo Total</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {inventarios.map((inventario) => {
                       return (
                       <tr key={inventario.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{inventario.idRecepcion}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{inventario.idRecepcion}</td>
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <div className="text-sm">
                             <div className="font-medium text-gray-900">{inventario.ocChina.oc}</div>
                             <div className="text-gray-500 text-xs">
@@ -259,9 +259,9 @@ export default function InventarioRecibidoPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(inventario.fechaLlegada)}</td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{inventario.bodegaInicial}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(inventario.fechaLlegada)}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{inventario.bodegaInicial}</td>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
                           <div className="text-sm">
                             <div className="font-medium text-gray-900">{inventario.cantidadRecibida.toLocaleString()}</div>
                             {inventario.item && (
@@ -271,17 +271,17 @@ export default function InventarioRecibidoPage() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right text-sm text-gray-900">
+                        <td className="py-3 px-4 text-right text-sm text-gray-900 whitespace-nowrap">
                           {inventario.costoUnitarioFinalRD !== null
                             ? formatCurrency(inventario.costoUnitarioFinalRD)
                             : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900 whitespace-nowrap">
                           {inventario.costoTotalRecepcionRD !== null
                             ? formatCurrency(inventario.costoTotalRecepcionRD)
                             : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               variant="ghost"
@@ -305,19 +305,19 @@ export default function InventarioRecibidoPage() {
                   </tbody>
                   <tfoot>
                     <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td className="py-3 px-4 text-sm font-semibold text-gray-700" colSpan={4}>
+                      <td className="py-3 px-4 text-sm font-semibold text-gray-700 whitespace-nowrap" colSpan={4}>
                         Total
                       </td>
-                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
                         {inventarios.reduce((sum, inv) => sum + inv.cantidadRecibida, 0).toLocaleString()}
                       </td>
-                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
                         -
                       </td>
-                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
+                      <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
                         {formatCurrency(inventarios.reduce((sum, inv) => sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString()), 0))}
                       </td>
-                      <td className="py-3 px-4"></td>
+                      <td className="py-3 px-4 whitespace-nowrap"></td>
                     </tr>
                   </tfoot>
                 </table>
