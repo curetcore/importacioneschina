@@ -115,7 +115,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       precioUnitarioUSD: 0,
     }
     setItems([...items, newItem])
-    setExpandedItems(new Set([...expandedItems, items.length]))
+    const newExpanded = new Set(expandedItems)
+    newExpanded.add(items.length)
+    setExpandedItems(newExpanded)
   }
 
   const removeItem = (index: number) => {
