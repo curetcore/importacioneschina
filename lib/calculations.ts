@@ -130,6 +130,10 @@ interface OCChinaItem {
   id: string
   sku: string
   nombre: string
+  material?: string | null
+  color?: string | null
+  especificaciones?: string | null
+  tallaDistribucion?: any
   cantidadTotal: number
   precioUnitarioUSD: number | Prisma.Decimal
   subtotalUSD: number | Prisma.Decimal
