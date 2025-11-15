@@ -1,20 +1,13 @@
 import { z } from "zod";
 
-// ==========================================
-// Esquemas de Validación con Zod
-// ==========================================
-
-/**
- * Esquema para OC China
- */
 export const ocChinaSchema = z.object({
-  oc: z.string().min(1, "El código OC es requerido"),
+  oc: z.string().min(1, "El codigo OC es requerido"),
   proveedor: z.string().min(1, "El proveedor es requerido"),
   fechaOC: z.coerce.date({
     required_error: "La fecha es requerida",
   }),
   descripcionLote: z.string().optional(),
-  categoriaPrincipal: z.string().min(1, "La categoría es requerida"),
+  categoriaPrincipal: z.string().min(1, "La categoria es requerida"),
   cantidadOrdenada: z.coerce
     .number()
     .int()
@@ -26,9 +19,6 @@ export const ocChinaSchema = z.object({
 
 export type OCChinaInput = z.infer<typeof ocChinaSchema>;
 
-/**
- * Esquema para Pagos China
- */
 export const pagosChinaSchema = z.object({
   idPago: z.string().min(1, "El ID de pago es requerido"),
   ocId: z.string().min(1, "La OC es requerida"),
@@ -36,7 +26,7 @@ export const pagosChinaSchema = z.object({
     required_error: "La fecha de pago es requerida",
   }),
   tipoPago: z.string().min(1, "El tipo de pago es requerido"),
-  metodoPago: z.string().min(1, "El método de pago es requerido"),
+  metodoPago: z.string().min(1, "El metodo de pago es requerido"),
   moneda: z.enum(["USD", "CNY", "RD$"], {
     required_error: "La moneda es requerida",
   }),
@@ -49,15 +39,12 @@ export const pagosChinaSchema = z.object({
     .default(1),
   comisionBancoRD: z.coerce
     .number()
-    .nonnegative("La comisión no puede ser negativa")
+    .nonnegative("La comision no puede ser negativa")
     .default(0),
 });
 
 export type PagosChinaInput = z.infer<typeof pagosChinaSchema>;
 
-/**
- * Esquema para Gastos Logísticos
- */
 export const gastosLogisticosSchema = z.object({
   idGasto: z.string().min(1, "El ID de gasto es requerido"),
   ocId: z.string().min(1, "La OC es requerida"),
@@ -74,11 +61,8 @@ export const gastosLogisticosSchema = z.object({
 
 export type GastosLogisticosInput = z.infer<typeof gastosLogisticosSchema>;
 
-/**
- * Esquema para Inventario Recibido
- */
 export const inventarioRecibidoSchema = z.object({
-  idRecepcion: z.string().min(1, "El ID de recepción es requerido"),
+  idRecepcion: z.string().min(1, "El ID de recepcion es requerido"),
   ocId: z.string().min(1, "La OC es requerida"),
   fechaLlegada: z.coerce.date({
     required_error: "La fecha de llegada es requerida",
@@ -93,9 +77,6 @@ export const inventarioRecibidoSchema = z.object({
 
 export type InventarioRecibidoInput = z.infer<typeof inventarioRecibidoSchema>;
 
-/**
- * Opciones para tipos de pago
- */
 export const tiposPago = [
   "Anticipo",
   "Pago final",
@@ -105,20 +86,14 @@ export const tiposPago = [
   "Otros",
 ] as const;
 
-/**
- * Opciones para métodos de pago
- */
 export const metodosPago = [
   "Transferencia",
-  "Tarjeta de crédito",
-  "Tarjeta de débito",
+  "Tarjeta de credito",
+  "Tarjeta de debito",
   "Efectivo",
   "Cheque",
 ] as const;
 
-/**
- * Opciones para tipos de gasto
- */
 export const tiposGasto = [
   "Flete internacional",
   "Seguro",
@@ -130,19 +105,13 @@ export const tiposGasto = [
   "Otros",
 ] as const;
 
-/**
- * Opciones para proveedores
- */
 export const proveedores = [
   "China 1",
   "China 2",
-  "Fábrica X",
+  "Fabrica X",
   "Otro",
 ] as const;
 
-/**
- * Opciones para categorías
- */
 export const categorias = [
   "Zapatos",
   "Carteras",
@@ -151,18 +120,12 @@ export const categorias = [
   "Mix",
 ] as const;
 
-/**
- * Opciones para bodegas
- */
 export const bodegas = [
-  "Bóveda",
+  "Boveda",
   "Piantini",
   "Villa Mella",
   "Oficina",
   "Otra",
 ] as const;
 
-/**
- * Opciones para monedas
- */
 export const monedas = ["USD", "CNY", "RD$"] as const;
