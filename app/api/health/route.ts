@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Verificar conexión a base de datos
+    // Verificar conexiÃ³n a base de datos
     await prisma.$queryRaw`SELECT 1`;
 
     return NextResponse.json(

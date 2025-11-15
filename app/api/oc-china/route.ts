@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/oc-china - Obtener todas las órdenes de compra
+// GET /api/oc-china - Obtener todas las Ã³rdenes de compra
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Error al obtener órdenes de compra",
+        error: "Error al obtener Ã³rdenes de compra",
       },
       { status: 500 }
     );
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       costoFOBTotalUSD,
     } = body;
 
-    // Validaciones básicas
+    // Validaciones bÃ¡sicas
     if (!oc || !proveedor || !fechaOC || !categoriaPrincipal || !cantidadOrdenada || !costoFOBTotalUSD) {
       return NextResponse.json(
         {
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el OC sea único
+    // Verificar que el OC sea Ãºnico
     const existing = await prisma.oCChina.findUnique({
       where: { oc },
     });
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ya existe una OC con ese código",
+          error: "Ya existe una OC con ese cÃ³digo",
         },
         { status: 400 }
       );

@@ -5,37 +5,30 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import OCChinaForm from "@/components/forms/OCChinaForm"
 
-interface OCChina {
+interface Inventario {
   id: string
-  oc: string
-  proveedor: string
-  fechaOC: string
-  categoriaPrincipal: string
-  cantidadOrdenada: number
-  costoFOBTotalUSD: number
+  idRecepcion: string
+  fechaLlegada: string
+  bodegaInicial: string
+  cantidadRecibida: number
+  ocChina: { oc: string; proveedor: string }
 }
 
-export default function OCChinaPage() {
-  const [ocs, setOcs] = useState<OCChina[]>([])
+export default function InventarioRecibidoPage() {
+  const [inventarios, setInventarios] = useState<Inventario[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadOCs = () => {
-    setLoading(true)
-    fetch("/api/oc-china")
+  useEffect(() => {
+    fetch("/api/inventario-recibido")
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
-          setOcs(result.data)
+          setInventarios(result.data)
         }
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    loadOCs()
   }, [])
 
   if (loading) {
@@ -51,53 +44,53 @@ export default function OCChinaPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">OC China</h1>
-            <p className="text-gray-600 mt-1">Gestion de ordenes de compra</p>
+            <h1 className="text-3xl font-bold text-gray-900">Inventario Recibido</h1>
+            <p className="text-gray-600 mt-1">Gestión de recepción de mercancía</p>
           </div>
-          <OCChinaForm onSuccess={loadOCs} />
+          <Button>+ Nueva Recepción</Button>
         </div>
 
-{ocs.length === 0 ? (
+        {inventarios.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="text-6xl mb-4">📦</div>
+              <div className="text-6xl mb-4">📥</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No hay órdenes de compra registradas
+                No hay inventario recibido registrado
               </h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
-                Comienza registrando tu primera orden de compra desde China
+                Comienza registrando tu primera recepción de mercancía
               </p>
-              <OCChinaForm onSuccess={loadOCs} />
+              <Button>+ Nueva Recepción</Button>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Ordenes de Compra</CardTitle>
+              <CardTitle>Inventario Recibido</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">ID Recepción</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">Proveedor</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Categoria</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha Llegada</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Bodega</th>
                       <th className="text-right py-3 px-4 font-medium text-gray-700">Cantidad</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Costo FOB</th>
                       <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {ocs.map((oc) => (
-                      <tr key={oc.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{oc.oc}</td>
-                        <td className="py-3 px-4">{oc.proveedor}</td>
-                        <td className="py-3 px-4">{formatDate(oc.fechaOC)}</td>
-                        <td className="py-3 px-4">{oc.categoriaPrincipal}</td>
-                        <td className="py-3 px-4 text-right">{oc.cantidadOrdenada.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-right">${oc.costoFOBTotalUSD.toLocaleString()}</td>
+                    {inventarios.map((inv) => (
+                      <tr key={inv.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{inv.idRecepcion}</td>
+                        <td className="py-3 px-4">{inv.ocChina.oc}</td>
+                        <td className="py-3 px-4">{inv.ocChina.proveedor}</td>
+                        <td className="py-3 px-4">{formatDate(inv.fechaLlegada)}</td>
+                        <td className="py-3 px-4">{inv.bodegaInicial}</td>
+                        <td className="py-3 px-4 text-right">{inv.cantidadRecibida.toLocaleString()}</td>
                         <td className="py-3 px-4 text-center">
                           <Button variant="ghost" className="text-sm">Ver</Button>
                         </td>

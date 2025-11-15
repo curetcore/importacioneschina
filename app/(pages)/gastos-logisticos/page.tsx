@@ -6,27 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 
-interface Pago {
+interface Gasto {
   id: string
-  idPago: string
-  fechaPago: string
-  tipoPago: string
-  moneda: string
-  montoOriginal: number
-  montoRDNeto: number
-  ocChina: { oc: string }
+  idGasto: string
+  fechaGasto: string
+  tipoGasto: string
+  proveedorServicio: string | null
+  montoRD: number
+  ocChina: { oc: string; proveedor: string }
 }
 
-export default function PagosChinaPage() {
-  const [pagos, setPagos] = useState<Pago[]>([])
+export default function GastosLogisticosPage() {
+  const [gastos, setGastos] = useState<Gasto[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/pagos-china")
+    fetch("/api/gastos-logisticos")
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
-          setPagos(result.data)
+          setGastos(result.data)
         }
         setLoading(false)
       })
@@ -46,58 +45,56 @@ export default function PagosChinaPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pagos China</h1>
-            <p className="text-gray-600 mt-1">Gestión de pagos a proveedores</p>
+            <h1 className="text-3xl font-bold text-gray-900">Gastos Logísticos</h1>
+            <p className="text-gray-600 mt-1">Gestión de gastos de importación</p>
           </div>
-          <Button>+ Nuevo Pago</Button>
+          <Button>+ Nuevo Gasto</Button>
         </div>
 
-{pagos.length === 0 ? (
+        {gastos.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="text-6xl mb-4">💰</div>
+              <div className="text-6xl mb-4">📋</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No hay pagos registrados
+                No hay gastos logísticos registrados
               </h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
-                Comienza registrando tu primer pago a proveedor
+                Comienza registrando tu primer gasto logístico (flete, aduana, broker, etc.)
               </p>
-              <Button>+ Nuevo Pago</Button>
+              <Button>+ Nuevo Gasto</Button>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Pagos Realizados</CardTitle>
+              <CardTitle>Gastos Logísticos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">ID Pago</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">ID Gasto</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                      <th className="text-center py-3 px-4 font-medium text-gray-700">Moneda</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Monto Original</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$ Neto</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Proveedor</th>
+                      <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$</th>
+                      <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {pagos.map((pago) => (
-                      <tr key={pago.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{pago.idPago}</td>
-                        <td className="py-3 px-4">{pago.ocChina.oc}</td>
-                        <td className="py-3 px-4">{formatDate(pago.fechaPago)}</td>
-                        <td className="py-3 px-4">{pago.tipoPago}</td>
+                    {gastos.map((gasto) => (
+                      <tr key={gasto.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{gasto.idGasto}</td>
+                        <td className="py-3 px-4">{gasto.ocChina.oc}</td>
+                        <td className="py-3 px-4">{formatDate(gasto.fechaGasto)}</td>
+                        <td className="py-3 px-4">{gasto.tipoGasto}</td>
+                        <td className="py-3 px-4">{gasto.proveedorServicio || "-"}</td>
+                        <td className="py-3 px-4 text-right font-medium">{formatCurrency(gasto.montoRD)}</td>
                         <td className="py-3 px-4 text-center">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                            {pago.moneda}
-                          </span>
+                          <Button variant="ghost" className="text-sm">Ver</Button>
                         </td>
-                        <td className="py-3 px-4 text-right">{pago.montoOriginal.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-right font-medium">{formatCurrency(pago.montoRDNeto)}</td>
                       </tr>
                     ))}
                   </tbody>
