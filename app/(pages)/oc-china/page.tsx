@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Search, Plus, Eye, Package } from "lucide-react"
+import { Search, Plus, Eye, ClipboardList } from "lucide-react"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 
 interface OCChina {
@@ -151,7 +151,7 @@ export default function OCChinaPage() {
           <CardContent>
             {ocs.length === 0 ? (
               <div className="text-center py-12">
-                <Package size={48} className="mx-auto text-gray-300 mb-4" />
+                <ClipboardList size={48} className="mx-auto text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes de compra</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {searchTerm || proveedorFilter
@@ -168,15 +168,15 @@ export default function OCChinaPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Código OC</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Proveedor</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Categoría</th>
-                      <th className="text-center py-3 px-4 font-medium text-gray-700">Productos</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Unidades</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Costo FOB</th>
-                      <th className="text-center py-3 px-4 font-medium text-gray-700">Estado</th>
-                      <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Código OC</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoría</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Productos</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades</th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo FOB</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</th>
+                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
