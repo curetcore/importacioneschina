@@ -4,11 +4,16 @@ import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { InventarioRecibidoForm } from "@/components/forms/InventarioRecibidoForm"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { Plus, Edit, Trash2 } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
   idRecepcion: string
+  ocId: string
   fechaLlegada: string
   bodegaInicial: string
   cantidadRecibida: number
@@ -23,10 +28,16 @@ interface InventarioRecibido {
 }
 
 export default function InventarioRecibidoPage() {
+  const { addToast } = useToast()
   const [inventarios, setInventarios] = useState<InventarioRecibido[]>([])
   const [loading, setLoading] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
+  const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
+  const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  useEffect(() => {
+  const fetchInventarios = () => {
+    setLoading(true)
     fetch("/api/inventario-recibido")
       .then((res) => res.json())
       .then((result) => {
@@ -36,12 +47,60 @@ export default function InventarioRecibidoPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchInventarios()
   }, [])
+
+  const handleEdit = (inventario: InventarioRecibido) => {
+    setInventarioToEdit(inventario)
+    setFormOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!inventarioToDelete) return
+
+    setDeleteLoading(true)
+    try {
+      const response = await fetch(`/api/inventario-recibido/${inventarioToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar el inventario")
+      }
+
+      addToast({
+        type: "success",
+        title: "Inventario eliminado",
+        description: `Recepción ${inventarioToDelete.idRecepcion} eliminada exitosamente`,
+      })
+
+      setInventarioToDelete(null)
+      fetchInventarios()
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al eliminar el inventario",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  const handleFormClose = () => {
+    setFormOpen(false)
+    setInventarioToEdit(null)
+  }
 
   if (loading) {
     return (
       <MainLayout>
-        <div className="text-center py-12">Cargando...</div>
+        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
       </MainLayout>
     )
   }
@@ -49,12 +108,15 @@ export default function InventarioRecibidoPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventario Recibido</h1>
-            <p className="text-gray-600 mt-1">Gestión de recepción de mercancía</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Inventario Recibido</h1>
+            <p className="text-sm text-gray-500 mt-1">Gestión de recepción de mercancía</p>
           </div>
-          <Button>+ Nueva Recepción</Button>
+          <Button onClick={() => setFormOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Recepción
+          </Button>
         </div>
 
         <Card>
@@ -65,15 +127,15 @@ export default function InventarioRecibidoPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">ID Recepción</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha Llegada</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Bodega</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Cantidad</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Costo Unitario</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Costo Total</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-700">Acciones</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Recepción</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Llegada</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Bodega</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cantidad</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Unitario</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Total</th>
+                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -82,51 +144,53 @@ export default function InventarioRecibidoPage() {
                     const isCompleto = porcentajeRecibido >= 100
 
                     return (
-                      <tr key={inventario.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{inventario.idRecepcion}</td>
+                      <tr key={inventario.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{inventario.idRecepcion}</td>
                         <td className="py-3 px-4">
                           <div className="text-sm">
-                            <div className="font-medium">{inventario.ocChina.oc}</div>
-                            <div className="text-gray-500">{inventario.ocChina.proveedor}</div>
+                            <div className="font-medium text-gray-900">{inventario.ocChina.oc}</div>
+                            <div className="text-gray-500 text-xs">{inventario.ocChina.proveedor}</div>
                           </div>
                         </td>
-                        <td className="py-3 px-4">{formatDate(inventario.fechaLlegada)}</td>
-                        <td className="py-3 px-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {inventario.bodegaInicial}
-                          </span>
-                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(inventario.fechaLlegada)}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700">{inventario.bodegaInicial}</td>
                         <td className="py-3 px-4 text-right">
                           <div className="text-sm">
-                            <div className="font-medium">
-                              {inventario.cantidadRecibida.toLocaleString()}
-                            </div>
-                            <div className="text-gray-500">
-                              de {inventario.ocChina.cantidadOrdenada.toLocaleString()}
-                            </div>
-                            <div className={`text-xs ${isCompleto ? 'text-green-600' : 'text-yellow-600'}`}>
-                              {porcentajeRecibido.toFixed(1)}%
+                            <div className="font-medium text-gray-900">{inventario.cantidadRecibida.toLocaleString()}</div>
+                            <div className="text-gray-500 text-xs">
+                              {porcentajeRecibido.toFixed(0)}% de {inventario.ocChina.cantidadOrdenada.toLocaleString()}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          {inventario.costoUnitarioFinalRD ? (
-                            formatCurrency(inventario.costoUnitarioFinalRD)
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
+                        <td className="py-3 px-4 text-right text-sm text-gray-900">
+                          {inventario.costoUnitarioFinalRD !== null
+                            ? formatCurrency(inventario.costoUnitarioFinalRD)
+                            : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          {inventario.costoTotalRecepcionRD ? (
-                            <div className="font-medium">
-                              {formatCurrency(inventario.costoTotalRecepcionRD)}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
+                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                          {inventario.costoTotalRecepcionRD !== null
+                            ? formatCurrency(inventario.costoTotalRecepcionRD)
+                            : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <Button variant="ghost" className="text-sm">Ver</Button>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              className="text-sm h-8"
+                              onClick={() => handleEdit(inventario)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="text-sm h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => setInventarioToDelete(inventario)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Eliminar
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -136,12 +200,34 @@ export default function InventarioRecibidoPage() {
             </div>
 
             {inventarios.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-sm text-gray-500">
                 No hay recepciones registradas
               </div>
             )}
           </CardContent>
         </Card>
+
+        <InventarioRecibidoForm
+          open={formOpen}
+          onOpenChange={handleFormClose}
+          onSuccess={() => {
+            fetchInventarios()
+            handleFormClose()
+          }}
+          inventarioToEdit={inventarioToEdit}
+        />
+
+        <ConfirmDialog
+          open={!!inventarioToDelete}
+          onOpenChange={(open) => !open && setInventarioToDelete(null)}
+          onConfirm={handleDelete}
+          title="Eliminar Recepción"
+          description={`¿Estás seguro de eliminar la recepción ${inventarioToDelete?.idRecepcion}? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
+          loading={deleteLoading}
+        />
       </div>
     </MainLayout>
   )
