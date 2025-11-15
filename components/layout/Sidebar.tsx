@@ -8,15 +8,17 @@ import {
   Package,
   DollarSign,
   FileText,
-  Inbox
+  Inbox,
+  Settings
 } from "lucide-react"
 
 const menuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/oc-china", label: "OC China", icon: Package },
+  { href: "/panel", label: "Panel", icon: LayoutDashboard },
+  { href: "/ordenes", label: "Ordenes", icon: Package },
   { href: "/pagos-china", label: "Pagos", icon: DollarSign },
   { href: "/gastos-logisticos", label: "Gastos", icon: FileText },
   { href: "/inventario-recibido", label: "Inventario", icon: Inbox },
+  { href: "/configuracion", label: "Configuración", icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -24,14 +26,8 @@ export default function Sidebar() {
 
   return (
     <aside className="w-60 bg-white border-r border-gray-200 min-h-screen">
-      <div className="p-4">
-        <Link href="/" className="block px-3 py-2 mb-4">
-          <h2 className="text-sm font-semibold text-gray-900">
-            Sistema de importacion
-          </h2>
-        </Link>
-
-        <nav className="space-y-1">
+      <div className="pt-4">
+        <nav className="space-y-1 px-3">
           {menuItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon

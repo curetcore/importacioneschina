@@ -1,211 +1,279 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { proveedores, categorias } from "@/lib/validations"
+import { Button } from "@/components/ui/button"
+import { Select, SelectOption } from "@/components/ui/select"
+import { DatePicker } from "@/components/ui/datepicker"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/components/ui/toast"
+import { ocChinaSchema, OCChinaInput, proveedores, categorias } from "@/lib/validations"
+import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
+import { Loader2 } from "lucide-react"
 
-interface OCChinaFormProps {
-  onSuccess?: () => void
+interface OCChina {
+  id: string
+  oc: string
+  proveedor: string
+  fechaOC: string
+  categoriaPrincipal: string
+  cantidadOrdenada: number
+  costoFOBTotalUSD: number
+  descripcionLote?: string | null
 }
 
-export default function OCChinaForm({ onSuccess }: OCChinaFormProps) {
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+interface OCChinaFormProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
+  ocToEdit?: OCChina | null
+}
 
-  const [formData, setFormData] = useState({
+const proveedorOptions: SelectOption[] = proveedores.map(p => ({
+  value: p,
+  label: p
+}))
+
+const categoriaOptions: SelectOption[] = categorias.map(c => ({
+  value: c,
+  label: c
+}))
+
+export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChinaFormProps) {
+  const { addToast } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<Partial<Record<keyof OCChinaInput, string>>>({})
+  const isEditMode = !!ocToEdit
+
+  const [formData, setFormData] = useState<Partial<OCChinaInput>>({
     oc: "",
     proveedor: "",
-    fechaOC: "",
+    fechaOC: undefined,
     descripcionLote: "",
     categoriaPrincipal: "",
-    cantidadOrdenada: "",
-    costoFOBTotalUSD: "",
+    cantidadOrdenada: undefined,
+    costoFOBTotalUSD: undefined,
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch("/api/oc-china", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+  // Cargar datos cuando se abre en modo edición
+  useEffect(() => {
+    if (ocToEdit) {
+      setFormData({
+        oc: ocToEdit.oc,
+        proveedor: ocToEdit.proveedor,
+        fechaOC: new Date(ocToEdit.fechaOC),
+        descripcionLote: ocToEdit.descripcionLote || "",
+        categoriaPrincipal: ocToEdit.categoriaPrincipal,
+        cantidadOrdenada: ocToEdit.cantidadOrdenada,
+        costoFOBTotalUSD: ocToEdit.costoFOBTotalUSD,
       })
-
-      const result = await response.json()
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Error al crear la orden de compra")
-      }
-
-      // Reset form
+    } else {
       setFormData({
         oc: "",
         proveedor: "",
-        fechaOC: "",
+        fechaOC: undefined,
         descripcionLote: "",
         categoriaPrincipal: "",
-        cantidadOrdenada: "",
-        costoFOBTotalUSD: "",
+        cantidadOrdenada: undefined,
+        costoFOBTotalUSD: undefined,
+      })
+    }
+    setErrors({})
+  }, [ocToEdit])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+    setLoading(true)
+
+    try {
+      // Validar con Zod
+      const validatedData = ocChinaSchema.parse(formData)
+
+      // Enviar al API con manejo mejorado de errores
+      const result = isEditMode
+        ? await apiPut(`/api/oc-china/${ocToEdit.id}`, validatedData, { timeout: 15000 })
+        : await apiPost("/api/oc-china", validatedData, { timeout: 15000 })
+
+      if (!result.success) {
+        throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la orden`)
+      }
+
+      // Éxito
+      addToast({
+        type: "success",
+        title: isEditMode ? "Orden actualizada" : "Orden creada",
+        description: `Orden ${validatedData.oc} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
       })
 
-      setOpen(false)
-      if (onSuccess) onSuccess()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido")
+      // Resetear formulario
+      setFormData({
+        oc: "",
+        proveedor: "",
+        fechaOC: undefined,
+        descripcionLote: "",
+        categoriaPrincipal: "",
+        cantidadOrdenada: undefined,
+        costoFOBTotalUSD: undefined,
+      })
+
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (error: any) {
+      if (error.errors) {
+        // Errores de validación Zod
+        const validationErrors: Partial<Record<keyof OCChinaInput, string>> = {}
+        error.errors.forEach((err: any) => {
+          const field = err.path[0] as keyof OCChinaInput
+          validationErrors[field] = err.message
+        })
+        setErrors(validationErrors)
+      } else {
+        // Otros errores (red, timeout, API, etc.)
+        addToast({
+          type: "error",
+          title: "Error",
+          description: getErrorMessage(error),
+        })
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleCancel = () => {
+    setFormData({
+      oc: "",
+      proveedor: "",
+      fechaOC: undefined,
+      descripcionLote: "",
+      categoriaPrincipal: "",
+      cantidadOrdenada: undefined,
+      costoFOBTotalUSD: undefined,
+    })
+    setErrors({})
+    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>+ Nueva OC</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogClose onClose={handleCancel} />
         <DialogHeader>
-          <DialogTitle>Crear Nueva Orden de Compra</DialogTitle>
-          <DialogDescription>
-            Completa los datos de la nueva orden de compra de China
-          </DialogDescription>
+          <DialogTitle>{isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="oc">Código OC *</Label>
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 space-y-4">
+            {/* Código OC */}
+            <div>
+              <label htmlFor="oc" className="block text-sm font-medium text-gray-700 mb-1">
+                Código OC <span className="text-red-500">*</span>
+              </label>
               <Input
                 id="oc"
-                placeholder="OC-2025-001"
                 value={formData.oc}
-                onChange={(e) => handleChange("oc", e.target.value)}
-                required
+                onChange={(e) => setFormData({ ...formData, oc: e.target.value })}
+                error={errors.oc}
+                placeholder="Ej: OC-2024-001"
+                disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="proveedor">Proveedor *</Label>
+            {/* Proveedor */}
+            <div>
+              <label htmlFor="proveedor" className="block text-sm font-medium text-gray-700 mb-1">
+                Proveedor <span className="text-red-500">*</span>
+              </label>
               <Select
-                value={formData.proveedor}
-                onValueChange={(value) => handleChange("proveedor", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar proveedor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {proveedores.map((prov) => (
-                    <SelectItem key={prov} value={prov}>
-                      {prov}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={proveedorOptions}
+                value={formData.proveedor || ""}
+                onChange={(value) => setFormData({ ...formData, proveedor: value })}
+                error={errors.proveedor}
+                placeholder="Selecciona un proveedor"
+                disabled={loading}
+              />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fechaOC">Fecha OC *</Label>
-              <Input
+            {/* Fecha OC */}
+            <div>
+              <label htmlFor="fechaOC" className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha OC <span className="text-red-500">*</span>
+              </label>
+              <DatePicker
                 id="fechaOC"
-                type="date"
                 value={formData.fechaOC}
-                onChange={(e) => handleChange("fechaOC", e.target.value)}
-                required
+                onChange={(date) => setFormData({ ...formData, fechaOC: date || undefined })}
+                error={errors.fechaOC}
+                disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="categoriaPrincipal">Categoría *</Label>
+            {/* Categoría Principal */}
+            <div>
+              <label htmlFor="categoriaPrincipal" className="block text-sm font-medium text-gray-700 mb-1">
+                Categoría Principal <span className="text-red-500">*</span>
+              </label>
               <Select
-                value={formData.categoriaPrincipal}
-                onValueChange={(value) => handleChange("categoriaPrincipal", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categorias.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={categoriaOptions}
+                value={formData.categoriaPrincipal || ""}
+                onChange={(value) => setFormData({ ...formData, categoriaPrincipal: value })}
+                error={errors.categoriaPrincipal}
+                placeholder="Selecciona una categoría"
+                disabled={loading}
+              />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="descripcionLote">Descripción del Lote</Label>
-            <Input
-              id="descripcionLote"
-              placeholder="Descripción breve del lote"
-              value={formData.descripcionLote}
-              onChange={(e) => handleChange("descripcionLote", e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cantidadOrdenada">Cantidad Ordenada *</Label>
+            {/* Cantidad Ordenada */}
+            <div>
+              <label htmlFor="cantidadOrdenada" className="block text-sm font-medium text-gray-700 mb-1">
+                Cantidad Ordenada <span className="text-red-500">*</span>
+              </label>
               <Input
                 id="cantidadOrdenada"
                 type="number"
                 min="1"
-                placeholder="500"
-                value={formData.cantidadOrdenada}
-                onChange={(e) => handleChange("cantidadOrdenada", e.target.value)}
-                required
+                step="1"
+                value={formData.cantidadOrdenada ?? ""}
+                onChange={(e) => setFormData({ ...formData, cantidadOrdenada: e.target.value ? parseInt(e.target.value) : undefined })}
+                error={errors.cantidadOrdenada}
+                placeholder="Ej: 500"
+                disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="costoFOBTotalUSD">Costo FOB Total (USD) *</Label>
+            {/* Costo FOB Total USD */}
+            <div>
+              <label htmlFor="costoFOBTotalUSD" className="block text-sm font-medium text-gray-700 mb-1">
+                Costo FOB Total (USD) <span className="text-red-500">*</span>
+              </label>
               <Input
                 id="costoFOBTotalUSD"
                 type="number"
-                min="0"
+                min="0.01"
                 step="0.01"
-                placeholder="5000.00"
-                value={formData.costoFOBTotalUSD}
-                onChange={(e) => handleChange("costoFOBTotalUSD", e.target.value)}
-                required
+                value={formData.costoFOBTotalUSD ?? ""}
+                onChange={(e) => setFormData({ ...formData, costoFOBTotalUSD: e.target.value ? parseFloat(e.target.value) : undefined })}
+                error={errors.costoFOBTotalUSD}
+                placeholder="Ej: 12500.00"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Descripción Lote (Opcional) */}
+            <div>
+              <label htmlFor="descripcionLote" className="block text-sm font-medium text-gray-700 mb-1">
+                Descripción del Lote
+              </label>
+              <Textarea
+                id="descripcionLote"
+                value={formData.descripcionLote || ""}
+                onChange={(e) => setFormData({ ...formData, descripcionLote: e.target.value })}
+                error={errors.descripcionLote}
+                placeholder="Descripción opcional del lote..."
+                rows={3}
+                disabled={loading}
               />
             </div>
           </div>
@@ -214,13 +282,20 @@ export default function OCChinaForm({ onSuccess }: OCChinaFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={handleCancel}
               disabled={loading}
             >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creando..." : "Crear Orden de Compra"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isEditMode ? "Actualizando..." : "Creando..."}
+                </>
+              ) : (
+                isEditMode ? "Actualizar Orden" : "Crear Orden"
+              )}
             </Button>
           </DialogFooter>
         </form>

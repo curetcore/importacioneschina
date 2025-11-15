@@ -1,0 +1,197 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { pagosChinaSchema } from "@/lib/validations";
+
+// GET /api/pagos-china/[id] - Obtener un pago específico
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+
+    const pago = await prisma.pagosChina.findUnique({
+      where: { id },
+      include: {
+        ocChina: {
+          select: {
+            oc: true,
+            proveedor: true,
+          },
+        },
+      },
+    });
+
+    if (!pago) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Pago no encontrado",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: pago,
+    });
+  } catch (error) {
+    console.error("Error en GET /api/pagos-china/[id]:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Error al obtener pago",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/pagos-china/[id] - Actualizar un pago
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+    const body = await request.json();
+
+    // Verificar que el pago existe
+    const existing = await prisma.pagosChina.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Pago no encontrado",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Validar datos con Zod
+    const validatedData = pagosChinaSchema.parse(body);
+
+    // Verificar que la OC existe
+    const oc = await prisma.oCChina.findUnique({
+      where: { id: validatedData.ocId },
+    });
+
+    if (!oc) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "La OC especificada no existe",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Si se está cambiando el idPago, verificar que no exista otro con ese ID
+    if (validatedData.idPago !== existing.idPago) {
+      const duplicate = await prisma.pagosChina.findUnique({
+        where: { idPago: validatedData.idPago },
+      });
+
+      if (duplicate) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Ya existe un pago con ese ID",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Actualizar el pago
+    const updatedPago = await prisma.pagosChina.update({
+      where: { id },
+      data: {
+        idPago: validatedData.idPago,
+        ocId: validatedData.ocId,
+        fechaPago: new Date(validatedData.fechaPago),
+        tipoPago: validatedData.tipoPago,
+        metodoPago: validatedData.metodoPago,
+        moneda: validatedData.moneda,
+        montoOriginal: validatedData.montoOriginal,
+        tasaCambio: validatedData.tasaCambio,
+        comisionBancoRD: validatedData.comisionBancoRD,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: updatedPago,
+    });
+  } catch (error: any) {
+    console.error("Error en PUT /api/pagos-china/[id]:", error);
+
+    // Errores de validación Zod
+    if (error.errors) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Datos de entrada inválidos",
+          details: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Error al actualizar pago",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/pagos-china/[id] - Eliminar un pago
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+
+    // Verificar que el pago existe
+    const existing = await prisma.pagosChina.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Pago no encontrado",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Eliminar el pago
+    await prisma.pagosChina.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Pago eliminado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error en DELETE /api/pagos-china/[id]:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Error al eliminar pago",
+      },
+      { status: 500 }
+    );
+  }
+}

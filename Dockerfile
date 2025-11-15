@@ -1,109 +1,63 @@
-# ==========================================
-# CURET - Sistema de Importaciones China
-# Dockerfile optimizado multi-stage
-# ==========================================
-
-# ==========================================
-# Stage 1: Dependencies
-# ==========================================
-FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat openssl
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY package.json package-lock.json* ./
+# Copy package files
+COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
-RUN npm ci --only=production && \
-    npm cache clean --force
+# Install dependencies
+RUN npm ci
 
-# ==========================================
-# Stage 2: Builder
-# ==========================================
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Copiar dependencias del stage anterior
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
 COPY . .
 
-# Configurar variables de entorno para build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
-
-# Generar cliente Prisma
+# Generate Prisma Client
 RUN npx prisma generate
 
-# Build de Next.js
+# Build arguments for environment variables
+ARG DATABASE_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NODE_ENV=production
+
+# Set environment variables for build
+ENV DATABASE_URL=$DATABASE_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NODE_ENV=$NODE_ENV
+
+# Build Next.js app
 RUN npm run build
 
-# ==========================================
-# Stage 3: Runner (Producción)
-# ==========================================
-FROM node:18-alpine AS production
+# Production stage
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Configurar usuario no-root por seguridad
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Set production environment
+ENV NODE_ENV=production
 
-# Copiar archivos necesarios
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
+# Add non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copiar build de Next.js
+# Copy necessary files from builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Copiar Prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/prisma ./prisma
+# Copy Prisma files and tsx (needed for seed)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Variables de entorno
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-# Cambiar a usuario no-root
 USER nextjs
 
-# Exponer puerto
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-# Comando de inicio
 CMD ["node", "server.js"]
-
-# ==========================================
-# Stage 4: Development (Opcional)
-# ==========================================
-FROM node:18-alpine AS development
-
-WORKDIR /app
-
-# Instalar dependencias de desarrollo
-RUN apk add --no-cache libc6-compat openssl
-
-COPY package.json package-lock.json* ./
-RUN npm install
-
-COPY . .
-
-# Generar Prisma
-RUN npx prisma generate
-
-ENV NODE_ENV development
-ENV PORT 3000
-
-EXPOSE 3000
-
-CMD ["npm", "run", "dev"]

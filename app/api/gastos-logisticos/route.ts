@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { gastosLogisticosSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
 export async function GET(request: NextRequest) {
@@ -7,11 +9,26 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
+    const search = searchParams.get("search") || "";
     const ocId = searchParams.get("ocId") || "";
+    const tipoGasto = searchParams.get("tipoGasto") || "";
 
     const skip = (page - 1) * limit;
 
-    const where = ocId ? { ocId } : {};
+    const where: Prisma.GastosLogisticosWhereInput = {
+      ...(search && {
+        idGasto: {
+          contains: search,
+          mode: "insensitive",
+        },
+      }),
+      ...(ocId && {
+        ocId: ocId,
+      }),
+      ...(tipoGasto && {
+        tipoGasto: tipoGasto,
+      }),
+    };
 
     const [gastos, total] = await Promise.all([
       prisma.gastosLogisticos.findMany({
@@ -48,7 +65,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Error al obtener gastos logisticos",
+        error: "Error al obtener gastos logísticos",
       },
       { status: 500 }
     );
@@ -60,15 +77,57 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // Validar con Zod
+    const validatedData = gastosLogisticosSchema.parse(body);
+
+    // Verificar que la OC existe
+    const oc = await prisma.oCChina.findUnique({
+      where: { id: validatedData.ocId },
+    });
+
+    if (!oc) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "La OC especificada no existe",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el ID de gasto sea único
+    const existingGasto = await prisma.gastosLogisticos.findUnique({
+      where: { idGasto: validatedData.idGasto },
+    });
+
+    if (existingGasto) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Ya existe un gasto con ese ID",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Crear el gasto
     const nuevoGasto = await prisma.gastosLogisticos.create({
       data: {
-        idGasto: body.idGasto,
-        ocId: body.ocId,
-        fechaGasto: new Date(body.fechaGasto),
-        tipoGasto: body.tipoGasto,
-        proveedorServicio: body.proveedorServicio,
-        montoRD: parseFloat(body.montoRD),
-        notas: body.notas,
+        idGasto: validatedData.idGasto,
+        ocId: validatedData.ocId,
+        fechaGasto: validatedData.fechaGasto,
+        tipoGasto: validatedData.tipoGasto,
+        proveedorServicio: validatedData.proveedorServicio,
+        montoRD: new Prisma.Decimal(validatedData.montoRD),
+        notas: validatedData.notas,
+      },
+      include: {
+        ocChina: {
+          select: {
+            oc: true,
+            proveedor: true,
+          },
+        },
       },
     });
 
@@ -81,10 +140,22 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error en POST /api/gastos-logisticos:", error);
+
+    if (error instanceof Error && error.name === "ZodError") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Datos de validación incorrectos",
+          details: error,
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: "Error al crear gasto logistico",
+        error: "Error al crear gasto logístico",
       },
       { status: 500 }
     );

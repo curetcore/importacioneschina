@@ -1,42 +1,158 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectOption } from "@/components/ui/select"
+import { PagosChinaForm } from "@/components/forms/PagosChinaForm"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
+import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { Plus, Edit, Trash2, Search, X } from "lucide-react"
 
 interface Pago {
   id: string
   idPago: string
+  ocId: string
   fechaPago: string
   tipoPago: string
-  moneda: string
+  metodoPago: string
+  moneda: "USD" | "CNY" | "RD$"
   montoOriginal: number
+  tasaCambio: number
+  comisionBancoRD: number
+  montoRD: number
   montoRDNeto: number
-  ocChina: { oc: string }
+  ocChina: {
+    oc: string
+    proveedor: string
+  }
 }
 
 export default function PagosChinaPage() {
+  const { addToast } = useToast()
   const [pagos, setPagos] = useState<Pago[]>([])
   const [loading, setLoading] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
+  const [pagoToEdit, setPagoToEdit] = useState<Pago | null>(null)
+  const [pagoToDelete, setPagoToDelete] = useState<Pago | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [ocFilter, setOcFilter] = useState("")
+  const [monedaFilter, setMonedaFilter] = useState("")
+  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
 
-  useEffect(() => {
-    fetch("/api/pagos-china")
+  const monedaOptions: SelectOption[] = [
+    { value: "", label: "Todas las monedas" },
+    { value: "USD", label: "USD" },
+    { value: "CNY", label: "CNY" },
+    { value: "RD$", label: "RD$" },
+  ]
+
+  const fetchPagos = (page = 1) => {
+    setLoading(true)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: "20",
+    })
+    if (searchQuery) params.append("search", searchQuery)
+    if (ocFilter) params.append("ocId", ocFilter)
+    if (monedaFilter) params.append("moneda", monedaFilter)
+
+    fetch(`/api/pagos-china?${params.toString()}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setPagos(result.data)
+          setTotalPages(result.pagination.pages)
+          setCurrentPage(result.pagination.page)
         }
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  const fetchOCs = () => {
+    fetch("/api/oc-china")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          setOcsOptions([
+            { value: "", label: "Todas las OCs" },
+            ...result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
+          ])
+        }
+      })
+  }
+
+  useEffect(() => {
+    fetchOCs()
   }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchPagos(1)
+  }, [searchQuery, ocFilter, monedaFilter])
+
+  useEffect(() => {
+    fetchPagos(currentPage)
+  }, [currentPage])
+
+  const handleEdit = (pago: Pago) => {
+    setPagoToEdit(pago)
+    setFormOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!pagoToDelete) return
+
+    setDeleteLoading(true)
+    try {
+      const response = await fetch(`/api/pagos-china/${pagoToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar el pago")
+      }
+
+      addToast({
+        type: "success",
+        title: "Pago eliminado",
+        description: `Pago ${pagoToDelete.idPago} eliminado exitosamente`,
+      })
+
+      setPagoToDelete(null)
+      fetchPagos(currentPage)
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al eliminar el pago",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  const handleFormClose = () => {
+    setFormOpen(false)
+    setPagoToEdit(null)
+  }
 
   if (loading) {
     return (
       <MainLayout>
-        <div className="text-center py-12">Cargando...</div>
+        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
       </MainLayout>
     )
   }
@@ -44,68 +160,161 @@ export default function PagosChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pagos China</h1>
-            <p className="text-gray-600 mt-1">Gestión de pagos a proveedores</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Pagos</h1>
+            <p className="text-sm text-gray-500 mt-1">Gestión de pagos a proveedores</p>
           </div>
-          <Button>+ Nuevo Pago</Button>
+          <Button onClick={() => setFormOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nuevo Pago
+          </Button>
         </div>
 
-{pagos.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="text-6xl mb-4">💰</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No hay pagos registrados
-              </h3>
-              <p className="text-gray-600 mb-6 text-center max-w-md">
-                Comienza registrando tu primer pago a proveedor
-              </p>
-              <Button>+ Nuevo Pago</Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Pagos Realizados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">ID Pago</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">OC</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                      <th className="text-center py-3 px-4 font-medium text-gray-700">Moneda</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Monto Original</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Monto RD$ Neto</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagos.map((pago) => (
-                      <tr key={pago.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{pago.idPago}</td>
-                        <td className="py-3 px-4">{pago.ocChina.oc}</td>
-                        <td className="py-3 px-4">{formatDate(pago.fechaPago)}</td>
-                        <td className="py-3 px-4">{pago.tipoPago}</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                            {pago.moneda}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">{pago.montoOriginal.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-right font-medium">{formatCurrency(pago.montoRDNeto)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <Card>
+          <CardHeader>
+            <CardTitle>Pagos Realizados</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por ID de pago..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="w-64">
+                <Select
+                  options={ocsOptions}
+                  value={ocFilter}
+                  onChange={setOcFilter}
+                  placeholder="Filtrar por OC"
+                />
+              </div>
+              <div className="w-48">
+                <Select
+                  options={monedaOptions}
+                  value={monedaFilter}
+                  onChange={setMonedaFilter}
+                  placeholder="Filtrar por moneda"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Pago</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">OC</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Método</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Original</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tasa</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$ (Neto)</th>
+                    <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagos.map((pago) => (
+                    <tr key={pago.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{pago.idPago}</td>
+                      <td className="py-3 px-4">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">{pago.ocChina.oc}</div>
+                          <div className="text-gray-500 text-xs">{pago.ocChina.proveedor}</div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{formatDate(pago.fechaPago)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{pago.tipoPago}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{pago.metodoPago}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">{pago.montoOriginal.toLocaleString()}</div>
+                          <div className="text-gray-500 text-xs">{pago.moneda}</div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-right text-gray-900">{pago.tasaCambio.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">{formatCurrency(pago.montoRDNeto)}</div>
+                          {pago.comisionBancoRD > 0 && (
+                            <div className="text-gray-500 text-xs">
+                              + {formatCurrency(pago.comisionBancoRD)} comisión
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8"
+                            onClick={() => handleEdit(pago)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="text-sm h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setPagoToDelete(pago)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Eliminar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </CardContent>
+        </Card>
+
+        <PagosChinaForm
+          open={formOpen}
+          onOpenChange={handleFormClose}
+          onSuccess={() => {
+            fetchPagos(currentPage)
+            handleFormClose()
+          }}
+          pagoToEdit={pagoToEdit}
+        />
+
+        <ConfirmDialog
+          open={!!pagoToDelete}
+          onOpenChange={(open) => !open && setPagoToDelete(null)}
+          onConfirm={handleDelete}
+          title="Eliminar Pago"
+          description={`¿Estás seguro de eliminar el pago ${pagoToDelete?.idPago}? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
+          loading={deleteLoading}
+        />
       </div>
     </MainLayout>
   )

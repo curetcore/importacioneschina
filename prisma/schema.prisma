@@ -110,3 +110,21 @@ model InventarioRecibido {
   @@index([bodegaInicial])
   @@index([fechaLlegada])
 }
+
+// TABLA 5: CONFIGURACIONES DEL SISTEMA
+model Configuracion {
+  id                    String   @id @default(cuid())
+  categoria             String   // "categorias", "tiposPago", "metodosPago", "bodegas", "tiposGasto"
+  valor                 String
+  orden                 Int      @default(0)
+  activo                Boolean  @default(true)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion")
+  @@unique([categoria, valor])
+  @@index([categoria])
+  @@index([activo])
+}
