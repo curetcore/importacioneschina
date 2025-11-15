@@ -169,8 +169,13 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
     try {
       // Validaciones
-      if (!formData.oc || !formData.proveedor || !formData.fechaOC || !formData.categoriaPrincipal) {
+      if (!formData.proveedor || !formData.fechaOC || !formData.categoriaPrincipal) {
         throw new Error("Por favor completa todos los campos requeridos")
+      }
+
+      // En modo edición, validar que exista el código OC
+      if (isEditMode && !formData.oc) {
+        throw new Error("El código OC es requerido en modo edición")
       }
 
       if (items.length === 0) {
@@ -185,8 +190,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         }
       }
 
+      // En modo creación, no enviar el campo 'oc' (se genera automáticamente)
       const payload = {
-        ...formData,
+        ...(isEditMode ? formData : { ...formData, oc: undefined }),
         items: items.map(item => ({
           sku: item.sku,
           nombre: item.nombre,
@@ -210,7 +216,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       addToast({
         type: "success",
         title: isEditMode ? "Orden actualizada" : "Orden creada",
-        description: `Orden ${formData.oc} ${isEditMode ? "actualizada" : "creada"} con ${items.length} producto(s)`,
+        description: `Orden ${result.data?.oc || formData.oc} ${isEditMode ? "actualizada" : "creada"} con ${items.length} producto(s)`,
       })
 
       onOpenChange(false)
@@ -245,21 +251,22 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
               <h3 className="font-semibold text-lg">Información General</h3>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* Código OC */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Código OC <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    value={formData.oc}
-                    onChange={(e) => setFormData({ ...formData, oc: e.target.value })}
-                    placeholder="Ej: OC-2024-001"
-                    disabled={loading}
-                  />
-                </div>
+                {/* Código OC - Solo mostrar en modo edición */}
+                {isEditMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código OC
+                    </label>
+                    <Input
+                      value={formData.oc}
+                      disabled={true}
+                      className="bg-gray-100"
+                    />
+                  </div>
+                )}
 
                 {/* Proveedor */}
-                <div>
+                <div className={isEditMode ? "" : "col-span-2"}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Proveedor <span className="text-red-500">*</span>
                   </label>

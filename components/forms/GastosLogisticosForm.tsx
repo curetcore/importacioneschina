@@ -99,7 +99,9 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
     setLoading(true)
 
     try {
-      const validatedData = gastosLogisticosSchema.parse(formData)
+      // En modo creación, remover idGasto antes de validar (se genera automáticamente)
+      const dataToValidate = isEditMode ? formData : { ...formData, idGasto: undefined }
+      const validatedData = gastosLogisticosSchema.parse(dataToValidate)
 
       const url = isEditMode ? `/api/gastos-logisticos/${gastoToEdit.id}` : "/api/gastos-logisticos"
       const method = isEditMode ? "PUT" : "POST"
@@ -119,7 +121,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       addToast({
         type: "success",
         title: isEditMode ? "Gasto actualizado" : "Gasto creado",
-        description: `Gasto ${validatedData.idGasto} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
+        description: `Gasto ${result.data?.idGasto || validatedData.idGasto} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
       })
 
       setFormData({ idGasto: "", ocId: "", fechaGasto: undefined, tipoGasto: "", proveedorServicio: "", montoRD: undefined, notas: "" })
@@ -156,19 +158,20 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
 
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
-            <div>
-              <label htmlFor="idGasto" className="block text-sm font-medium text-gray-700 mb-1">
-                ID Gasto <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="idGasto"
-                value={formData.idGasto}
-                onChange={(e) => setFormData({ ...formData, idGasto: e.target.value })}
-                error={errors.idGasto}
-                placeholder="Ej: GASTO-2024-001"
-                disabled={loading}
-              />
-            </div>
+            {/* ID Gasto - Solo mostrar en modo edición */}
+            {isEditMode && (
+              <div>
+                <label htmlFor="idGasto" className="block text-sm font-medium text-gray-700 mb-1">
+                  ID Gasto
+                </label>
+                <Input
+                  id="idGasto"
+                  value={formData.idGasto}
+                  disabled={true}
+                  className="bg-gray-100"
+                />
+              </div>
+            )}
 
             <div>
               <label htmlFor="ocId" className="block text-sm font-medium text-gray-700 mb-1">

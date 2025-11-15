@@ -126,8 +126,11 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     setLoading(true)
 
     try {
+      // En modo creación, remover idPago antes de validar (se genera automáticamente)
+      const dataToValidate = isEditMode ? formData : { ...formData, idPago: undefined }
+
       // Validar con Zod
-      const validatedData = pagosChinaSchema.parse(formData)
+      const validatedData = pagosChinaSchema.parse(dataToValidate)
 
       // Enviar al API
       const url = isEditMode ? `/api/pagos-china/${pagoToEdit.id}` : "/api/pagos-china"
@@ -151,7 +154,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       addToast({
         type: "success",
         title: isEditMode ? "Pago actualizado" : "Pago creado",
-        description: `Pago ${validatedData.idPago} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
+        description: `Pago ${result.data?.idPago || validatedData.idPago} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
       })
 
       // Resetear formulario
@@ -217,20 +220,20 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
-            {/* ID Pago */}
-            <div>
-              <label htmlFor="idPago" className="block text-sm font-medium text-gray-700 mb-1">
-                ID Pago <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="idPago"
-                value={formData.idPago}
-                onChange={(e) => setFormData({ ...formData, idPago: e.target.value })}
-                error={errors.idPago}
-                placeholder="Ej: PAGO-2024-001"
-                disabled={loading}
-              />
-            </div>
+            {/* ID Pago - Solo mostrar en modo edición */}
+            {isEditMode && (
+              <div>
+                <label htmlFor="idPago" className="block text-sm font-medium text-gray-700 mb-1">
+                  ID Pago
+                </label>
+                <Input
+                  id="idPago"
+                  value={formData.idPago}
+                  disabled={true}
+                  className="bg-gray-100"
+                />
+              </div>
+            )}
 
             {/* OC */}
             <div>

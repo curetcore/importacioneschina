@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { pagosChinaSchema } from "@/lib/validations";
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
+import { generateNextId } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
 // GET /api/pagos-china - Obtener todos los pagos
@@ -78,7 +79,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validar con Zod
+    // Generar ID automático secuencial
+    const lastPago = await prisma.pagosChina.findFirst({
+      orderBy: { idPago: "desc" },
+      select: { idPago: true },
+    });
+    const idPago = generateNextId("PAG", lastPago?.idPago);
+
+    // Validar con Zod (sin necesidad de idPago en el body)
     const validatedData = pagosChinaSchema.parse(body);
 
     // Verificar que la OC existe
@@ -91,21 +99,6 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el ID de pago sea único
-    const existingPago = await prisma.pagosChina.findUnique({
-      where: { idPago: validatedData.idPago },
-    });
-
-    if (existingPago) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ya existe un pago con ese ID",
         },
         { status: 400 }
       );
@@ -126,7 +119,7 @@ export async function POST(request: NextRequest) {
     // Crear el pago
     const nuevoPago = await prisma.pagosChina.create({
       data: {
-        idPago: validatedData.idPago,
+        idPago,
         ocId: validatedData.ocId,
         fechaPago: validatedData.fechaPago,
         tipoPago: validatedData.tipoPago,

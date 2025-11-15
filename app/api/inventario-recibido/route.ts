@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { inventarioRecibidoSchema } from "@/lib/validations";
 import { distribuirGastosLogisticos } from "@/lib/calculations";
+import { generateNextId } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
@@ -79,7 +80,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validar con Zod
+    // Generar ID automático secuencial
+    const lastRecepcion = await prisma.inventarioRecibido.findFirst({
+      orderBy: { idRecepcion: "desc" },
+      select: { idRecepcion: true },
+    });
+    const idRecepcion = generateNextId("REC", lastRecepcion?.idRecepcion);
+
+    // Validar con Zod (sin necesidad de idRecepcion en el body)
     const validatedData = inventarioRecibidoSchema.parse(body);
 
     // Verificar que la OC existe y cargar todos los datos necesarios
@@ -97,21 +105,6 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el ID de recepción sea único
-    const existingRecepcion = await prisma.inventarioRecibido.findUnique({
-      where: { idRecepcion: validatedData.idRecepcion },
-    });
-
-    if (existingRecepcion) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ya existe una recepción con ese ID",
         },
         { status: 400 }
       );
@@ -214,7 +207,7 @@ export async function POST(request: NextRequest) {
     // Crear la recepción con los costos calculados
     const nuevaRecepcion = await prisma.inventarioRecibido.create({
       data: {
-        idRecepcion: validatedData.idRecepcion,
+        idRecepcion,
         ocId: validatedData.ocId,
         itemId: validatedData.itemId || null,
         fechaLlegada: validatedData.fechaLlegada,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gastosLogisticosSchema } from "@/lib/validations";
+import { generateNextId } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
@@ -77,7 +78,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validar con Zod
+    // Generar ID automático secuencial
+    const lastGasto = await prisma.gastosLogisticos.findFirst({
+      orderBy: { idGasto: "desc" },
+      select: { idGasto: true },
+    });
+    const idGasto = generateNextId("GASTO", lastGasto?.idGasto);
+
+    // Validar con Zod (sin necesidad de idGasto en el body)
     const validatedData = gastosLogisticosSchema.parse(body);
 
     // Verificar que la OC existe
@@ -95,25 +103,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el ID de gasto sea único
-    const existingGasto = await prisma.gastosLogisticos.findUnique({
-      where: { idGasto: validatedData.idGasto },
-    });
-
-    if (existingGasto) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ya existe un gasto con ese ID",
-        },
-        { status: 400 }
-      );
-    }
-
     // Crear el gasto
     const nuevoGasto = await prisma.gastosLogisticos.create({
       data: {
-        idGasto: validatedData.idGasto,
+        idGasto,
         ocId: validatedData.ocId,
         fechaGasto: validatedData.fechaGasto,
         tipoGasto: validatedData.tipoGasto,

@@ -58,3 +58,25 @@ export function calculatePercentage(value: number, total: number): number {
 export function roundTo2Decimals(num: number): number {
   return Math.round(num * 100) / 100;
 }
+
+/**
+ * Genera el siguiente ID en secuencia con formato de 5 dígitos
+ * @param prefix - Prefijo del ID (ej: "OC", "PAG", "GASTO", "REC")
+ * @param lastId - Último ID registrado (ej: "OC-00005")
+ * @returns Siguiente ID en secuencia (ej: "OC-00006")
+ */
+export function generateNextId(prefix: string, lastId?: string): string {
+  if (!lastId) {
+    return `${prefix}-00001`;
+  }
+
+  // Extraer el número del último ID
+  const parts = lastId.split('-');
+  const lastNumber = parseInt(parts[parts.length - 1], 10);
+
+  // Incrementar y formatear con padding de 5 dígitos
+  const nextNumber = lastNumber + 1;
+  const paddedNumber = nextNumber.toString().padStart(5, '0');
+
+  return `${prefix}-${paddedNumber}`;
+}

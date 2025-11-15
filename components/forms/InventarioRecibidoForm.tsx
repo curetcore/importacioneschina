@@ -160,14 +160,18 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
     setLoading(true)
 
     try {
-      // Validaciones
-      if (!formData.idRecepcion || !formData.ocId || !formData.fechaLlegada ||
+      // Validaciones (en modo creación, idRecepcion no es requerido ya que se genera automáticamente)
+      if (isEditMode && !formData.idRecepcion) {
+        throw new Error("El ID de recepción es requerido en modo edición")
+      }
+
+      if (!formData.ocId || !formData.fechaLlegada ||
           !formData.bodegaInicial || !formData.cantidadRecibida) {
         throw new Error("Por favor completa todos los campos requeridos")
       }
 
       const payload = {
-        idRecepcion: formData.idRecepcion,
+        ...(isEditMode ? { idRecepcion: formData.idRecepcion } : {}),
         ocId: formData.ocId,
         itemId: formData.itemId || null,
         fechaLlegada: formData.fechaLlegada,
@@ -198,7 +202,7 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       addToast({
         type: "success",
         title: isEditMode ? "Inventario actualizado" : "Inventario creado",
-        description: `Recepción ${formData.idRecepcion} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
+        description: `Recepción ${result.data?.idRecepcion || formData.idRecepcion} ${isEditMode ? "actualizada" : "creada"} exitosamente`,
       })
 
       onOpenChange(false)
@@ -228,18 +232,20 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
 
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
-            <div>
-              <label htmlFor="idRecepcion" className="block text-sm font-medium text-gray-700 mb-1">
-                ID Recepción <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="idRecepcion"
-                value={formData.idRecepcion}
-                onChange={(e) => setFormData({ ...formData, idRecepcion: e.target.value })}
-                placeholder="Ej: REC-2024-001"
-                disabled={loading}
-              />
-            </div>
+            {/* ID Recepción - Solo mostrar en modo edición */}
+            {isEditMode && (
+              <div>
+                <label htmlFor="idRecepcion" className="block text-sm font-medium text-gray-700 mb-1">
+                  ID Recepción
+                </label>
+                <Input
+                  id="idRecepcion"
+                  value={formData.idRecepcion}
+                  disabled={true}
+                  className="bg-gray-100"
+                />
+              </div>
+            )}
 
             <div>
               <label htmlFor="ocId" className="block text-sm font-medium text-gray-700 mb-1">
