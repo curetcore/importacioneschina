@@ -182,9 +182,10 @@ export default function PagosChinaPage() {
             <Button
               onClick={() => setFormOpen(true)}
               variant="outline"
-              className="h-8 w-8 p-0"
+              className="gap-1.5 h-8 px-3 text-xs"
             >
-              <Plus size={16} />
+              <Plus size={14} />
+              Crear Pago
             </Button>
           </CardHeader>
           <CardContent className="overflow-hidden">
