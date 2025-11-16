@@ -42,25 +42,29 @@ export async function POST(request: NextRequest) {
     // Validar datos
     const validatedData = proveedorSchema.parse(body)
 
-    // Verificar que el código no exista
-    const existingProveedor = await prisma.proveedor.findUnique({
-      where: { codigo: validatedData.codigo },
-    })
+    // Auto-generar código si no se proporciona
+    let codigo = validatedData.codigo
+    if (!codigo) {
+      // Obtener el último proveedor para generar el siguiente código
+      const lastProveedor = await prisma.proveedor.findFirst({
+        orderBy: { codigo: "desc" },
+        select: { codigo: true },
+      })
 
-    if (existingProveedor) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ya existe un proveedor con ese código",
-        },
-        { status: 400 }
-      )
+      if (lastProveedor) {
+        // Extraer el número del código (ej: "PROV-005" -> 5)
+        const match = lastProveedor.codigo.match(/PROV-(\d+)/)
+        const nextNumber = match ? parseInt(match[1]) + 1 : 1
+        codigo = `PROV-${String(nextNumber).padStart(3, "0")}`
+      } else {
+        codigo = "PROV-001"
+      }
     }
 
     // Crear proveedor
     const proveedor = await prisma.proveedor.create({
       data: {
-        codigo: validatedData.codigo,
+        codigo,
         nombre: validatedData.nombre,
         contactoPrincipal: validatedData.contactoPrincipal,
         email: validatedData.email || undefined,

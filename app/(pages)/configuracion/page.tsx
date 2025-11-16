@@ -66,6 +66,8 @@ export default function ConfiguracionPage() {
   // Proveedor CRM state (tab separado)
   const [proveedorFormOpen, setProveedorFormOpen] = useState(false)
   const [proveedorToEdit, setProveedorToEdit] = useState<any>(null)
+  const [proveedorToDelete, setProveedorToDelete] = useState<any>(null)
+  const [deleteProveedorLoading, setDeleteProveedorLoading] = useState(false)
   const [refreshProveedores, setRefreshProveedores] = useState(0)
 
   const fetchConfiguraciones = async () => {
@@ -157,6 +159,37 @@ export default function ConfiguracionPage() {
     setFormOpen(false)
     setConfigToEdit(null)
     setSelectedCategoria("")
+  }
+
+  const handleDeleteProveedor = async () => {
+    if (!proveedorToDelete) return
+
+    setDeleteProveedorLoading(true)
+    try {
+      const result = await apiDelete(`/api/proveedores/${proveedorToDelete.id}`)
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar el proveedor")
+      }
+
+      addToast({
+        type: "success",
+        title: "Proveedor eliminado",
+        description: `${proveedorToDelete.nombre} eliminado exitosamente`,
+      })
+
+      setProveedorToDelete(null)
+      setRefreshProveedores(prev => prev + 1)
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: getErrorMessage(error),
+        details: getErrorDetails(error),
+      })
+    } finally {
+      setDeleteProveedorLoading(false)
+    }
   }
 
   if (loading) {
@@ -270,6 +303,9 @@ export default function ConfiguracionPage() {
                 setProveedorToEdit(proveedor)
                 setProveedorFormOpen(true)
               }}
+              onDelete={(proveedor) => {
+                setProveedorToDelete(proveedor)
+              }}
             />
           </TabsContent>
         </Tabs>
@@ -308,6 +344,18 @@ export default function ConfiguracionPage() {
           setRefreshProveedores(prev => prev + 1)
         }}
         proveedorToEdit={proveedorToEdit}
+      />
+
+      <ConfirmDialog
+        open={!!proveedorToDelete}
+        onOpenChange={(open) => !open && setProveedorToDelete(null)}
+        onConfirm={handleDeleteProveedor}
+        title="Eliminar Proveedor"
+        description={`¿Estás seguro de eliminar "${proveedorToDelete?.nombre}"? El proveedor será marcado como inactivo.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deleteProveedorLoading}
       />
     </MainLayout>
   )

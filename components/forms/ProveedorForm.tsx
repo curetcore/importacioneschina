@@ -116,10 +116,17 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
       const url = proveedorToEdit ? `/api/proveedores/${proveedorToEdit.id}` : "/api/proveedores"
       const method = proveedorToEdit ? "PUT" : "POST"
 
+      // Preparar datos para enviar (sin código si es nuevo proveedor)
+      const dataToSend = proveedorToEdit
+        ? formData
+        : Object.fromEntries(
+            Object.entries(formData).filter(([key]) => key !== "codigo")
+          )
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       })
 
       const result = await response.json()
@@ -150,33 +157,33 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {proveedorToEdit ? "Editar Proveedor" : "Nuevo Proveedor"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información básica */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Información Básica</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Código *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.codigo}
-                  onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  placeholder="PROV-001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-5">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Básica</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {proveedorToEdit && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Código
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={formData.codigo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+              )}
+              <div className={proveedorToEdit ? "" : "col-span-2"}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre *
                 </label>
                 <input
@@ -184,7 +191,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                   required
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Nike China Factory"
                 />
               </div>
@@ -192,120 +199,120 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
           </div>
 
           {/* Información de contacto */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Información de Contacto</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información de Contacto</h3>
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Contacto Principal
                 </label>
                 <input
                   type="text"
                   value={formData.contactoPrincipal}
                   onChange={(e) => setFormData({ ...formData, contactoPrincipal: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Teléfono
                 </label>
                 <input
                   type="text"
                   value={formData.telefono}
                   onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   WhatsApp
                 </label>
                 <input
                   type="text"
                   value={formData.whatsapp}
                   onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Ubicación */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Ubicación</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Ubicación</h3>
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   País
                 </label>
                 <input
                   type="text"
                   value={formData.pais}
                   onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Ciudad
                 </label>
                 <input
                   type="text"
                   value={formData.ciudad}
                   onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Información comercial */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-gray-900">Información Comercial</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Comercial</h3>
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Categoría de Productos
                 </label>
                 <input
                   type="text"
                   value={formData.categoriaProductos}
                   onChange={(e) => setFormData({ ...formData, categoriaProductos: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Zapatos, Carteras, etc."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tiempo de Entrega (días)
                 </label>
                 <input
                   type="number"
                   value={formData.tiempoEntregaDias}
                   onChange={(e) => setFormData({ ...formData, tiempoEntregaDias: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Moneda Preferida
                 </label>
                 <select
                   value={formData.monedaPreferida}
                   onChange={(e) => setFormData({ ...formData, monedaPreferida: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="USD">USD</option>
                   <option value="CNY">CNY</option>
@@ -313,7 +320,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Calificación (0-5)
                 </label>
                 <input
@@ -322,23 +329,24 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                   max="5"
                   value={formData.calificacion}
                   onChange={(e) => setFormData({ ...formData, calificacion: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Notas */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notas
-            </label>
-            <textarea
-              value={formData.notas}
-              onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
+          <div className="space-y-5">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Notas Adicionales</h3>
+            <div>
+              <textarea
+                value={formData.notas}
+                onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Información adicional sobre el proveedor..."
+              />
+            </div>
           </div>
 
           {/* Actions */}

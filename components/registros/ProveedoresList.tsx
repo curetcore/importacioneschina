@@ -24,9 +24,10 @@ interface Proveedor {
 interface ProveedoresListProps {
   onAdd: () => void
   onEdit: (proveedor: Proveedor) => void
+  onDelete: (proveedor: Proveedor) => void
 }
 
-export function ProveedoresList({ onAdd, onEdit }: ProveedoresListProps) {
+export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProps) {
   const { addToast } = useToast()
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [loading, setLoading] = useState(true)
@@ -129,6 +130,13 @@ export function ProveedoresList({ onAdd, onEdit }: ProveedoresListProps) {
                       title="Editar"
                     >
                       <Edit className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(proveedor)}
+                      className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </div>

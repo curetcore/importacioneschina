@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const proveedorSchema = z.object({
-  codigo: z.string().min(1, "El código es requerido"),
+  codigo: z.string().optional(), // Auto-generado si no se proporciona
   nombre: z.string().min(1, "El nombre es requerido"),
 
   // Información de contacto
