@@ -9,7 +9,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const requestedLimit = parseInt(searchParams.get("limit") || "20");
+    // Validación de límite máximo para prevenir ataques de denegación de servicio
+    const limit = Math.min(requestedLimit, 100); // Máximo 100 registros por página
     const search = searchParams.get("search") || "";
     const ocId = searchParams.get("ocId") || "";
     const tipoGasto = searchParams.get("tipoGasto") || "";
