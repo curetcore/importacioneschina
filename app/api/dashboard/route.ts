@@ -4,7 +4,12 @@ import { calcularOC } from "@/lib/calculations";
 
 export async function GET() {
   try {
+    // PERFORMANCE: Limitar carga de OCs para prevenir problemas de memoria
+    // Dashboard solo necesita datos agregados, no todas las OCs
+    const MAX_OCS_DASHBOARD = 500; // Límite razonable para dashboard
+
     const ocs = await prisma.oCChina.findMany({
+      take: MAX_OCS_DASHBOARD,
       include: {
         items: true,
         pagosChina: true,
@@ -19,6 +24,14 @@ export async function GET() {
         fechaOC: "desc",
       },
     });
+
+    // PERFORMANCE WARNING: Si hay más OCs que el límite, notificar
+    const totalOCs = await prisma.oCChina.count();
+    if (totalOCs > MAX_OCS_DASHBOARD) {
+      console.warn(
+        `⚠️ Dashboard mostrando datos de ${MAX_OCS_DASHBOARD} OCs más recientes de ${totalOCs} totales`
+      );
+    }
 
     const ocsCalculadas = ocs.map((oc) => {
       // Calcular valores desde items

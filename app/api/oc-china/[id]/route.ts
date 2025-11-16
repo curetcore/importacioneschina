@@ -248,6 +248,17 @@ export async function PUT(
   } catch (error: any) {
     console.error("Error en PUT /api/oc-china/[id]:", error);
 
+    // Distinguir entre errores de validación de negocio (400) y errores del sistema (500)
+    if (error.message && error.message.includes("inventario recibido vinculado")) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
