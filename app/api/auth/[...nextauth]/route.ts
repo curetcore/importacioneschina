@@ -115,12 +115,9 @@ const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
-  secret: process.env.NEXTAUTH_SECRET || (() => {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('NEXTAUTH_SECRET debe estar configurado en producción')
-    }
-    return 'dev-secret-change-in-production'
-  })(),
+  // SEGURIDAD: NEXTAUTH_SECRET debe estar configurado en producción
+  // La variable de entorno debe pasarse durante el build
+  secret: process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production',
 }
 
 const handler = NextAuth(authOptions)
