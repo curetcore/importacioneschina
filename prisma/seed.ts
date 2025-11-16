@@ -149,6 +149,7 @@ async function main() {
           fechaGasto: new Date(oc.fechaOC.getTime() + (j + 1) * 5 * 24 * 60 * 60 * 1000),
           tipoGasto: tiposGasto[Math.floor(Math.random() * tiposGasto.length)],
           proveedorServicio: "Proveedor Logístico",
+          metodoPago: metodosPago[Math.floor(Math.random() * metodosPago.length)],
           montoRD: new Prisma.Decimal(3000 + Math.random() * 12000), // RD$ 3,000-15,000
           notas: `Gasto logístico ${j + 1} para ${oc.oc}`,
         },
