@@ -33,5 +33,128 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
   }
+}
+
+/* Airtable-style Table Styles */
+.airtable-table-container {
+  background: white;
+  border-radius: 8px;
+}
+
+.airtable-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.airtable-th {
+  background: #f8f9fa;
+  border-bottom: 1.5px solid #e5e7eb;
+  border-right: 1px solid #f0f0f0;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.airtable-th:last-child {
+  border-right: none;
+}
+
+.airtable-th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.airtable-th.sortable:hover {
+  background: #f0f1f3;
+}
+
+.airtable-th-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.airtable-th.left .airtable-th-content {
+  justify-content: flex-start;
+}
+
+.airtable-th.center .airtable-th-content {
+  justify-content: center;
+}
+
+.airtable-th.right .airtable-th-content {
+  justify-content: flex-end;
+}
+
+.airtable-td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  border-right: 1px solid #f8f9fa;
+  color: #1f2937;
+  white-space: nowrap;
+  transition: background-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+.airtable-td:last-child {
+  border-right: none;
+}
+
+.airtable-td.left {
+  text-align: left;
+}
+
+.airtable-td.center {
+  text-align: center;
+}
+
+.airtable-td.right {
+  text-align: right;
+}
+
+.airtable-tr {
+  transition: background-color 0.15s ease;
+}
+
+.airtable-tr:hover {
+  background-color: #f9fafb;
+}
+
+.airtable-tr:hover .airtable-td {
+  background-color: #f9fafb;
+}
+
+.airtable-tr.clickable {
+  cursor: pointer;
+}
+
+.airtable-tr.clickable:hover {
+  background-color: #f3f4f6;
+}
+
+.airtable-tr.clickable:hover .airtable-td {
+  background-color: #f3f4f6;
+}
+
+/* Cell hover effect - highlight individual cell */
+.airtable-td:hover {
+  background-color: #eff6ff !important;
+  box-shadow: inset 0 0 0 1px #dbeafe;
+}
+
+/* Empty state */
+.airtable-table tbody tr:last-child .airtable-td {
+  border-bottom: none;
 }

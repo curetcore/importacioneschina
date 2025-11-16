@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Search, Plus, Eye, ClipboardList } from "lucide-react"
+import { Search, Plus, Eye, ClipboardList, Calendar, Package, DollarSign } from "lucide-react"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
+import { AirtableTable, TableBadge, TableCount } from "@/components/ui/airtable-table"
 
 interface OCChina {
   id: string
@@ -160,76 +161,129 @@ export default function OCChinaPage() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full" style={{ minWidth: "1200px" }}>
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Código OC</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Proveedor</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Categoría</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Productos</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Unidades</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Costo FOB</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Estado</th>
-                      <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ocs.map((oc) => {
-                      const { cantidadTotal, costoFOBTotal } = calculateOCTotals(oc)
-                      const hasPayments = oc._count.pagosChina > 0
-                      const hasExpenses = oc._count.gastosLogisticos > 0
-                      const hasInventory = oc._count.inventarioRecibido > 0
-
+              <AirtableTable
+                columns={[
+                  {
+                    key: "oc",
+                    header: "Código OC",
+                    minWidth: "140px",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center gap-2">
+                        <ClipboardList size={16} className="text-gray-400" />
+                        <span className="font-semibold text-gray-900">{value}</span>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "proveedor",
+                    header: "Proveedor",
+                    minWidth: "180px",
+                    sortable: true,
+                    render: (value) => <span className="text-gray-700 font-medium">{value}</span>,
+                  },
+                  {
+                    key: "fechaOC",
+                    header: "Fecha",
+                    minWidth: "130px",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar size={14} className="text-gray-400" />
+                        <span>{formatDate(value)}</span>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "categoriaPrincipal",
+                    header: "Categoría",
+                    minWidth: "140px",
+                    sortable: true,
+                    render: (value) => <TableBadge>{value}</TableBadge>,
+                  },
+                  {
+                    key: "_count",
+                    header: "Productos",
+                    minWidth: "110px",
+                    align: "center",
+                    render: (value) => <TableCount count={value.items} variant="blue" />,
+                  },
+                  {
+                    key: "items",
+                    header: "Unidades",
+                    minWidth: "110px",
+                    align: "right",
+                    render: (_, row) => {
+                      const { cantidadTotal } = calculateOCTotals(row)
                       return (
-                        <tr key={oc.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <span className="font-medium text-gray-900">{oc.oc}</span>
-                          </td>
-                          <td className="py-3 px-4 text-gray-700 whitespace-nowrap">{oc.proveedor}</td>
-                          <td className="py-3 px-4 text-gray-600 text-sm whitespace-nowrap">{formatDate(oc.fechaOC)}</td>
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              {oc.categoriaPrincipal}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-center whitespace-nowrap">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
-                              {oc._count.items}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-medium text-gray-900 whitespace-nowrap">
-                            {cantidadTotal.toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 text-right font-semibold text-gray-900 whitespace-nowrap">
-                            {formatCurrency(costoFOBTotal)}
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-1">
-                              <div className={`w-2 h-2 rounded-full ${hasPayments ? 'bg-green-500' : 'bg-gray-300'}`} title={hasPayments ? "Tiene pagos" : "Sin pagos"} />
-                              <div className={`w-2 h-2 rounded-full ${hasExpenses ? 'bg-yellow-500' : 'bg-gray-300'}`} title={hasExpenses ? "Tiene gastos" : "Sin gastos"} />
-                              <div className={`w-2 h-2 rounded-full ${hasInventory ? 'bg-blue-500' : 'bg-gray-300'}`} title={hasInventory ? "Tiene inventario" : "Sin inventario"} />
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                variant="ghost"
-                                onClick={() => router.push(`/ordenes/${oc.id}`)}
-                                className="gap-1 px-3 py-1.5 text-sm h-8"
-                              >
-                                <Eye size={16} />
-                                Ver
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
+                        <div className="flex items-center justify-end gap-2">
+                          <Package size={14} className="text-gray-400" />
+                          <span className="font-semibold text-gray-900">{cantidadTotal.toLocaleString()}</span>
+                        </div>
                       )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                    },
+                  },
+                  {
+                    key: "costoFOB",
+                    header: "Costo FOB",
+                    minWidth: "140px",
+                    align: "right",
+                    sortable: true,
+                    render: (_, row) => {
+                      const { costoFOBTotal } = calculateOCTotals(row)
+                      return (
+                        <div className="flex items-center justify-end gap-2">
+                          <DollarSign size={14} className="text-green-600" />
+                          <span className="font-bold text-gray-900">{formatCurrency(costoFOBTotal)}</span>
+                        </div>
+                      )
+                    },
+                  },
+                  {
+                    key: "_count",
+                    header: "Estado",
+                    minWidth: "100px",
+                    align: "center",
+                    render: (value) => (
+                      <div className="flex items-center justify-center gap-1.5">
+                        <div
+                          className={`w-2 h-2 rounded-full ${value.pagosChina > 0 ? "bg-green-500" : "bg-gray-300"}`}
+                          title={value.pagosChina > 0 ? "Tiene pagos" : "Sin pagos"}
+                        />
+                        <div
+                          className={`w-2 h-2 rounded-full ${value.gastosLogisticos > 0 ? "bg-yellow-500" : "bg-gray-300"}`}
+                          title={value.gastosLogisticos > 0 ? "Tiene gastos" : "Sin gastos"}
+                        />
+                        <div
+                          className={`w-2 h-2 rounded-full ${value.inventarioRecibido > 0 ? "bg-blue-500" : "bg-gray-300"}`}
+                          title={value.inventarioRecibido > 0 ? "Tiene inventario" : "Sin inventario"}
+                        />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "id",
+                    header: "Acciones",
+                    minWidth: "100px",
+                    align: "center",
+                    render: (value) => (
+                      <Button
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/ordenes/${value}`)
+                        }}
+                        className="gap-1.5 px-3 py-1.5 text-xs h-7 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        <Eye size={14} />
+                        Ver
+                      </Button>
+                    ),
+                  },
+                ]}
+                data={ocs}
+                minWidth="1400px"
+              />
             )}
           </CardContent>
         </Card>
