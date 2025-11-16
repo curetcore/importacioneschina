@@ -78,14 +78,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
     if (open) {
       setLoadingConfig(true)
       Promise.all([
-        fetch("/api/configuracion?categoria=proveedores").then(res => res.json()),
+        fetch("/api/proveedores?activo=true").then(res => res.json()),
         fetch("/api/configuracion?categoria=categorias").then(res => res.json()),
       ])
         .then(([proveedoresRes, categoriasRes]) => {
           if (proveedoresRes.success) {
             setProveedorOptions(proveedoresRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
+              value: item.nombre,
+              label: item.nombre
             })))
           }
           if (categoriasRes.success) {
