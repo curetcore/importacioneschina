@@ -137,6 +137,14 @@ async function main() {
     "Transporte local",
   ];
 
+  const metodosPago = [
+    "Transferencia",
+    "Tarjeta de credito",
+    "Tarjeta de debito",
+    "Efectivo",
+    "Cheque",
+  ];
+
   let gastoCount = 0;
   for (const oc of ocs) {
     // 2-3 gastos por OC
