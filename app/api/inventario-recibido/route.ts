@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { inventarioRecibidoSchema } from "@/lib/validations";
 import { distribuirGastosLogisticos } from "@/lib/calculations";
-import { generateNextId } from "@/lib/utils";
+import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
@@ -80,12 +80,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Generar ID automático secuencial
-    const lastRecepcion = await prisma.inventarioRecibido.findFirst({
-      orderBy: { idRecepcion: "desc" },
-      select: { idRecepcion: true },
-    });
-    const idRecepcion = generateNextId("REC", lastRecepcion?.idRecepcion);
+    // Generar ID automático secuencial (thread-safe)
+    const idRecepcion = await generateUniqueId("inventarioRecibido", "idRecepcion", "REC");
 
     // Validar con Zod (sin necesidad de idRecepcion en el body)
     const validatedData = inventarioRecibidoSchema.parse(body);

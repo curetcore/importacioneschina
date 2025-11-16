@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gastosLogisticosSchema } from "@/lib/validations";
-import { generateNextId } from "@/lib/utils";
+import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
@@ -78,12 +78,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Generar ID automático secuencial
-    const lastGasto = await prisma.gastosLogisticos.findFirst({
-      orderBy: { idGasto: "desc" },
-      select: { idGasto: true },
-    });
-    const idGasto = generateNextId("GASTO", lastGasto?.idGasto);
+    // Generar ID automático secuencial (thread-safe)
+    const idGasto = await generateUniqueId("gastosLogisticos", "idGasto", "GASTO");
 
     // Validar con Zod (sin necesidad de idGasto en el body)
     const validatedData = gastosLogisticosSchema.parse(body);

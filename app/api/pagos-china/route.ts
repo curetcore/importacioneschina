@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { pagosChinaSchema } from "@/lib/validations";
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
-import { generateNextId } from "@/lib/utils";
+import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 
 // GET /api/pagos-china - Obtener todos los pagos
@@ -79,12 +79,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Generar ID automático secuencial
-    const lastPago = await prisma.pagosChina.findFirst({
-      orderBy: { idPago: "desc" },
-      select: { idPago: true },
-    });
-    const idPago = generateNextId("PAG", lastPago?.idPago);
+    // Generar ID automático secuencial (thread-safe)
+    const idPago = await generateUniqueId("pagosChina", "idPago", "PAG");
 
     // Validar con Zod (sin necesidad de idPago en el body)
     const validatedData = pagosChinaSchema.parse(body);

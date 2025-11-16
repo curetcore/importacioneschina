@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateNextId } from "@/lib/utils";
+import { generateUniqueId } from "@/lib/id-generator";
 
 // GET /api/oc-china - Obtener todas las órdenes de compra
 export async function GET(request: NextRequest) {
@@ -106,12 +106,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generar ID automático secuencial
-    const lastOC = await prisma.oCChina.findFirst({
-      orderBy: { oc: "desc" },
-      select: { oc: true },
-    });
-    const oc = generateNextId("OC", lastOC?.oc);
+    // Generar ID automático secuencial (thread-safe)
+    const oc = await generateUniqueId("oCChina", "oc", "OC");
 
     // Validar y normalizar cada item (Problemas #1 y #2)
     const itemsValidados: any[] = [];
