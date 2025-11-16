@@ -1,12 +1,23 @@
 import { z } from "zod";
 
+// Validador de fecha que no permite fechas futuras
+const pastDateValidator = (date: Date) => {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // Permitir fechas de hoy hasta las 11:59:59 PM
+  return date <= today;
+};
+
 // Schema base para OC (sin items, cantidadOrdenada y costoFOBTotalUSD se calculan desde items)
 export const ocChinaSchema = z.object({
   oc: z.string().min(1, "El codigo OC es requerido"),
   proveedor: z.string().min(1, "El proveedor es requerido"),
-  fechaOC: z.coerce.date({
-    required_error: "La fecha es requerida",
-  }),
+  fechaOC: z.coerce
+    .date({
+      required_error: "La fecha es requerida",
+    })
+    .refine(pastDateValidator, {
+      message: "La fecha no puede ser futura",
+    }),
   descripcionLote: z.string().optional(),
   categoriaPrincipal: z.string().min(1, "La categoria es requerida"),
 });
@@ -16,9 +27,13 @@ export type OCChinaInput = z.infer<typeof ocChinaSchema>;
 export const pagosChinaSchema = z.object({
   idPago: z.string().min(1, "El ID de pago es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
-  fechaPago: z.coerce.date({
-    required_error: "La fecha de pago es requerida",
-  }),
+  fechaPago: z.coerce
+    .date({
+      required_error: "La fecha de pago es requerida",
+    })
+    .refine(pastDateValidator, {
+      message: "La fecha de pago no puede ser futura",
+    }),
   tipoPago: z.string().min(1, "El tipo de pago es requerido"),
   metodoPago: z.string().min(1, "El metodo de pago es requerido"),
   moneda: z.enum(["USD", "CNY", "RD$"], {
@@ -42,9 +57,13 @@ export type PagosChinaInput = z.infer<typeof pagosChinaSchema>;
 export const gastosLogisticosSchema = z.object({
   idGasto: z.string().min(1, "El ID de gasto es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
-  fechaGasto: z.coerce.date({
-    required_error: "La fecha del gasto es requerida",
-  }),
+  fechaGasto: z.coerce
+    .date({
+      required_error: "La fecha del gasto es requerida",
+    })
+    .refine(pastDateValidator, {
+      message: "La fecha del gasto no puede ser futura",
+    }),
   tipoGasto: z.string().min(1, "El tipo de gasto es requerido"),
   proveedorServicio: z.string().optional(),
   metodoPago: z.string().min(1, "El metodo de pago es requerido"),
@@ -60,9 +79,13 @@ export const inventarioRecibidoSchema = z.object({
   idRecepcion: z.string().min(1, "El ID de recepcion es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
   itemId: z.string().optional(), // Vincular a producto específico (opcional)
-  fechaLlegada: z.coerce.date({
-    required_error: "La fecha de llegada es requerida",
-  }),
+  fechaLlegada: z.coerce
+    .date({
+      required_error: "La fecha de llegada es requerida",
+    })
+    .refine(pastDateValidator, {
+      message: "La fecha de llegada no puede ser futura",
+    }),
   bodegaInicial: z.string().min(1, "La bodega es requerida"),
   cantidadRecibida: z.coerce
     .number()
