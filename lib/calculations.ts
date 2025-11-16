@@ -38,14 +38,18 @@ export function calcularTotalInversion(
   totalPagosRD: number,
   totalGastosRD: number
 ): number {
-  return totalPagosRD + totalGastosRD;
+  // Validar que los valores no sean negativos
+  const pagos = totalPagosRD < 0 ? 0 : totalPagosRD;
+  const gastos = totalGastosRD < 0 ? 0 : totalGastosRD;
+  return pagos + gastos;
 }
 
 export function calcularCostoUnitarioFinal(
   totalInversionRD: number,
   cantidadRecibida: number
 ): number {
-  if (cantidadRecibida === 0) return 0;
+  // Validar que los valores sean positivos
+  if (cantidadRecibida <= 0 || totalInversionRD < 0) return 0;
   return Math.round((totalInversionRD / cantidadRecibida) * 100) / 100;
 }
 
@@ -60,7 +64,10 @@ export function calcularPorcentajeRecepcion(
   cantidadRecibida: number,
   cantidadOrdenada: number
 ): number {
-  if (cantidadOrdenada === 0) return 0;
+  // Validar que cantidadOrdenada sea positiva
+  if (cantidadOrdenada <= 0) return 0;
+  // Validar que cantidadRecibida no sea negativa
+  if (cantidadRecibida < 0) return 0;
   return Math.round((cantidadRecibida / cantidadOrdenada) * 100 * 100) / 100;
 }
 
@@ -68,6 +75,8 @@ export function calcularCostoTotalRecepcion(
   cantidadRecibida: number,
   costoUnitarioFinalRD: number
 ): number {
+  // Validar que los valores no sean negativos
+  if (cantidadRecibida < 0 || costoUnitarioFinalRD < 0) return 0;
   return Math.round(cantidadRecibida * costoUnitarioFinalRD * 100) / 100;
 }
 
@@ -75,8 +84,11 @@ export function calcularCostoFOBUnitario(
   costoFOBTotal: number | Prisma.Decimal,
   cantidadOrdenada: number
 ): number {
-  if (cantidadOrdenada === 0) return 0;
+  // Validar que cantidadOrdenada sea positiva
+  if (cantidadOrdenada <= 0) return 0;
   const total = typeof costoFOBTotal === "number" ? costoFOBTotal : parseFloat(costoFOBTotal.toString());
+  // Validar que el total no sea negativo
+  if (total < 0) return 0;
   return Math.round((total / cantidadOrdenada) * 100) / 100;
 }
 
@@ -235,17 +247,21 @@ export function distribuirGastosLogisticos(
   }, 0)
   const tasaCambioPromedio = calcularTasaCambioPromedio(pagosChina)
 
-  // Si no hay items, retornar array vacío
-  if (itemsNormalizados.length === 0 || totalFOBUSD === 0) {
+  // VALIDACIÓN CRÍTICA: Si no hay items o totalFOBUSD es <= 0, retornar array vacío
+  // Esto previene división por cero en las líneas 246 y 249
+  if (itemsNormalizados.length === 0 || totalFOBUSD <= 0) {
+    console.warn(`⚠️ distribuirGastosLogisticos: totalFOBUSD inválido (${totalFOBUSD}). Retornando array vacío.`)
     return []
   }
 
   // Calcular costos para cada item
   return itemsNormalizados.map(item => {
     // Porcentaje que representa este item del total FOB
+    // SEGURO: totalFOBUSD > 0 garantizado por validación arriba
     const porcentajeFOB = (item.subtotalUSD / totalFOBUSD) * 100
 
     // Gastos logísticos prorrateados para este item
+    // SEGURO: totalFOBUSD > 0 garantizado por validación arriba
     const gastosLogisticosRD = (item.subtotalUSD / totalFOBUSD) * totalGastosRD
 
     // Costo FOB en RD$ (usando tasa de cambio promedio)
@@ -254,7 +270,7 @@ export function distribuirGastosLogisticos(
     // Costo total en RD$ (FOB + gastos logísticos)
     const costoTotalRD = costoFOBRD + gastosLogisticosRD
 
-    // Costo unitario en RD$
+    // Costo unitario en RD$ (con validación de división por cero)
     const costoUnitarioRD = item.cantidadTotal > 0
       ? costoTotalRD / item.cantidadTotal
       : 0
