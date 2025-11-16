@@ -31,10 +31,6 @@ interface ConfigGroup {
 }
 
 const categoriaLabels: Record<string, { titulo: string; descripcion: string }> = {
-  proveedores: {
-    titulo: "Proveedores",
-    descripcion: "Proveedores de órdenes de compra",
-  },
   categorias: {
     titulo: "Categorías Principales",
     descripcion: "Categorías disponibles para las órdenes de compra",
@@ -79,12 +75,14 @@ export default function ConfiguracionPage() {
       const result = await response.json()
 
       if (result.success) {
-        const grouped: ConfigGroup[] = Object.entries(result.data).map(([key, items]) => ({
-          categoria: key,
-          titulo: categoriaLabels[key]?.titulo || key,
-          descripcion: categoriaLabels[key]?.descripcion || "",
-          items: items as Configuracion[],
-        }))
+        const grouped: ConfigGroup[] = Object.entries(result.data)
+          .filter(([key]) => key !== "proveedores") // Excluir proveedores (ahora es módulo CRM separado)
+          .map(([key, items]) => ({
+            categoria: key,
+            titulo: categoriaLabels[key]?.titulo || key,
+            descripcion: categoriaLabels[key]?.descripcion || "",
+            items: items as Configuracion[],
+          }))
         setConfiguraciones(grouped)
       } else {
         // Si la API retorna success: false, mostrar error
