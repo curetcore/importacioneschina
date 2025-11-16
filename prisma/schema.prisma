@@ -112,6 +112,7 @@ model GastosLogisticos {
   fechaGasto            DateTime @map("fecha_gasto")
   tipoGasto             String   @map("tipo_gasto")
   proveedorServicio     String?  @map("proveedor_servicio")
+  metodoPago            String   @map("metodo_pago") // Efectivo, Transferencia, Tarjeta, Cheque
   montoRD               Decimal  @map("monto_rd") @db.Decimal(12, 2)
   notas                 String?  @db.Text
 

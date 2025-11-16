@@ -47,6 +47,7 @@ export const gastosLogisticosSchema = z.object({
   }),
   tipoGasto: z.string().min(1, "El tipo de gasto es requerido"),
   proveedorServicio: z.string().optional(),
+  metodoPago: z.string().min(1, "El metodo de pago es requerido"),
   montoRD: z.coerce
     .number()
     .positive("El monto debe ser mayor a 0"),

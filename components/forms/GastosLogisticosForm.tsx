@@ -9,7 +9,7 @@ import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
-import { gastosLogisticosSchema, GastosLogisticosInput, tiposGasto } from "@/lib/validations"
+import { gastosLogisticosSchema, GastosLogisticosInput, tiposGasto, metodosPago } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface FileAttachment {
@@ -44,6 +44,11 @@ const tiposGastoOptions: SelectOption[] = tiposGasto.map(t => ({
   label: t
 }))
 
+const metodosPagoOptions: SelectOption[] = metodosPago.map(m => ({
+  value: m,
+  label: m
+}))
+
 export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdit }: GastosLogisticosFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -59,6 +64,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
     fechaGasto: undefined,
     tipoGasto: "",
     proveedorServicio: "",
+    metodoPago: "",
     montoRD: undefined,
     notas: "",
   })
@@ -87,6 +93,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         fechaGasto: new Date(gastoToEdit.fechaGasto),
         tipoGasto: gastoToEdit.tipoGasto,
         proveedorServicio: gastoToEdit.proveedorServicio || "",
+        metodoPago: (gastoToEdit as any).metodoPago || "",
         montoRD: gastoToEdit.montoRD,
         notas: gastoToEdit.notas || "",
       })
@@ -98,6 +105,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
         fechaGasto: undefined,
         tipoGasto: "",
         proveedorServicio: "",
+        metodoPago: "",
         montoRD: undefined,
         notas: "",
       })
@@ -160,7 +168,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
   }
 
   const handleCancel = () => {
-    setFormData({ idGasto: "", ocId: "", fechaGasto: undefined, tipoGasto: "", proveedorServicio: "", montoRD: undefined, notas: "" })
+    setFormData({ idGasto: "", ocId: "", fechaGasto: undefined, tipoGasto: "", proveedorServicio: "", metodoPago: "", montoRD: undefined, notas: "" })
     setAdjuntos([])
     setErrors({})
     onOpenChange(false)
@@ -250,21 +258,35 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
               </div>
 
               <div>
-                <label htmlFor="montoRD" className="block text-sm font-medium text-gray-700 mb-1">
-                  Monto (RD$) <span className="text-red-500">*</span>
+                <label htmlFor="metodoPago" className="block text-sm font-medium text-gray-700 mb-1">
+                  Método de Pago <span className="text-red-500">*</span>
                 </label>
-                <Input
-                  id="montoRD"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={formData.montoRD ?? ""}
-                  onChange={(e) => setFormData({ ...formData, montoRD: e.target.value ? parseFloat(e.target.value) : undefined })}
-                  error={errors.montoRD}
-                  placeholder="Ej: 5000.00"
+                <Select
+                  options={metodosPagoOptions}
+                  value={formData.metodoPago || ""}
+                  onChange={(value) => setFormData({ ...formData, metodoPago: value })}
+                  error={errors.metodoPago}
+                  placeholder="Selecciona método"
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="montoRD" className="block text-sm font-medium text-gray-700 mb-1">
+                Monto (RD$) <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="montoRD"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={formData.montoRD ?? ""}
+                onChange={(e) => setFormData({ ...formData, montoRD: e.target.value ? parseFloat(e.target.value) : undefined })}
+                error={errors.montoRD}
+                placeholder="Ej: 5000.00"
+                disabled={loading}
+              />
             </div>
 
             <div>
