@@ -8,7 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfiguracionForm } from "@/components/forms/ConfiguracionForm"
 import { ProveedorForm } from "@/components/forms/ProveedorForm"
+import { ProductoForm } from "@/components/forms/ProductoForm"
+import { MetodoPagoForm } from "@/components/forms/MetodoPagoForm"
 import { ProveedoresList } from "@/components/registros/ProveedoresList"
+import { ProductosList } from "@/components/registros/ProductosList"
+import { MetodosPagoList } from "@/components/registros/MetodosPagoList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -51,10 +55,7 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
     titulo: "Tipos de Gasto",
     descripcion: "Tipos de gastos logísticos",
   },
-  proveedores: {
-    titulo: "Proveedores",
-    descripcion: "Proveedores de órdenes de compra",
-  },
+  // proveedores movido a su propio tab con CRM completo
 }
 
 export default function ConfiguracionPage() {
@@ -72,6 +73,16 @@ export default function ConfiguracionPage() {
   const [proveedorToEdit, setProveedorToEdit] = useState<any>(null)
   const [refreshProveedores, setRefreshProveedores] = useState(0)
 
+  // Producto state
+  const [productoFormOpen, setProductoFormOpen] = useState(false)
+  const [productoToEdit, setProductoToEdit] = useState<any>(null)
+  const [refreshProductos, setRefreshProductos] = useState(0)
+
+  // Método de pago state
+  const [metodoPagoFormOpen, setMetodoPagoFormOpen] = useState(false)
+  const [metodoPagoToEdit, setMetodoPagoToEdit] = useState<any>(null)
+  const [refreshMetodosPago, setRefreshMetodosPago] = useState(0)
+
   const fetchConfiguraciones = async () => {
     setLoading(true)
     try {
@@ -79,12 +90,14 @@ export default function ConfiguracionPage() {
       const result = await response.json()
 
       if (result.success) {
-        const grouped: ConfigGroup[] = Object.entries(result.data).map(([key, items]) => ({
-          categoria: key,
-          titulo: categoriaLabels[key]?.titulo || key,
-          descripcion: categoriaLabels[key]?.descripcion || "",
-          items: items as Configuracion[],
-        }))
+        const grouped: ConfigGroup[] = Object.entries(result.data)
+          .filter(([key]) => key !== "proveedores") // Excluir proveedores (ahora en su propio tab)
+          .map(([key, items]) => ({
+            categoria: key,
+            titulo: categoriaLabels[key]?.titulo || key,
+            descripcion: categoriaLabels[key]?.descripcion || "",
+            items: items as Configuracion[],
+          }))
         setConfiguraciones(grouped)
       } else {
         // Si la API retorna success: false, mostrar error
@@ -283,36 +296,30 @@ export default function ConfiguracionPage() {
             />
           </TabsContent>
 
-          <TabsContent value="productos">
-            <Card>
-              <CardHeader>
-                <CardTitle>Catálogo de Productos</CardTitle>
-                <p className="text-sm text-gray-500">Productos maestros que puedes reutilizar en órdenes</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-gray-500">
-                  <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p>Catálogo de Productos en construcción</p>
-                  <p className="text-xs mt-2">Próximamente: SKUs, descripciones, precios de referencia, imágenes</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="productos" key={refreshProductos}>
+            <ProductosList
+              onAdd={() => {
+                setProductoToEdit(null)
+                setProductoFormOpen(true)
+              }}
+              onEdit={(producto) => {
+                setProductoToEdit(producto)
+                setProductoFormOpen(true)
+              }}
+            />
           </TabsContent>
 
-          <TabsContent value="metodos-pago">
-            <Card>
-              <CardHeader>
-                <CardTitle>Métodos de Pago y Monederos</CardTitle>
-                <p className="text-sm text-gray-500">Gestiona cuentas bancarias, tarjetas y monederos digitales</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-gray-500">
-                  <Wallet className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p>Métodos de Pago en construcción</p>
-                  <p className="text-xs mt-2">Próximamente: cuentas bancarias, tarjetas, Alipay, PayPal, Wise</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="metodos-pago" key={refreshMetodosPago}>
+            <MetodosPagoList
+              onAdd={() => {
+                setMetodoPagoToEdit(null)
+                setMetodoPagoFormOpen(true)
+              }}
+              onEdit={(metodoPago) => {
+                setMetodoPagoToEdit(metodoPago)
+                setMetodoPagoFormOpen(true)
+              }}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -350,6 +357,30 @@ export default function ConfiguracionPage() {
           setRefreshProveedores(prev => prev + 1)
         }}
         proveedorToEdit={proveedorToEdit}
+      />
+
+      <ProductoForm
+        open={productoFormOpen}
+        onOpenChange={(open) => {
+          setProductoFormOpen(open)
+          if (!open) setProductoToEdit(null)
+        }}
+        onSuccess={() => {
+          setRefreshProductos(prev => prev + 1)
+        }}
+        productoToEdit={productoToEdit}
+      />
+
+      <MetodoPagoForm
+        open={metodoPagoFormOpen}
+        onOpenChange={(open) => {
+          setMetodoPagoFormOpen(open)
+          if (!open) setMetodoPagoToEdit(null)
+        }}
+        onSuccess={() => {
+          setRefreshMetodosPago(prev => prev + 1)
+        }}
+        metodoPagoToEdit={metodoPagoToEdit}
       />
     </MainLayout>
   )
