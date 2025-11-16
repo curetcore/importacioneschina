@@ -48,6 +48,10 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
     titulo: "Tipos de Gasto",
     descripcion: "Tipos de gastos logísticos",
   },
+  proveedores: {
+    titulo: "Proveedores",
+    descripcion: "Proveedores de órdenes de compra",
+  },
 }
 
 export default function ConfiguracionPage() {

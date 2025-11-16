@@ -15,6 +15,12 @@ const configuraciones = [
   { categoria: "categorias", valor: "Accesorios", orden: 4 },
   { categoria: "categorias", valor: "Mix", orden: 5 },
 
+  // Proveedores
+  { categoria: "proveedores", valor: "China 1", orden: 1 },
+  { categoria: "proveedores", valor: "China 2", orden: 2 },
+  { categoria: "proveedores", valor: "Fabrica X", orden: 3 },
+  { categoria: "proveedores", valor: "Otro", orden: 4 },
+
   // Tipos de Pago
   { categoria: "tiposPago", valor: "Anticipo", orden: 1 },
   { categoria: "tiposPago", valor: "Pago final", orden: 2 },

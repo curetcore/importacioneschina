@@ -9,7 +9,6 @@ import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
-import { proveedores, categorias } from "@/lib/validations"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
 import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus } from "lucide-react"
 
@@ -52,20 +51,15 @@ interface OCChinaFormProps {
   ocToEdit?: OCChina | null
 }
 
-const proveedorOptions: SelectOption[] = proveedores.map(p => ({
-  value: p,
-  label: p
-}))
-
-const categoriaOptions: SelectOption[] = categorias.map(c => ({
-  value: c,
-  label: c
-}))
-
 export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChinaFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const isEditMode = !!ocToEdit
+
+  // Opciones de configuración dinámica
+  const [proveedorOptions, setProveedorOptions] = useState<SelectOption[]>([])
+  const [categoriaOptions, setCategoriaOptions] = useState<SelectOption[]>([])
+  const [loadingConfig, setLoadingConfig] = useState(false)
 
   const [formData, setFormData] = useState({
     oc: "",
@@ -78,6 +72,33 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   const [items, setItems] = useState<OCChinaItem[]>([])
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
+
+  // Cargar configuraciones dinámicas
+  useEffect(() => {
+    if (open) {
+      setLoadingConfig(true)
+      Promise.all([
+        fetch("/api/configuracion?categoria=proveedores").then(res => res.json()),
+        fetch("/api/configuracion?categoria=categorias").then(res => res.json()),
+      ])
+        .then(([proveedoresRes, categoriasRes]) => {
+          if (proveedoresRes.success) {
+            setProveedorOptions(proveedoresRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          if (categoriasRes.success) {
+            setCategoriaOptions(categoriasRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          setLoadingConfig(false)
+        })
+        .catch(() => setLoadingConfig(false))
+    }
+  }, [open])
 
   // Cargar datos cuando se abre en modo edición
   useEffect(() => {
@@ -288,8 +309,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                     options={proveedorOptions}
                     value={formData.proveedor || ""}
                     onChange={(value) => setFormData({ ...formData, proveedor: value })}
-                    placeholder="Selecciona un proveedor"
-                    disabled={loading}
+                    placeholder={loadingConfig ? "Cargando proveedores..." : "Selecciona un proveedor"}
+                    disabled={loading || loadingConfig}
                   />
                 </div>
 
@@ -314,8 +335,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                     options={categoriaOptions}
                     value={formData.categoriaPrincipal || ""}
                     onChange={(value) => setFormData({ ...formData, categoriaPrincipal: value })}
-                    placeholder="Selecciona una categoría"
-                    disabled={loading}
+                    placeholder={loadingConfig ? "Cargando categorías..." : "Selecciona una categoría"}
+                    disabled={loading || loadingConfig}
                   />
                 </div>
               </div>

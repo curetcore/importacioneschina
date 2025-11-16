@@ -8,7 +8,7 @@ import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
-import { pagosChinaSchema, PagosChinaInput, tiposPago, metodosPago, monedas } from "@/lib/validations"
+import { pagosChinaSchema, PagosChinaInput } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface FileAttachment {
@@ -40,20 +40,12 @@ interface PagosChinaFormProps {
   pagoToEdit?: PagoChina | null
 }
 
-const tiposPagoOptions: SelectOption[] = tiposPago.map(t => ({
-  value: t,
-  label: t
-}))
-
-const metodosPagoOptions: SelectOption[] = metodosPago.map(m => ({
-  value: m,
-  label: m
-}))
-
-const monedasOptions: SelectOption[] = monedas.map(m => ({
-  value: m,
-  label: m
-}))
+// Monedas fijas (no configurables)
+const monedasOptions: SelectOption[] = [
+  { value: "USD", label: "USD" },
+  { value: "CNY", label: "CNY" },
+  { value: "RD$", label: "RD$" },
+]
 
 export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: PagosChinaFormProps) {
   const { addToast } = useToast()
@@ -63,6 +55,11 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [loadingOcs, setLoadingOcs] = useState(false)
+
+  // Opciones de configuración dinámica
+  const [tiposPagoOptions, setTiposPagoOptions] = useState<SelectOption[]>([])
+  const [metodosPagoOptions, setMetodosPagoOptions] = useState<SelectOption[]>([])
+  const [loadingConfig, setLoadingConfig] = useState(false)
 
   const [formData, setFormData] = useState<Partial<PagosChinaInput>>({
     idPago: "",
@@ -81,9 +78,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
   const montoRDNeto = montoRD - (formData.comisionBancoRD ?? 0)
 
-  // Cargar OCs disponibles
+  // Cargar OCs disponibles y configuraciones
   useEffect(() => {
     if (open) {
+      // Cargar OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
         .then((res) => res.json())
@@ -98,6 +96,29 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
           setLoadingOcs(false)
         })
         .catch(() => setLoadingOcs(false))
+
+      // Cargar configuraciones dinámicas
+      setLoadingConfig(true)
+      Promise.all([
+        fetch("/api/configuracion?categoria=tiposPago").then(res => res.json()),
+        fetch("/api/configuracion?categoria=metodosPago").then(res => res.json()),
+      ])
+        .then(([tiposPagoRes, metodosPagoRes]) => {
+          if (tiposPagoRes.success) {
+            setTiposPagoOptions(tiposPagoRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          if (metodosPagoRes.success) {
+            setMetodosPagoOptions(metodosPagoRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          setLoadingConfig(false)
+        })
+        .catch(() => setLoadingConfig(false))
     }
   }, [open])
 
@@ -293,8 +314,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   value={formData.tipoPago || ""}
                   onChange={(value) => setFormData({ ...formData, tipoPago: value })}
                   error={errors.tipoPago}
-                  placeholder="Selecciona tipo"
-                  disabled={loading}
+                  placeholder={loadingConfig ? "Cargando tipos..." : "Selecciona tipo"}
+                  disabled={loading || loadingConfig}
                 />
               </div>
 
@@ -308,8 +329,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   value={formData.metodoPago || ""}
                   onChange={(value) => setFormData({ ...formData, metodoPago: value })}
                   error={errors.metodoPago}
-                  placeholder="Selecciona método"
-                  disabled={loading}
+                  placeholder={loadingConfig ? "Cargando métodos..." : "Selecciona método"}
+                  disabled={loading || loadingConfig}
                 />
               </div>
             </div>

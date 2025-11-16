@@ -9,7 +9,7 @@ import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
-import { gastosLogisticosSchema, GastosLogisticosInput, tiposGasto, metodosPago } from "@/lib/validations"
+import { gastosLogisticosSchema, GastosLogisticosInput } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface FileAttachment {
@@ -39,16 +39,6 @@ interface GastosLogisticosFormProps {
   gastoToEdit?: GastoLogistico | null
 }
 
-const tiposGastoOptions: SelectOption[] = tiposGasto.map(t => ({
-  value: t,
-  label: t
-}))
-
-const metodosPagoOptions: SelectOption[] = metodosPago.map(m => ({
-  value: m,
-  label: m
-}))
-
 export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdit }: GastosLogisticosFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -57,6 +47,11 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [loadingOcs, setLoadingOcs] = useState(false)
+
+  // Opciones de configuración dinámica
+  const [tiposGastoOptions, setTiposGastoOptions] = useState<SelectOption[]>([])
+  const [metodosPagoOptions, setMetodosPagoOptions] = useState<SelectOption[]>([])
+  const [loadingConfig, setLoadingConfig] = useState(false)
 
   const [formData, setFormData] = useState<Partial<GastosLogisticosInput>>({
     idGasto: "",
@@ -72,6 +67,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
 
   useEffect(() => {
     if (open) {
+      // Cargar OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
         .then((res) => res.json())
@@ -82,6 +78,29 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
           setLoadingOcs(false)
         })
         .catch(() => setLoadingOcs(false))
+
+      // Cargar configuraciones dinámicas
+      setLoadingConfig(true)
+      Promise.all([
+        fetch("/api/configuracion?categoria=tiposGasto").then(res => res.json()),
+        fetch("/api/configuracion?categoria=metodosPago").then(res => res.json()),
+      ])
+        .then(([tiposGastoRes, metodosPagoRes]) => {
+          if (tiposGastoRes.success) {
+            setTiposGastoOptions(tiposGastoRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          if (metodosPagoRes.success) {
+            setMetodosPagoOptions(metodosPagoRes.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          setLoadingConfig(false)
+        })
+        .catch(() => setLoadingConfig(false))
     }
   }, [open])
 
@@ -236,8 +255,8 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                   value={formData.tipoGasto || ""}
                   onChange={(value) => setFormData({ ...formData, tipoGasto: value })}
                   error={errors.tipoGasto}
-                  placeholder="Selecciona tipo"
-                  disabled={loading}
+                  placeholder={loadingConfig ? "Cargando tipos..." : "Selecciona tipo"}
+                  disabled={loading || loadingConfig}
                 />
               </div>
             </div>
@@ -266,8 +285,8 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                   value={formData.metodoPago || ""}
                   onChange={(value) => setFormData({ ...formData, metodoPago: value })}
                   error={errors.metodoPago}
-                  placeholder="Selecciona método"
-                  disabled={loading}
+                  placeholder={loadingConfig ? "Cargando métodos..." : "Selecciona método"}
+                  disabled={loading || loadingConfig}
                 />
               </div>
             </div>

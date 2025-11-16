@@ -8,7 +8,6 @@ import { Select, SelectOption } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
-import { bodegas } from "@/lib/validations"
 import { distribuirGastosLogisticos } from "@/lib/calculations"
 import { Loader2 } from "lucide-react"
 
@@ -30,8 +29,6 @@ interface InventarioRecibidoFormProps {
   inventarioToEdit?: InventarioRecibido | null
 }
 
-const bodegasOptions: SelectOption[] = bodegas.map(b => ({ value: b, label: b }))
-
 export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventarioToEdit }: InventarioRecibidoFormProps) {
   const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -39,6 +36,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [loadingOcs, setLoadingOcs] = useState(false)
+
+  // Opciones de configuración dinámica
+  const [bodegasOptions, setBodegasOptions] = useState<SelectOption[]>([])
+  const [loadingConfig, setLoadingConfig] = useState(false)
 
   const [itemsOptions, setItemsOptions] = useState<SelectOption[]>([])
   const [selectedOcData, setSelectedOcData] = useState<any>(null)
@@ -54,9 +55,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
     notas: "",
   })
 
-  // Cargar lista de OCs
+  // Cargar lista de OCs y configuraciones
   useEffect(() => {
     if (open) {
+      // Cargar OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
         .then((res) => res.json())
@@ -70,6 +72,21 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
           setLoadingOcs(false)
         })
         .catch(() => setLoadingOcs(false))
+
+      // Cargar configuraciones dinámicas
+      setLoadingConfig(true)
+      fetch("/api/configuracion?categoria=bodegas")
+        .then(res => res.json())
+        .then((result) => {
+          if (result.success) {
+            setBodegasOptions(result.data.map((item: any) => ({
+              value: item.valor,
+              label: item.valor
+            })))
+          }
+          setLoadingConfig(false)
+        })
+        .catch(() => setLoadingConfig(false))
     }
   }, [open])
 
@@ -303,8 +320,8 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                   options={bodegasOptions}
                   value={formData.bodegaInicial || ""}
                   onChange={(value) => setFormData({ ...formData, bodegaInicial: value })}
-                  placeholder="Selecciona bodega"
-                  disabled={loading}
+                  placeholder={loadingConfig ? "Cargando bodegas..." : "Selecciona bodega"}
+                  disabled={loading || loadingConfig}
                 />
               </div>
             </div>

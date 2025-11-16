@@ -30,6 +30,7 @@ const categoriaOptions: SelectOption[] = [
   { value: "metodosPago", label: "Métodos de Pago" },
   { value: "bodegas", label: "Bodegas" },
   { value: "tiposGasto", label: "Tipos de Gasto" },
+  { value: "proveedores", label: "Proveedores" },
 ]
 
 export function ConfiguracionForm({

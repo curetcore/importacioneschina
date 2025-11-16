@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const configuracionSchema = z.object({
-  categoria: z.enum(["categorias", "tiposPago", "metodosPago", "bodegas", "tiposGasto"]),
+  categoria: z.enum(["categorias", "tiposPago", "metodosPago", "bodegas", "tiposGasto", "proveedores"]),
   valor: z.string().min(1, "El valor es requerido"),
   orden: z.number().int().default(0),
 });
