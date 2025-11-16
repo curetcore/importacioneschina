@@ -111,6 +111,19 @@ export async function DELETE(
       );
     }
 
+    // Verificar si está en uso antes de eliminar
+    const inUse = await checkConfigurationInUse(existing.categoria, existing.valor);
+
+    if (inUse.isUsed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `No se puede eliminar "${existing.valor}" porque está en uso en: ${inUse.usedIn.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
     // Soft delete - marcar como inactivo
     await prisma.configuracion.update({
       where: { id },
@@ -131,4 +144,66 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+// Función auxiliar para verificar si una configuración está en uso
+async function checkConfigurationInUse(categoria: string, valor: string): Promise<{ isUsed: boolean; usedIn: string[] }> {
+  const usedIn: string[] = [];
+
+  try {
+    switch (categoria) {
+      case "proveedores":
+        const ocsWithProveedor = await prisma.oCChina.count({
+          where: { proveedor: valor },
+        });
+        if (ocsWithProveedor > 0) usedIn.push(`${ocsWithProveedor} órdenes de compra`);
+        break;
+
+      case "categorias":
+        const ocsWithCategoria = await prisma.oCChina.count({
+          where: { categoriaPrincipal: valor },
+        });
+        if (ocsWithCategoria > 0) usedIn.push(`${ocsWithCategoria} órdenes de compra`);
+        break;
+
+      case "tiposPago":
+        const pagosWithTipo = await prisma.pagosChina.count({
+          where: { tipoPago: valor },
+        });
+        if (pagosWithTipo > 0) usedIn.push(`${pagosWithTipo} pagos`);
+        break;
+
+      case "metodosPago":
+        const pagosWithMetodo = await prisma.pagosChina.count({
+          where: { metodoPago: valor },
+        });
+        const gastosWithMetodo = await prisma.gastosLogisticos.count({
+          where: { metodoPago: valor },
+        });
+        if (pagosWithMetodo > 0) usedIn.push(`${pagosWithMetodo} pagos`);
+        if (gastosWithMetodo > 0) usedIn.push(`${gastosWithMetodo} gastos logísticos`);
+        break;
+
+      case "tiposGasto":
+        const gastosWithTipo = await prisma.gastosLogisticos.count({
+          where: { tipoGasto: valor },
+        });
+        if (gastosWithTipo > 0) usedIn.push(`${gastosWithTipo} gastos logísticos`);
+        break;
+
+      case "bodegas":
+        const inventarioWithBodega = await prisma.inventarioRecibido.count({
+          where: { bodegaInicial: valor },
+        });
+        if (inventarioWithBodega > 0) usedIn.push(`${inventarioWithBodega} recepciones de inventario`);
+        break;
+    }
+  } catch (error) {
+    console.error("Error verificando uso de configuración:", error);
+  }
+
+  return {
+    isUsed: usedIn.length > 0,
+    usedIn,
+  };
 }
