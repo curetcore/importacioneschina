@@ -14,8 +14,9 @@ import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
+import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { tiposGasto } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, Truck, FileText } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Truck, FileText, Paperclip } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -55,6 +56,8 @@ export default function GastosLogisticosPage() {
   const [ocFilter, setOcFilter] = useState("")
   const [tipoGastoFilter, setTipoGastoFilter] = useState("")
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
+  const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
+  const [selectedGastoForAttachments, setSelectedGastoForAttachments] = useState<GastoLogistico | null>(null)
 
   const tipoGastoOptions: SelectOption[] = [
     { value: "", label: "Todos los tipos" },
@@ -274,6 +277,17 @@ export default function GastosLogisticosPage() {
                           <Button
                             variant="ghost"
                             className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setSelectedGastoForAttachments(gasto)
+                              setAttachmentsDialogOpen(true)
+                            }}
+                            title="Agregar adjuntos"
+                          >
+                            <Paperclip className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
                             onClick={() => handleEdit(gasto)}
                           >
                             <Edit className="w-4 h-4" />
@@ -336,6 +350,21 @@ export default function GastosLogisticosPage() {
           variant="danger"
           loading={deleteLoading}
         />
+
+        {selectedGastoForAttachments && (
+          <AddAttachmentsDialog
+            open={attachmentsDialogOpen}
+            onOpenChange={setAttachmentsDialogOpen}
+            module="gastos-logisticos"
+            recordId={selectedGastoForAttachments.id}
+            recordName={`Gasto ${selectedGastoForAttachments.idGasto} - ${selectedGastoForAttachments.tipoGasto}`}
+            currentAttachments={selectedGastoForAttachments.adjuntos || []}
+            onSuccess={() => {
+              fetchGastos(currentPage)
+              setSelectedGastoForAttachments(null)
+            }}
+          />
+        )}
       </div>
     </MainLayout>
   )

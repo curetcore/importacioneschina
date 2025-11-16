@@ -14,7 +14,8 @@ import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
-import { Plus, Edit, Trash2, Search, X, DollarSign } from "lucide-react"
+import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
+import { Plus, Edit, Trash2, Search, X, DollarSign, Paperclip } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -58,6 +59,8 @@ export default function PagosChinaPage() {
   const [ocFilter, setOcFilter] = useState("")
   const [monedaFilter, setMonedaFilter] = useState("")
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
+  const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
+  const [selectedPagoForAttachments, setSelectedPagoForAttachments] = useState<Pago | null>(null)
 
   const monedaOptions: SelectOption[] = [
     { value: "", label: "Todas las monedas" },
@@ -292,6 +295,17 @@ export default function PagosChinaPage() {
                           <Button
                             variant="ghost"
                             className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setSelectedPagoForAttachments(pago)
+                              setAttachmentsDialogOpen(true)
+                            }}
+                            title="Agregar adjuntos"
+                          >
+                            <Paperclip className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
                             onClick={() => handleEdit(pago)}
                           >
                             <Edit className="w-4 h-4" />
@@ -361,6 +375,21 @@ export default function PagosChinaPage() {
           variant="danger"
           loading={deleteLoading}
         />
+
+        {selectedPagoForAttachments && (
+          <AddAttachmentsDialog
+            open={attachmentsDialogOpen}
+            onOpenChange={setAttachmentsDialogOpen}
+            module="pagos-china"
+            recordId={selectedPagoForAttachments.id}
+            recordName={`Pago ${selectedPagoForAttachments.idPago} - OC ${selectedPagoForAttachments.ocChina.oc}`}
+            currentAttachments={selectedPagoForAttachments.adjuntos || []}
+            onSuccess={() => {
+              fetchPagos(currentPage)
+              setSelectedPagoForAttachments(null)
+            }}
+          />
+        )}
       </div>
     </MainLayout>
   )

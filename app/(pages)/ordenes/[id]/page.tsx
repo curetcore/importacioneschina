@@ -9,7 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { distribuirGastosLogisticos, calcularResumenFinanciero } from "@/lib/calculations"
-import { ArrowLeft } from "lucide-react"
+import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
+import { AttachmentsList } from "@/components/ui/attachments-list"
+import { ArrowLeft, Paperclip } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
 
 interface OCChinaItem {
   id: string
@@ -31,6 +41,7 @@ interface OCDetail {
   fechaOC: string
   categoriaPrincipal: string
   descripcionLote: string | null
+  adjuntos?: FileAttachment[]
   items: OCChinaItem[]
   pagosChina: Array<{
     id: string
@@ -72,8 +83,9 @@ export default function OCDetailPage() {
   const router = useRouter()
   const [oc, setOc] = useState<OCDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
 
-  useEffect(() => {
+  const fetchOC = () => {
     if (params.id) {
       setLoading(true)
       fetch(`/api/oc-china/${params.id}`)
@@ -86,6 +98,10 @@ export default function OCDetailPage() {
         })
         .catch(() => setLoading(false))
     }
+  }
+
+  useEffect(() => {
+    fetchOC()
   }, [params.id])
 
   if (loading) {
@@ -501,7 +517,45 @@ export default function OCDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Sección de Adjuntos */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <Paperclip size={18} />
+              Archivos Adjuntos ({oc.adjuntos?.length || 0})
+            </CardTitle>
+            <Button
+              onClick={() => setAttachmentsDialogOpen(true)}
+              variant="outline"
+              className="h-8 gap-2"
+            >
+              <Paperclip size={16} />
+              Agregar Archivos
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {!oc.adjuntos || oc.adjuntos.length === 0 ? (
+              <div className="text-center py-8 text-sm text-gray-500">
+                No hay archivos adjuntos para esta orden
+              </div>
+            ) : (
+              <AttachmentsList attachments={oc.adjuntos} />
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Diálogo para agregar adjuntos */}
+      <AddAttachmentsDialog
+        open={attachmentsDialogOpen}
+        onOpenChange={setAttachmentsDialogOpen}
+        module="oc-china"
+        recordId={oc.id}
+        recordName={`Orden ${oc.oc}`}
+        currentAttachments={oc.adjuntos || []}
+        onSuccess={fetchOC}
+      />
     </MainLayout>
   )
 }
