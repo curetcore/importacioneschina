@@ -18,7 +18,7 @@ export async function GET() {
       logs.push(generateOut);
     } catch (error) {
       logs.push("Ã¢ÂÂ Error generando cliente Prisma");
-      logs.push(error.message);
+      logs.push(error instanceof Error ? error.message : String(error));
     }
 
     // 2. Crear tablas con db push
@@ -29,7 +29,7 @@ export async function GET() {
       logs.push(pushOut);
     } catch (error) {
       logs.push("Ã¢ÂÂ Error creando tablas");
-      logs.push(error.message);
+      logs.push(error instanceof Error ? error.message : String(error));
       throw error; // Si falla aquÃÂ­, no continuar
     }
 
@@ -41,7 +41,7 @@ export async function GET() {
       logs.push(seedOut);
     } catch (error) {
       logs.push("Ã¢ÂÂ Error ejecutando seed");
-      logs.push(error.message);
+      logs.push(error instanceof Error ? error.message : String(error));
     }
 
     logs.push("\nÃ°ÂÂÂ ÃÂ¡Setup completado exitosamente!");
@@ -67,7 +67,7 @@ export async function GET() {
       {
         success: false,
         error: "Error ejecutando setup",
-        details: error.message,
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
