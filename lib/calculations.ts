@@ -28,9 +28,10 @@ export function calcularMontoRDNeto(
   const monto = typeof montoRD === "number" ? montoRD : parseFloat(montoRD.toString());
   const comision = typeof comisionBancoRD === "number" ? comisionBancoRD : parseFloat(comisionBancoRD.toString());
 
-  // FIX: RESTAR comisión (monto neto = monto - comisión)
-  // Antes estaba sumando incorrectamente
-  return monto - comision;
+  // SUMA la comisión para obtener el COSTO TOTAL real
+  // montoRDNeto = lo que realmente pagaste (monto convertido + comisión bancaria)
+  // Ejemplo: $1000 × 58.5 = 58,500 + 500 comisión = 59,000 RD$ (costo total)
+  return monto + comision;
 }
 
 export function calcularTotalInversion(

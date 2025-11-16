@@ -76,7 +76,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
   // Cálculos automáticos
   const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
-  const montoRDNeto = montoRD - (formData.comisionBancoRD ?? 0)
+  const montoRDNeto = montoRD + (formData.comisionBancoRD ?? 0)  // FIX: SUMA la comisión (costo total real)
 
   // Cargar OCs disponibles y configuraciones
   useEffect(() => {
@@ -425,13 +425,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
-                    Monto Neto (RD$)
+                    Costo Total (RD$)
                   </label>
                   <div className="text-lg font-semibold text-green-700">
                     RD$ {montoRDNeto.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Monto RD$ - Comisión
+                    Monto RD$ + Comisión
                   </p>
                 </div>
               </div>
