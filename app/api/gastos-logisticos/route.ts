@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
         fechaGasto: validatedData.fechaGasto,
         tipoGasto: validatedData.tipoGasto,
         proveedorServicio: validatedData.proveedorServicio,
+        metodoPago: validatedData.metodoPago,
         montoRD: new Prisma.Decimal(validatedData.montoRD),
         notas: validatedData.notas,
         adjuntos: adjuntos || null,

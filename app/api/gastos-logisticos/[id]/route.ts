@@ -114,6 +114,7 @@ export async function PUT(
         fechaGasto: new Date(validatedData.fechaGasto),
         tipoGasto: validatedData.tipoGasto,
         proveedorServicio: validatedData.proveedorServicio,
+        metodoPago: validatedData.metodoPago,
         montoRD: validatedData.montoRD,
         notas: validatedData.notas,
         adjuntos: adjuntos || null,
