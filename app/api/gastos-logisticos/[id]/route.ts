@@ -90,26 +90,12 @@ export async function PUT(
       );
     }
 
-    if (validatedData.idGasto !== existing.idGasto) {
-      const duplicate = await prisma.gastosLogisticos.findUnique({
-        where: { idGasto: validatedData.idGasto },
-      });
-
-      if (duplicate) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ya existe un gasto con ese ID",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
+    // Actualizar el gasto
+    // NOTA: idGasto NO se puede modificar (es autogenerado e inmutable)
     const updatedGasto = await prisma.gastosLogisticos.update({
       where: { id },
       data: {
-        idGasto: validatedData.idGasto,
+        // idGasto es inmutable - se mantiene el valor existente
         ocId: validatedData.ocId,
         fechaGasto: new Date(validatedData.fechaGasto),
         tipoGasto: validatedData.tipoGasto,

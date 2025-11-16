@@ -95,23 +95,6 @@ export async function PUT(
       );
     }
 
-    // Si se está cambiando el idPago, verificar que no exista otro con ese ID
-    if (validatedData.idPago !== existing.idPago) {
-      const duplicate = await prisma.pagosChina.findUnique({
-        where: { idPago: validatedData.idPago },
-      });
-
-      if (duplicate) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ya existe un pago con ese ID",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
     // Recalcular montoRD y montoRDNeto (Problema #4)
     const montoRD = calcularMontoRD(
       validatedData.montoOriginal,
@@ -125,10 +108,11 @@ export async function PUT(
     );
 
     // Actualizar el pago con campos recalculados
+    // NOTA: idPago NO se puede modificar (es autogenerado e inmutable)
     const updatedPago = await prisma.pagosChina.update({
       where: { id },
       data: {
-        idPago: validatedData.idPago,
+        // idPago es inmutable - se mantiene el valor existente
         ocId: validatedData.ocId,
         fechaPago: new Date(validatedData.fechaPago),
         tipoPago: validatedData.tipoPago,

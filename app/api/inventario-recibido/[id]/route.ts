@@ -93,20 +93,6 @@ export async function PUT(
       );
     }
 
-    // Verificar unicidad del idRecepcion (si cambió)
-    if (validatedData.idRecepcion !== existing.idRecepcion) {
-      const duplicate = await prisma.inventarioRecibido.findUnique({
-        where: { idRecepcion: validatedData.idRecepcion },
-      });
-
-      if (duplicate) {
-        return NextResponse.json(
-          { success: false, error: "Ya existe una recepción con ese ID" },
-          { status: 400 }
-        );
-      }
-    }
-
     // Si se especificó un itemId, validar sobre-recepción (Problema #5)
     if (validatedData.itemId) {
       const item = oc.items.find(i => i.id === validatedData.itemId);
@@ -191,10 +177,11 @@ export async function PUT(
     }
 
     // Actualizar la recepción con todos los campos y costos recalculados
+    // NOTA: idRecepcion NO se puede modificar (es autogenerado e inmutable)
     const updated = await prisma.inventarioRecibido.update({
       where: { id },
       data: {
-        idRecepcion: validatedData.idRecepcion,
+        // idRecepcion es inmutable - se mantiene el valor existente
         ocId: validatedData.ocId,
         itemId: validatedData.itemId || null,
         fechaLlegada: validatedData.fechaLlegada,
