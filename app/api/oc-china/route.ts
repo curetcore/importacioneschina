@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateUniqueId } from "@/lib/id-generator";
 import { TallaDistribucion } from "@/lib/calculations";
+import type { InputJsonValue } from "@prisma/client/runtime/library";
 
 interface OCItemInput {
   sku: string;
@@ -20,14 +21,14 @@ interface OCItemValidado {
   material: string | null;
   color: string | null;
   especificaciones: string | null;
-  tallaDistribucion: TallaDistribucion | null;
+  tallaDistribucion: InputJsonValue;
   cantidadTotal: number;
   precioUnitarioUSD: number;
   subtotalUSD: number;
 }
 
 // Función de validación para tallaDistribucion
-function validarTallaDistribucion(tallas: unknown): TallaDistribucion | null {
+function validarTallaDistribucion(tallas: unknown): InputJsonValue {
   if (!tallas) return null;
 
   // Validar que sea un objeto
