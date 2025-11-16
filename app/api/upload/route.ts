@@ -58,17 +58,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // SEGURIDAD: Validar extensión del archivo (evitar double extensions como .php.jpg)
+    const originalExtension = path.extname(file.name).toLowerCase()
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".pdf"]
+
+    if (!allowedExtensions.includes(originalExtension)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Extensión de archivo no válida. Solo .jpg, .jpeg, .png y .pdf son permitidos.",
+        },
+        { status: 400 }
+      )
+    }
+
+    // SEGURIDAD: Validar que el nombre no contenga caracteres peligrosos o path traversal
+    const originalName = file.name
+    if (originalName.includes("..") || originalName.includes("/") || originalName.includes("\\")) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Nombre de archivo no válido",
+        },
+        { status: 400 }
+      )
+    }
+
     // Crear directorio si no existe
     const moduleDir = path.join(UPLOAD_DIR, MODULE_FOLDERS[module])
     if (!existsSync(moduleDir)) {
       await mkdir(moduleDir, { recursive: true })
     }
 
-    // Generar nombre único
+    // Generar nombre único seguro
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(2, 8)
-    const extension = path.extname(file.name)
-    const filename = `${timestamp}-${randomString}${extension}`
+    // Usar la extensión validada (no la del usuario directamente)
+    const filename = `${timestamp}-${randomString}${originalExtension}`
     const filepath = path.join(moduleDir, filename)
 
     // Guardar archivo
