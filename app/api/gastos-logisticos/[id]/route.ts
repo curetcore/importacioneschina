@@ -114,7 +114,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error en PUT /api/gastos-logisticos/[id]:", error);
 
-    if (error.errors) {
+    if (error && typeof error === 'object' && 'errors' in error) {
       return NextResponse.json(
         {
           success: false,

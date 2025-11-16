@@ -209,7 +209,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error en PUT /api/inventario-recibido/[id]:", error);
 
-    if (error.errors) {
+    if (error && typeof error === 'object' && 'errors' in error) {
       return NextResponse.json(
         { success: false, error: "Datos de entrada inválidos", details: error.errors },
         { status: 400 }

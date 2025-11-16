@@ -135,7 +135,7 @@ export async function PUT(
     console.error("Error en PUT /api/pagos-china/[id]:", error);
 
     // Errores de validación Zod
-    if (error.errors) {
+    if (error && typeof error === 'object' && 'errors' in error) {
       return NextResponse.json(
         {
           success: false,
