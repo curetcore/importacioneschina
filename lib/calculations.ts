@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 export interface TallaDistribucion {
   [talla: string]: number;
@@ -158,7 +159,7 @@ interface OCChinaItem {
   material?: string | null
   color?: string | null
   especificaciones?: string | null
-  tallaDistribucion?: TallaDistribucion | null
+  tallaDistribucion?: JsonValue
   cantidadTotal: number
   precioUnitarioUSD: number | Prisma.Decimal
   subtotalUSD: number | Prisma.Decimal
