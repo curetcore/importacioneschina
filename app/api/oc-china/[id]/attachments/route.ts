@@ -46,7 +46,7 @@ export async function PUT(
     }
 
     // Combinar adjuntos existentes con los nuevos
-    const existingAttachments = (oc.adjuntos as FileAttachment[]) || [];
+    const existingAttachments = (oc.adjuntos as unknown as FileAttachment[]) || [];
     const updatedAttachments = [...existingAttachments, ...adjuntos];
 
     // Actualizar en la base de datos
@@ -114,7 +114,7 @@ export async function DELETE(
     }
 
     // Filtrar el adjunto a eliminar
-    const existingAttachments = (oc.adjuntos as FileAttachment[]) || [];
+    const existingAttachments = (oc.adjuntos as unknown as FileAttachment[]) || [];
     const updatedAttachments = existingAttachments.filter(
       (att) => att.url !== fileUrl
     );
