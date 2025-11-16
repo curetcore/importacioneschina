@@ -13,14 +13,6 @@ export async function GET(request: NextRequest) {
 
     const proveedores = await prisma.proveedor.findMany({
       where: whereClause,
-      include: {
-        _count: {
-          select: {
-            productos: true,
-            metodosPago: true,
-          },
-        },
-      },
       orderBy: {
         nombre: "asc",
       },

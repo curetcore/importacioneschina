@@ -11,16 +11,6 @@ export async function GET(
   try {
     const proveedor = await prisma.proveedor.findUnique({
       where: { id: params.id },
-      include: {
-        productos: {
-          where: { activo: true },
-          orderBy: { nombre: "asc" },
-        },
-        metodosPago: {
-          where: { activo: true },
-          orderBy: { nombre: "asc" },
-        },
-      },
     })
 
     if (!proveedor) {
@@ -155,14 +145,6 @@ export async function DELETE(
     // Verificar que el proveedor existe
     const proveedor = await prisma.proveedor.findUnique({
       where: { id: params.id },
-      include: {
-        _count: {
-          select: {
-            productos: true,
-            metodosPago: true,
-          },
-        },
-      },
     })
 
     if (!proveedor) {
@@ -172,25 +154,6 @@ export async function DELETE(
           error: "Proveedor no encontrado",
         },
         { status: 404 }
-      )
-    }
-
-    // Verificar si tiene productos o métodos de pago asociados
-    if (proveedor._count.productos > 0 || proveedor._count.metodosPago > 0) {
-      const usedIn: string[] = []
-      if (proveedor._count.productos > 0) {
-        usedIn.push(`${proveedor._count.productos} producto(s)`)
-      }
-      if (proveedor._count.metodosPago > 0) {
-        usedIn.push(`${proveedor._count.metodosPago} método(s) de pago`)
-      }
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: `No se puede eliminar "${proveedor.nombre}" porque está en uso en: ${usedIn.join(", ")}`,
-        },
-        { status: 400 }
       )
     }
 

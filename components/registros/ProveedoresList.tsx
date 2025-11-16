@@ -19,10 +19,6 @@ interface Proveedor {
   categoriaProductos?: string | null
   calificacion?: number | null
   activo: boolean
-  _count?: {
-    productos: number
-    metodosPago: number
-  }
 }
 
 interface ProveedoresListProps {
@@ -172,15 +168,11 @@ export function ProveedoresList({ onAdd, onEdit }: ProveedoresListProps) {
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                  <div className="flex gap-3 text-xs text-gray-500">
-                    <span>{proveedor._count?.productos || 0} productos</span>
-                    <span>{proveedor._count?.metodosPago || 0} métodos pago</span>
+                {proveedor.calificacion !== null && proveedor.calificacion !== undefined && (
+                  <div className="pt-2 border-t border-gray-100">
+                    {renderStars(proveedor.calificacion)}
                   </div>
-                  {proveedor.calificacion !== null && proveedor.calificacion !== undefined && (
-                    <div>{renderStars(proveedor.calificacion)}</div>
-                  )}
-                </div>
+                )}
               </CardContent>
             </Card>
           ))}
