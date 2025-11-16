@@ -28,7 +28,9 @@ export function calcularMontoRDNeto(
   const monto = typeof montoRD === "number" ? montoRD : parseFloat(montoRD.toString());
   const comision = typeof comisionBancoRD === "number" ? comisionBancoRD : parseFloat(comisionBancoRD.toString());
 
-  return monto + comision;
+  // FIX: RESTAR comisión (monto neto = monto - comisión)
+  // Antes estaba sumando incorrectamente
+  return monto - comision;
 }
 
 export function calcularTotalInversion(

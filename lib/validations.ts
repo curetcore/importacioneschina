@@ -14,7 +14,7 @@ export const ocChinaSchema = z.object({
 export type OCChinaInput = z.infer<typeof ocChinaSchema>;
 
 export const pagosChinaSchema = z.object({
-  idPago: z.string().min(1, "El ID de pago es requerido"),
+  idPago: z.string().min(1, "El ID de pago es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
   fechaPago: z.coerce.date({
     required_error: "La fecha de pago es requerida",
@@ -40,7 +40,7 @@ export const pagosChinaSchema = z.object({
 export type PagosChinaInput = z.infer<typeof pagosChinaSchema>;
 
 export const gastosLogisticosSchema = z.object({
-  idGasto: z.string().min(1, "El ID de gasto es requerido"),
+  idGasto: z.string().min(1, "El ID de gasto es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
   fechaGasto: z.coerce.date({
     required_error: "La fecha del gasto es requerida",
@@ -57,7 +57,7 @@ export const gastosLogisticosSchema = z.object({
 export type GastosLogisticosInput = z.infer<typeof gastosLogisticosSchema>;
 
 export const inventarioRecibidoSchema = z.object({
-  idRecepcion: z.string().min(1, "El ID de recepcion es requerido"),
+  idRecepcion: z.string().min(1, "El ID de recepcion es requerido").optional(), // Opcional en CREATE (autogenerado)
   ocId: z.string().min(1, "La OC es requerida"),
   itemId: z.string().optional(), // Vincular a producto específico (opcional)
   fechaLlegada: z.coerce.date({
