@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
 
+export interface TallaDistribucion {
+  [talla: string]: number;
+}
+
 export function calcularMontoRD(
   montoOriginal: number | Prisma.Decimal,
   moneda: string,
@@ -154,7 +158,7 @@ interface OCChinaItem {
   material?: string | null
   color?: string | null
   especificaciones?: string | null
-  tallaDistribucion?: any
+  tallaDistribucion?: TallaDistribucion | null
   cantidadTotal: number
   precioUnitarioUSD: number | Prisma.Decimal
   subtotalUSD: number | Prisma.Decimal

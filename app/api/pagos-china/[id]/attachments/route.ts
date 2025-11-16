@@ -70,7 +70,7 @@ export async function PUT(
       data: updated,
       message: `${adjuntos.length} archivo(s) agregado(s) exitosamente`,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en PUT /api/pagos-china/[id]/attachments:", error);
     return NextResponse.json(
       {
@@ -137,7 +137,7 @@ export async function DELETE(
       data: updated,
       message: "Archivo eliminado exitosamente",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en DELETE /api/pagos-china/[id]/attachments:", error);
     return NextResponse.json(
       {

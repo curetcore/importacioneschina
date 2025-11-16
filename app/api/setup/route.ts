@@ -16,7 +16,7 @@ export async function GET() {
       const { stdout: generateOut } = await execAsync("npx prisma generate");
       logs.push("Ã¢ÂÂ Cliente Prisma generado");
       logs.push(generateOut);
-    } catch (error: any) {
+    } catch (error) {
       logs.push("Ã¢ÂÂ Error generando cliente Prisma");
       logs.push(error.message);
     }
@@ -27,7 +27,7 @@ export async function GET() {
       const { stdout: pushOut } = await execAsync("npx prisma db push --accept-data-loss");
       logs.push("Ã¢ÂÂ Tablas creadas exitosamente");
       logs.push(pushOut);
-    } catch (error: any) {
+    } catch (error) {
       logs.push("Ã¢ÂÂ Error creando tablas");
       logs.push(error.message);
       throw error; // Si falla aquÃÂ­, no continuar
@@ -39,7 +39,7 @@ export async function GET() {
       const { stdout: seedOut } = await execAsync("npm run db:seed");
       logs.push("Ã¢ÂÂ Datos de prueba insertados");
       logs.push(seedOut);
-    } catch (error: any) {
+    } catch (error) {
       logs.push("Ã¢ÂÂ Error ejecutando seed");
       logs.push(error.message);
     }
@@ -61,7 +61,7 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en setup:", error);
     return NextResponse.json(
       {

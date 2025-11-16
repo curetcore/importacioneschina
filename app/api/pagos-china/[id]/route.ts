@@ -131,7 +131,7 @@ export async function PUT(
       success: true,
       data: updatedPago,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en PUT /api/pagos-china/[id]:", error);
 
     // Errores de validación Zod

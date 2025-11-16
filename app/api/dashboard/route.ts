@@ -68,18 +68,21 @@ export async function GET() {
     const ocsActivas = ocsCalculadas.filter((oc) => oc.cantidadRecibida < oc.cantidadOrdenada).length;
     const ocsCompletadas = ocsCalculadas.filter((oc) => oc.cantidadRecibida >= oc.cantidadOrdenada).length;
 
-    // Obtener todos los pagos y gastos
-    const todosPagos = await prisma.pagosChina.findMany({
-      include: {
-        ocChina: { select: { oc: true } },
-      },
-    });
+    // OPTIMIZACIÓN: Usar los pagos y gastos que ya tenemos de las OCs cargadas
+    // en lugar de hacer queries adicionales (elimina N+1 queries)
+    const todosPagos = ocs.flatMap(oc =>
+      oc.pagosChina.map(pago => ({
+        ...pago,
+        ocChina: { oc: oc.oc }
+      }))
+    );
 
-    const todosGastos = await prisma.gastosLogisticos.findMany({
-      include: {
-        ocChina: { select: { oc: true } },
-      },
-    });
+    const todosGastos = ocs.flatMap(oc =>
+      oc.gastosLogisticos.map(gasto => ({
+        ...gasto,
+        ocChina: { oc: oc.oc }
+      }))
+    );
 
     // Total de comisiones bancarias
     const totalComisiones = todosPagos.reduce((sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0);

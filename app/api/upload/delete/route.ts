@@ -64,7 +64,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Archivo eliminado exitosamente",
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting file:", error)
     return NextResponse.json(
       { success: false, error: "Error al eliminar el archivo" },

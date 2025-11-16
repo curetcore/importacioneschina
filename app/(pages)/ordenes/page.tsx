@@ -141,11 +141,11 @@ export default function OrdenesPage() {
 
       setOcToDelete(null)
       fetchOCs(currentPage)
-    } catch (error: any) {
+    } catch (error) {
       addToast({
         type: "error",
         title: "Error",
-        description: error.message || "Error al eliminar la orden",
+        description: error instanceof Error ? error.message : "Error al eliminar la orden",
       })
     } finally {
       setDeleteLoading(false)

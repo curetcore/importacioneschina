@@ -88,7 +88,7 @@ export default function InventarioRecibidoPage() {
         if (result.success) {
           setOcsOptions([
             { value: "", label: "Todas las OCs" },
-            ...result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
+            ...result.data.map((oc: { id: string; oc: string; proveedor: string }) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
           ])
         }
       })
@@ -135,11 +135,11 @@ export default function InventarioRecibidoPage() {
 
       setInventarioToDelete(null)
       fetchInventarios(currentPage)
-    } catch (error: any) {
+    } catch (error) {
       addToast({
         type: "error",
         title: "Error",
-        description: error.message || "Error al eliminar el inventario",
+        description: error instanceof Error ? error.message : "Error al eliminar el inventario",
       })
     } finally {
       setDeleteLoading(false)

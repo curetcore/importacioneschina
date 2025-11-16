@@ -89,10 +89,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en POST /api/configuracion:", error);
 
-    if (error.errors) {
+    if (error && typeof error === 'object' && 'errors' in error) {
       return NextResponse.json(
         {
           success: false,

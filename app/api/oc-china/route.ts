@@ -1,6 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateUniqueId } from "@/lib/id-generator";
+import { TallaDistribucion } from "@/lib/calculations";
+
+interface OCItemInput {
+  sku: string;
+  nombre: string;
+  material?: string | null;
+  color?: string | null;
+  especificaciones?: string | null;
+  tallaDistribucion?: TallaDistribucion | null;
+  cantidadTotal: number | string;
+  precioUnitarioUSD: number | string;
+}
+
+interface OCItemValidado {
+  sku: string;
+  nombre: string;
+  material: string | null;
+  color: string | null;
+  especificaciones: string | null;
+  tallaDistribucion: TallaDistribucion | null;
+  cantidadTotal: number;
+  precioUnitarioUSD: number;
+  subtotalUSD: number;
+}
+
+// Función de validación para tallaDistribucion
+function validarTallaDistribucion(tallas: unknown): TallaDistribucion | null {
+  if (!tallas) return null;
+
+  // Validar que sea un objeto
+  if (typeof tallas !== 'object' || Array.isArray(tallas)) {
+    console.warn('⚠️ tallaDistribucion inválida: no es un objeto');
+    return null;
+  }
+
+  // Validar que todos los valores sean números positivos
+  const tallasObj = tallas as Record<string, unknown>;
+  const tallasValidadas: TallaDistribucion = {};
+
+  for (const [talla, cantidad] of Object.entries(tallasObj)) {
+    const cantidadNum = typeof cantidad === 'number' ? cantidad : parseInt(String(cantidad));
+
+    if (isNaN(cantidadNum) || cantidadNum < 0) {
+      console.warn(`⚠️ tallaDistribucion[${talla}] inválida: ${cantidad}`);
+      continue; // Saltar tallas inválidas
+    }
+
+    tallasValidadas[talla] = cantidadNum;
+  }
+
+  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : null;
+}
 
 // GET /api/oc-china - Obtener todas las órdenes de compra
 export async function GET(request: NextRequest) {
@@ -112,7 +164,7 @@ export async function POST(request: NextRequest) {
     const oc = await generateUniqueId("oCChina", "oc", "OC");
 
     // Validar y normalizar cada item (Problemas #1 y #2)
-    const itemsValidados: any[] = [];
+    const itemsValidados: OCItemValidado[] = [];
     for (const item of items) {
       // Validaciones básicas
       if (!item.sku || !item.nombre) {
@@ -163,13 +215,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Validar tallaDistribucion de manera segura (Problema #9)
+      const tallasValidadas = validarTallaDistribucion(item.tallaDistribucion);
+
       itemsValidados.push({
         sku: item.sku,
         nombre: item.nombre,
         material: item.material || null,
         color: item.color || null,
         especificaciones: item.especificaciones || null,
-        tallaDistribucion: item.tallaDistribucion || null,
+        tallaDistribucion: tallasValidadas,
         cantidadTotal: cantidad,
         precioUnitarioUSD: precio,
         subtotalUSD: subtotal,

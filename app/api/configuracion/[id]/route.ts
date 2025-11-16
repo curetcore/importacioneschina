@@ -65,10 +65,10 @@ export async function PUT(
       success: true,
       data: updated,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en PUT /api/configuracion/[id]:", error);
 
-    if (error.errors) {
+    if (error && typeof error === 'object' && 'errors' in error) {
       return NextResponse.json(
         {
           success: false,

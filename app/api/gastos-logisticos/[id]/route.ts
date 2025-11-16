@@ -111,7 +111,7 @@ export async function PUT(
       success: true,
       data: updatedGasto,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en PUT /api/gastos-logisticos/[id]:", error);
 
     if (error.errors) {

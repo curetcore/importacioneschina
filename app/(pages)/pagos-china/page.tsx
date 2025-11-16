@@ -99,7 +99,7 @@ export default function PagosChinaPage() {
         if (result.success) {
           setOcsOptions([
             { value: "", label: "Todas las OCs" },
-            ...result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
+            ...result.data.map((oc: { id: string; oc: string; proveedor: string }) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
           ])
         }
       })
@@ -146,11 +146,11 @@ export default function PagosChinaPage() {
 
       setPagoToDelete(null)
       fetchPagos(currentPage)
-    } catch (error: any) {
+    } catch (error) {
       addToast({
         type: "error",
         title: "Error",
-        description: error.message || "Error al eliminar el pago",
+        description: error instanceof Error ? error.message : "Error al eliminar el pago",
       })
     } finally {
       setDeleteLoading(false)

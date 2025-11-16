@@ -206,7 +206,7 @@ export async function PUT(
       success: true,
       data: updated,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error en PUT /api/inventario-recibido/[id]:", error);
 
     if (error.errors) {
