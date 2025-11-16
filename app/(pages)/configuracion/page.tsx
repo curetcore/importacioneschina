@@ -7,9 +7,12 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfiguracionForm } from "@/components/forms/ConfiguracionForm"
+import { ProveedorForm } from "@/components/forms/ProveedorForm"
+import { ProveedoresList } from "@/components/registros/ProveedoresList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Plus, Edit, Trash2, Settings, Users, Package, Wallet } from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 
 interface Configuracion {
@@ -63,6 +66,11 @@ export default function ConfiguracionPage() {
   const [configToDelete, setConfigToDelete] = useState<Configuracion | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [selectedCategoria, setSelectedCategoria] = useState<string>("")
+
+  // Proveedor state
+  const [proveedorFormOpen, setProveedorFormOpen] = useState(false)
+  const [proveedorToEdit, setProveedorToEdit] = useState<any>(null)
+  const [refreshProveedores, setRefreshProveedores] = useState(0)
 
   const fetchConfiguraciones = async () => {
     setLoading(true)
@@ -165,80 +173,148 @@ export default function ConfiguracionPage() {
     <MainLayout>
       <div className="space-y-6">
         <div className="border-b border-gray-200 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Configuración</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Registros</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestiona las opciones y parámetros del sistema
+            Gestiona proveedores, productos, métodos de pago y configuración del sistema
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {configuraciones.map((config) => (
-            <Card key={config.categoria}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle>{config.titulo}</CardTitle>
-                    <p className="text-xs text-gray-500 mt-1">{config.descripcion}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    className="h-8 text-sm"
-                    onClick={() => handleAdd(config.categoria)}
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Agregar
-                  </Button>
+        <Tabs defaultValue="configuracion" className="w-full">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="configuracion" className="gap-2">
+              <Settings className="w-4 h-4" />
+              Configuración
+            </TabsTrigger>
+            <TabsTrigger value="proveedores" className="gap-2">
+              <Users className="w-4 h-4" />
+              Proveedores
+            </TabsTrigger>
+            <TabsTrigger value="productos" className="gap-2">
+              <Package className="w-4 h-4" />
+              Productos
+            </TabsTrigger>
+            <TabsTrigger value="metodos-pago" className="gap-2">
+              <Wallet className="w-4 h-4" />
+              Métodos de Pago
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="configuracion" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {configuraciones.map((config) => (
+                <Card key={config.categoria}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle>{config.titulo}</CardTitle>
+                        <p className="text-xs text-gray-500 mt-1">{config.descripcion}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="h-8 text-sm"
+                        onClick={() => handleAdd(config.categoria)}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Agregar
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {config.items.length === 0 ? (
+                        <div className="text-center py-4 text-sm text-gray-400">
+                          No hay items configurados
+                        </div>
+                      ) : (
+                        config.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <span>{item.valor}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                title="Editar"
+                              >
+                                <Edit className="w-3.5 h-3.5 text-gray-600" />
+                              </button>
+                              <button
+                                onClick={() => setConfigToDelete(item)}
+                                className="p-1 hover:bg-red-100 rounded transition-colors"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-green-900">✓ Configuración Dinámica Activa</h3>
+                  <p className="text-xs text-green-700 mt-1">
+                    Ahora puedes gestionar las configuraciones directamente desde esta interfaz.
+                    Los cambios se aplicarán inmediatamente en todos los formularios del sistema.
+                  </p>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="proveedores" key={refreshProveedores}>
+            <ProveedoresList
+              onAdd={() => {
+                setProveedorToEdit(null)
+                setProveedorFormOpen(true)
+              }}
+              onEdit={(proveedor) => {
+                setProveedorToEdit(proveedor)
+                setProveedorFormOpen(true)
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="productos">
+            <Card>
+              <CardHeader>
+                <CardTitle>Catálogo de Productos</CardTitle>
+                <p className="text-sm text-gray-500">Productos maestros que puedes reutilizar en órdenes</p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {config.items.length === 0 ? (
-                    <div className="text-center py-4 text-sm text-gray-400">
-                      No hay items configurados
-                    </div>
-                  ) : (
-                    config.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        <span>{item.valor}</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="p-1 hover:bg-gray-200 rounded transition-colors"
-                            title="Editar"
-                          >
-                            <Edit className="w-3.5 h-3.5 text-gray-600" />
-                          </button>
-                          <button
-                            onClick={() => setConfigToDelete(item)}
-                            className="p-1 hover:bg-red-100 rounded transition-colors"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-red-600" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div className="text-center py-12 text-gray-500">
+                  <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Catálogo de Productos en construcción</p>
+                  <p className="text-xs mt-2">Próximamente: SKUs, descripciones, precios de referencia, imágenes</p>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          </TabsContent>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-green-900">✓ Configuración Dinámica Activa</h3>
-              <p className="text-xs text-green-700 mt-1">
-                Ahora puedes gestionar las configuraciones directamente desde esta interfaz.
-                Los cambios se aplicarán inmediatamente en todos los formularios del sistema.
-              </p>
-            </div>
-          </div>
-        </div>
+          <TabsContent value="metodos-pago">
+            <Card>
+              <CardHeader>
+                <CardTitle>Métodos de Pago y Monederos</CardTitle>
+                <p className="text-sm text-gray-500">Gestiona cuentas bancarias, tarjetas y monederos digitales</p>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-gray-500">
+                  <Wallet className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Métodos de Pago en construcción</p>
+                  <p className="text-xs mt-2">Próximamente: cuentas bancarias, tarjetas, Alipay, PayPal, Wise</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <ConfiguracionForm
@@ -262,6 +338,18 @@ export default function ConfiguracionPage() {
         cancelText="Cancelar"
         variant="danger"
         loading={deleteLoading}
+      />
+
+      <ProveedorForm
+        open={proveedorFormOpen}
+        onOpenChange={(open) => {
+          setProveedorFormOpen(open)
+          if (!open) setProveedorToEdit(null)
+        }}
+        onSuccess={() => {
+          setRefreshProveedores(prev => prev + 1)
+        }}
+        proveedorToEdit={proveedorToEdit}
       />
     </MainLayout>
   )

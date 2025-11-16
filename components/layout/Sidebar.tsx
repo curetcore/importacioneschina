@@ -9,7 +9,7 @@ import {
   DollarSign,
   FileText,
   Inbox,
-  Settings
+  FolderOpen
 } from "lucide-react"
 
 const menuItems = [
@@ -18,7 +18,7 @@ const menuItems = [
   { href: "/pagos-china", label: "Pagos", icon: DollarSign },
   { href: "/gastos-logisticos", label: "Gastos", icon: FileText },
   { href: "/inventario-recibido", label: "Inventario", icon: Inbox },
-  { href: "/configuracion", label: "Configuración", icon: Settings },
+  { href: "/configuracion", label: "Registros", icon: FolderOpen },
 ]
 
 export default function Sidebar() {

@@ -196,3 +196,155 @@ model User {
   @@index([email])
   @@index([activo])
 }
+
+// TABLA 7: PROVEEDORES (CRM)
+model Proveedor {
+  id                    String   @id @default(cuid())
+  codigo                String   @unique  // "PROV-001"
+  nombre                String
+
+  // Información de contacto
+  contactoPrincipal     String?  @map("contacto_principal")
+  email                 String?
+  telefono              String?
+  whatsapp              String?
+  wechat                String?
+
+  // Ubicación
+  pais                  String   @default("China")
+  ciudad                String?
+  direccion             String?  @db.Text
+
+  // Información comercial
+  sitioWeb              String?  @map("sitio_web")
+  categoriaProductos    String?  @map("categoria_productos")  // Zapatos, Carteras, etc.
+  tiempoEntregaDias     Int?     @default(30) @map("tiempo_entrega_dias")
+  monedaPreferida       String?  @default("USD") @map("moneda_preferida")
+
+  // Términos comerciales
+  terminosPago          String?  @db.Text @map("terminos_pago")  // "50% anticipo, 50% antes de envío"
+  minimoOrden           Decimal? @db.Decimal(12, 2) @map("minimo_orden")
+
+  // Notas y calificación
+  notas                 String?  @db.Text
+  calificacion          Int?     @default(0)  // 0-5 estrellas
+
+  // Estado
+  activo                Boolean  @default(true)
+
+  // Relaciones
+  productos             Producto[]
+  metodosPago           MetodoPago[]
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("proveedores")
+  @@index([nombre])
+  @@index([activo])
+  @@index([pais])
+}
+
+// TABLA 8: CATÁLOGO DE PRODUCTOS
+model Producto {
+  id                    String   @id @default(cuid())
+  sku                   String   @unique
+  nombre                String
+
+  // Proveedor
+  proveedorId           String?  @map("proveedor_id")
+
+  // Descripción
+  descripcion           String?  @db.Text
+  material              String?
+  color                 String?
+  categoria             String?
+
+  // Precios de referencia (últimos conocidos)
+  precioReferenciaUSD   Decimal? @db.Decimal(10, 4) @map("precio_referencia_usd")
+  precioReferenciaCNY   Decimal? @db.Decimal(10, 4) @map("precio_referencia_cny")
+  ultimaActualizacionPrecio DateTime? @map("ultima_actualizacion_precio")
+
+  // Especificaciones técnicas
+  especificaciones      String?  @db.Text
+  tallasDisponibles     Json?    @map("tallas_disponibles")  // ["S", "M", "L", "XL"] o {"38": true, "39": true}
+
+  // Imágenes y documentos
+  imagenPrincipal       String?  @map("imagen_principal")  // URL
+  imagenesAdicionales   Json?    @map("imagenes_adicionales")  // [url1, url2, url3]
+  fichatecnica          String?  @map("ficha_tecnica")  // URL del PDF
+
+  // Estado
+  activo                Boolean  @default(true)
+
+  // Relaciones
+  proveedor             Proveedor? @relation(fields: [proveedorId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("productos")
+  @@index([proveedorId])
+  @@index([sku])
+  @@index([nombre])
+  @@index([categoria])
+  @@index([activo])
+}
+
+// TABLA 9: MÉTODOS DE PAGO / MONEDEROS
+model MetodoPago {
+  id                    String   @id @default(cuid())
+  nombre                String   // "Cuenta USD Bank of America", "Alipay Principal"
+  tipo                  String   // "banco", "tarjeta", "monedero_digital"
+
+  // Proveedor asociado (opcional)
+  proveedorId           String?  @map("proveedor_id")
+
+  // Información específica del método
+  moneda                String   // "USD", "CNY", "EUR"
+
+  // Datos bancarios (si es banco)
+  banco                 String?
+  numeroCuenta          String?  @map("numero_cuenta")
+  titular               String?
+  swift                 String?
+  iban                  String?
+
+  // Datos de tarjeta (si es tarjeta)
+  ultimos4Digitos       String?  @map("ultimos_4_digitos")
+  tipoTarjeta           String?  @map("tipo_tarjeta")  // "crédito", "débito"
+
+  // Datos de monedero digital (si es Alipay, PayPal, etc)
+  email                 String?  // Para PayPal
+  telefono              String?  // Para Alipay/WeChat
+  idCuenta              String?  @map("id_cuenta")  // ID genérico
+
+  // Límites y comisiones
+  limiteTransaccion     Decimal? @db.Decimal(12, 2) @map("limite_transaccion")
+  comisionPorcentaje    Decimal? @db.Decimal(5, 2) @map("comision_porcentaje")
+  comisionFija          Decimal? @db.Decimal(10, 2) @map("comision_fija")
+
+  // Balance actual (opcional)
+  balanceActual         Decimal? @db.Decimal(12, 2) @map("balance_actual")
+
+  // Notas
+  notas                 String?  @db.Text
+
+  // Estado
+  activo                Boolean  @default(true)
+
+  // Relaciones
+  proveedor             Proveedor? @relation(fields: [proveedorId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("metodos_pago")
+  @@index([proveedorId])
+  @@index([tipo])
+  @@index([moneda])
+  @@index([activo])
+}
