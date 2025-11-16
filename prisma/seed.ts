@@ -12,12 +12,106 @@ async function main() {
   await prisma.pagosChina.deleteMany();
   await prisma.oCChinaItem.deleteMany();
   await prisma.oCChina.deleteMany();
+  await prisma.configuracion.deleteMany();
+  await prisma.user.deleteMany();
+
+  // Crear datos de configuración
+  console.log("⚙️ Creando configuraciones del sistema...");
+
+  const configuraciones = [
+    // Proveedores
+    { categoria: "proveedores", valor: "Nike China", orden: 1 },
+    { categoria: "proveedores", valor: "Adidas Factory", orden: 2 },
+    { categoria: "proveedores", valor: "Puma Manufacturing", orden: 3 },
+    { categoria: "proveedores", valor: "Fábrica Guangzhou", orden: 4 },
+    { categoria: "proveedores", valor: "Shenzhen Leather Co.", orden: 5 },
+
+    // Categorías principales
+    { categoria: "categorias", valor: "Zapatos", orden: 1 },
+    { categoria: "categorias", valor: "Carteras", orden: 2 },
+    { categoria: "categorias", valor: "Cinturones", orden: 3 },
+    { categoria: "categorias", valor: "Accesorios", orden: 4 },
+    { categoria: "categorias", valor: "Ropa", orden: 5 },
+
+    // Tipos de pago
+    { categoria: "tiposPago", valor: "Anticipo", orden: 1 },
+    { categoria: "tiposPago", valor: "Pago final", orden: 2 },
+    { categoria: "tiposPago", valor: "Pago parcial", orden: 3 },
+    { categoria: "tiposPago", valor: "Pago completo", orden: 4 },
+
+    // Métodos de pago
+    { categoria: "metodosPago", valor: "Transferencia bancaria", orden: 1 },
+    { categoria: "metodosPago", valor: "Tarjeta de crédito", orden: 2 },
+    { categoria: "metodosPago", valor: "Tarjeta de débito", orden: 3 },
+    { categoria: "metodosPago", valor: "Efectivo", orden: 4 },
+    { categoria: "metodosPago", valor: "Cheque", orden: 5 },
+    { categoria: "metodosPago", valor: "PayPal", orden: 6 },
+    { categoria: "metodosPago", valor: "Alipay", orden: 7 },
+
+    // Bodegas
+    { categoria: "bodegas", valor: "Bóveda", orden: 1 },
+    { categoria: "bodegas", valor: "Piantini", orden: 2 },
+    { categoria: "bodegas", valor: "Villa Mella", orden: 3 },
+    { categoria: "bodegas", valor: "Oficina Central", orden: 4 },
+    { categoria: "bodegas", valor: "Almacén Norte", orden: 5 },
+
+    // Tipos de gasto
+    { categoria: "tiposGasto", valor: "Flete internacional", orden: 1 },
+    { categoria: "tiposGasto", valor: "Seguro de carga", orden: 2 },
+    { categoria: "tiposGasto", valor: "Aduana / DGA", orden: 3 },
+    { categoria: "tiposGasto", valor: "Impuestos", orden: 4 },
+    { categoria: "tiposGasto", valor: "Broker aduanal", orden: 5 },
+    { categoria: "tiposGasto", valor: "Almacenaje", orden: 6 },
+    { categoria: "tiposGasto", valor: "Transporte local", orden: 7 },
+    { categoria: "tiposGasto", valor: "Inspección", orden: 8 },
+    { categoria: "tiposGasto", valor: "Otros gastos", orden: 9 },
+  ];
+
+  for (const config of configuraciones) {
+    await prisma.configuracion.create({
+      data: {
+        categoria: config.categoria,
+        valor: config.valor,
+        orden: config.orden,
+        activo: true,
+      },
+    });
+  }
+  console.log(`✅ ${configuraciones.length} configuraciones creadas`);
+
+  // Crear usuario administrador
+  console.log("👤 Creando usuario administrador...");
+  const bcrypt = await import("bcryptjs");
+  const hashedPassword = await bcrypt.hash("admin123", 10);
+
+  await prisma.user.create({
+    data: {
+      email: "admin@curet.com",
+      password: hashedPassword,
+      name: "Administrador",
+      role: "ADMIN",
+      activo: true,
+    },
+  });
+  console.log("✅ Usuario admin creado (email: admin@curet.com, password: admin123)");
 
   // Crear 10 OCs de ejemplo con items
   console.log("📦 Creando órdenes de compra con productos...");
-  const proveedores = ["China 1", "China 2", "Fábrica X"];
-  const categorias = ["Zapatos", "Carteras", "Cinturones", "Accesorios"];
-  const skuPrefixes = ["ZAP", "CAR", "CIN", "ACC"];
+
+  // Obtener proveedores desde configuración
+  const proveedoresConfig = await prisma.configuracion.findMany({
+    where: { categoria: "proveedores", activo: true },
+    orderBy: { orden: "asc" },
+  });
+  const proveedores = proveedoresConfig.map((p) => p.valor);
+
+  // Obtener categorías desde configuración
+  const categoriasConfig = await prisma.configuracion.findMany({
+    where: { categoria: "categorias", activo: true },
+    orderBy: { orden: "asc" },
+  });
+  const categorias = categoriasConfig.map((c) => c.valor);
+  const skuPrefixes = ["ZAP", "CAR", "CIN", "ACC", "ROP"];
 
   const ocs = [];
   for (let i = 1; i <= 10; i++) {
@@ -127,23 +221,20 @@ async function main() {
 
   // Crear gastos logísticos
   console.log("🚚 Creando gastos logísticos...");
-  const tiposGasto = [
-    "Flete internacional",
-    "Seguro",
-    "Aduana / DGA",
-    "Impuestos",
-    "Broker",
-    "Almacenaje",
-    "Transporte local",
-  ];
 
-  const metodosPago = [
-    "Transferencia",
-    "Tarjeta de credito",
-    "Tarjeta de debito",
-    "Efectivo",
-    "Cheque",
-  ];
+  // Obtener tipos de gasto desde configuración
+  const tiposGastoConfig = await prisma.configuracion.findMany({
+    where: { categoria: "tiposGasto", activo: true },
+    orderBy: { orden: "asc" },
+  });
+  const tiposGasto = tiposGastoConfig.map((t) => t.valor);
+
+  // Obtener métodos de pago desde configuración
+  const metodosPagoConfig = await prisma.configuracion.findMany({
+    where: { categoria: "metodosPago", activo: true },
+    orderBy: { orden: "asc" },
+  });
+  const metodosPago = metodosPagoConfig.map((m) => m.valor);
 
   let gastoCount = 0;
   for (const oc of ocs) {
@@ -169,7 +260,14 @@ async function main() {
 
   // Crear recepciones de inventario (vinculadas a items específicos)
   console.log("📥 Creando recepciones de inventario...");
-  const bodegas = ["Bóveda", "Piantini", "Villa Mella", "Oficina"];
+
+  // Obtener bodegas desde configuración
+  const bodegasConfig = await prisma.configuracion.findMany({
+    where: { categoria: "bodegas", activo: true },
+    orderBy: { orden: "asc" },
+  });
+  const bodegas = bodegasConfig.map((b) => b.valor);
+
   let recepcionCount = 0;
 
   for (const oc of ocs) {
@@ -198,11 +296,16 @@ async function main() {
 
   console.log("\n✨ Seed data completado exitosamente!");
   console.log(`\n📊 Resumen:`);
+  console.log(`   - ${configuraciones.length} configuraciones del sistema`);
+  console.log(`   - 1 usuario administrador`);
   console.log(`   - ${ocs.length} órdenes de compra`);
   console.log(`   - ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`);
   console.log(`   - ${pagoCount} pagos`);
   console.log(`   - ${gastoCount} gastos logísticos`);
   console.log(`   - ${recepcionCount} recepciones de inventario`);
+  console.log(`\n🔑 Credenciales de acceso:`);
+  console.log(`   Email: admin@curet.com`);
+  console.log(`   Password: admin123`);
 }
 
 main()
