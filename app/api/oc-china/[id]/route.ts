@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
 
@@ -28,12 +29,12 @@ interface OCItemValidado {
 
 // Función de validación para tallaDistribucion
 function validarTallaDistribucion(tallas: unknown): InputJsonValue {
-  if (!tallas) return null;
+  if (!tallas) return Prisma.JsonNull;
 
   // Validar que sea un objeto
   if (typeof tallas !== 'object' || Array.isArray(tallas)) {
     console.warn('⚠️ tallaDistribucion inválida: no es un objeto');
-    return null;
+    return Prisma.JsonNull;
   }
 
   // Validar que todos los valores sean números positivos
@@ -51,7 +52,7 @@ function validarTallaDistribucion(tallas: unknown): InputJsonValue {
     tallasValidadas[talla] = cantidadNum;
   }
 
-  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : null;
+  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : Prisma.JsonNull;
 }
 
 // GET /api/oc-china/[id] - Obtener una orden de compra específica
