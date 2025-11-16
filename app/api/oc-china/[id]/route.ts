@@ -21,20 +21,20 @@ interface OCItemValidado {
   material: string | null;
   color: string | null;
   especificaciones: string | null;
-  tallaDistribucion: InputJsonValue;
+  tallaDistribucion: InputJsonValue | null;
   cantidadTotal: number;
   precioUnitarioUSD: number;
   subtotalUSD: number;
 }
 
 // Función de validación para tallaDistribucion
-function validarTallaDistribucion(tallas: unknown): InputJsonValue {
-  if (!tallas) return Prisma.JsonNull;
+function validarTallaDistribucion(tallas: unknown): InputJsonValue | null {
+  if (!tallas) return null;
 
   // Validar que sea un objeto
   if (typeof tallas !== 'object' || Array.isArray(tallas)) {
     console.warn('⚠️ tallaDistribucion inválida: no es un objeto');
-    return Prisma.JsonNull;
+    return null;
   }
 
   // Validar que todos los valores sean números positivos
@@ -52,7 +52,7 @@ function validarTallaDistribucion(tallas: unknown): InputJsonValue {
     tallasValidadas[talla] = cantidadNum;
   }
 
-  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : Prisma.JsonNull;
+  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : null;
 }
 
 // GET /api/oc-china/[id] - Obtener una orden de compra específica
