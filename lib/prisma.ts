@@ -17,12 +17,13 @@ export const prisma =
   })
 
 // Cliente Prisma demo (base de datos separada)
+// Usa DATABASE_URL como fallback durante build si DEMO_DATABASE_URL no está disponible
 export const prismaDemo =
   globalForPrisma.prismaDemo ??
   new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DEMO_DATABASE_URL,
+        url: process.env.DEMO_DATABASE_URL || process.env.DATABASE_URL,
       },
     },
   })
