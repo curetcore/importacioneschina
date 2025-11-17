@@ -28,7 +28,9 @@ export async function GET() {
 
     // PERFORMANCE WARNING: Si hay más OCs que el límite, notificar
     const totalOCs = await db.oCChina.count()
-    if (totalOCs > MAX_OCS_DASHBOARD) {
+    const datosLimitados = totalOCs > MAX_OCS_DASHBOARD
+
+    if (datosLimitados) {
       console.warn(
         `⚠️ Dashboard mostrando datos de ${MAX_OCS_DASHBOARD} OCs más recientes de ${totalOCs} totales`
       )
@@ -365,6 +367,16 @@ export async function GET() {
           totalComisiones: Math.round(totalComisiones * 100) / 100,
           ocsActivas,
           ocsCompletadas,
+        },
+        // NUEVO: Metadata para indicar si los datos están limitados
+        metadata: {
+          datosCompletos: !datosLimitados,
+          ocsIncluidas: ocs.length,
+          ocsTotal: totalOCs,
+          ocsExcluidas: datosLimitados ? totalOCs - MAX_OCS_DASHBOARD : 0,
+          advertencia: datosLimitados
+            ? `Los datos mostrados representan las ${MAX_OCS_DASHBOARD} OCs más recientes de ${totalOCs} totales. Considere usar filtros de fecha para análisis más específicos.`
+            : null,
         },
         financiero: {
           pagosPorMetodo: pagosPorMetodo.map(item => ({

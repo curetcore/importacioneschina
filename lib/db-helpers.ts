@@ -45,6 +45,27 @@ export async function restoreSoftDelete(model: keyof typeof prisma, id: string):
 /**
  * Obtener query filter para excluir registros eliminados
  * Usar en todas las queries para filtrar soft-deleted records
+ *
+ * NOTA IMPORTANTE SOBRE SOFT DELETE:
+ * - El schema tiene `deletedAt` en todas las tablas principales
+ * - Este filtro se aplica en todos los queries GET
+ * - ESTADO ACTUAL (2025-01-17):
+ *   ✅ Proveedores: DELETE endpoint implementado (soft delete)
+ *   ⏸️ OC China, Pagos, Gastos, Inventario: DELETE no implementado
+ * - PENDIENTE PARA PRODUCCIÓN:
+ *   1. Implementar DELETE consistente en todos los módulos
+ *   2. Agregar interfaz de "Papelera" para recuperar registros
+ *   3. O decidir eliminar el campo si no se va a usar
+ *
+ * Uso:
+ * ```typescript
+ * await db.oCChina.findMany({
+ *   where: {
+ *     ...notDeletedFilter,  // Excluye registros borrados
+ *     proveedor: "China 1"
+ *   }
+ * })
+ * ```
  */
 export const notDeletedFilter = {
   deletedAt: null,
@@ -52,6 +73,7 @@ export const notDeletedFilter = {
 
 /**
  * Obtener query filter para incluir SOLO registros eliminados
+ * Útil para implementar una "Papelera" o vista de registros eliminados
  */
 export const onlyDeletedFilter = {
   deletedAt: { not: null },

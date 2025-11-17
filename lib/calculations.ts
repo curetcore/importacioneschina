@@ -226,6 +226,40 @@ export interface ItemConCostos extends Omit<OCChinaItem, "precioUnitarioUSD" | "
 
 /**
  * Calcula la tasa de cambio promedio ponderada de los pagos
+ *
+ * DOCUMENTACIÓN DE LÓGICA DE TASA DE CAMBIO:
+ *
+ * ¿Por qué promedio ponderado?
+ * --------------------------------
+ * Si una OC tiene múltiples pagos a diferentes tasas, necesitamos una tasa
+ * representativa que refleje el costo real. El promedio simple sería incorrecto.
+ *
+ * Ejemplo:
+ * - Pago 1: $100 a tasa 58 = RD$5,800
+ * - Pago 2: $900 a tasa 60 = RD$54,000
+ * - Total: $1,000 = RD$59,800
+ *
+ * Promedio simple: (58 + 60) / 2 = 59 (INCORRECTO)
+ * Promedio ponderado: (100×58 + 900×60) / 1000 = 59.8 (CORRECTO)
+ *
+ * Fórmula:
+ * --------
+ * tasaPromedio = Σ(tasa × monto) / Σ(monto)
+ *
+ * Casos especiales:
+ * -----------------
+ * 1. Sin pagos: retorna 0
+ * 2. Pagos solo en RD$: retorna 0 (no necesitan conversión)
+ * 3. Montos totales = 0: retorna 0 (previene división por cero)
+ *
+ * Uso del default (58):
+ * ---------------------
+ * Si esta función retorna 0, los llamadores usan 58 como fallback.
+ * Esto permite calcular costos FOB incluso sin pagos registrados.
+ * Ver: analisis-costos/route.ts línea 87, calcularCostosCompletos línea 455
+ *
+ * @param pagos - Array de pagos de una OC
+ * @returns Tasa de cambio promedio ponderada (0 si no hay datos)
  */
 export function calcularTasaCambioPromedio(pagos: PagoChina[]): number {
   if (pagos.length === 0) return 0
@@ -376,4 +410,218 @@ export function calcularResumenFinanciero(
     tasaCambioPromedio: currency(tasaCambioPromedio).value,
     costoUnitarioPromedioRD: totalUnidades > 0 ? RD(totalCostoRD).divide(totalUnidades).value : 0,
   }
+}
+
+// =====================================================
+// CÁLCULO DE COSTOS COMPLETO CON SISTEMA PROFESIONAL
+// =====================================================
+// IMPORTANTE: Esta función usa el sistema profesional de distribución de costos
+// que incluye FOB + pagos + gastos + comisiones de forma completa y correcta.
+
+/**
+ * Calcula costos completos por producto usando el sistema profesional de distribución
+ *
+ * Este método es el CORRECTO para calcular costos finales, ya que incluye:
+ * - Costo FOB (precio base del producto)
+ * - Pagos distribuidos (anticipo, pago final, etc.)
+ * - Gastos logísticos distribuidos (flete, aduana, broker, etc.)
+ * - Comisiones bancarias distribuidas
+ *
+ * DIFERENCIA con distribuirGastosLogisticos():
+ * - distribuirGastosLogisticos() solo calcula FOB + gastos (INCOMPLETO)
+ * - Esta función calcula TODO (COMPLETO)
+ *
+ * @param items - Productos de la OC con sus datos (SKU, cantidad, precio FOB, peso, volumen)
+ * @param pagos - Todos los pagos realizados para esta OC
+ * @param gastos - Todos los gastos logísticos de esta OC
+ * @param metodosDistribucion - Métodos de distribución configurados (opcional)
+ * @returns Información detallada de costos por producto
+ */
+export interface CostoCompletoItem {
+  id: string
+  sku: string
+  nombre: string
+  cantidadTotal: number
+
+  // Costos base
+  precioUnitarioUSD: number
+  subtotalUSD: number
+
+  // Desglose de costos en RD$
+  costoFOBRD: number              // Precio FOB convertido a RD$
+  pagosDistribuidosRD: number     // Porción de pagos asignada a este producto
+  gastosDistribuidosRD: number    // Porción de gastos asignada a este producto
+  comisionesDistribuidasRD: number // Porción de comisiones asignada a este producto
+
+  // Costo total y unitario
+  costoTotalRD: number            // Suma de todos los costos
+  costoUnitarioRD: number         // Costo total / cantidad
+
+  // Metadatos
+  tasaCambio: number              // Tasa de cambio usada
+  metodosUsados: {                // Métodos de distribución aplicados
+    pagos: string
+    gastos: string
+    comisiones: string
+  }
+}
+
+export function calcularCostosCompletos(
+  items: OCChinaItem[],
+  pagosChina: PagoChina[],
+  gastosLogisticos: GastoLogistico[],
+  metodosDistribucion?: {
+    pagos?: string
+    gastos?: string
+    comisiones?: string
+  }
+): CostoCompletoItem[] {
+  // IMPORTANTE: Importar dinámicamente para evitar dependencias circulares
+  const { distributeCost } = require("@/lib/cost-distribution")
+
+  // Validación: si no hay items, retornar array vacío
+  if (!items || items.length === 0) {
+    console.warn("⚠️ calcularCostosCompletos: No hay items para calcular")
+    return []
+  }
+
+  // 1. Calcular tasa de cambio promedio ponderada
+  const tasaPromedio = calcularTasaCambioPromedio(pagosChina) || 58
+
+  // 2. Preparar datos para distribución
+  const itemsNormalizados = items.map(item => ({
+    id: item.id,
+    sku: item.sku,
+    nombre: item.nombre,
+    cantidadTotal: item.cantidadTotal,
+    precioUnitarioUSD: typeof item.precioUnitarioUSD === "number"
+      ? item.precioUnitarioUSD
+      : parseFloat(item.precioUnitarioUSD.toString()),
+    subtotalUSD: typeof item.subtotalUSD === "number"
+      ? item.subtotalUSD
+      : parseFloat(item.subtotalUSD.toString()),
+  }))
+
+  // 3. Preparar datos para sistema de distribución profesional
+  const productosParaDistribucion = items.map(item => ({
+    id: item.id,
+    cantidad: item.cantidadTotal,
+    pesoUnitarioKg: item.pesoUnitarioKg
+      ? parseFloat(item.pesoUnitarioKg.toString())
+      : null,
+    volumenUnitarioCBM: item.volumenUnitarioCBM
+      ? parseFloat(item.volumenUnitarioCBM.toString())
+      : null,
+    precioUnitarioUSD: typeof item.precioUnitarioUSD === "number"
+      ? item.precioUnitarioUSD
+      : parseFloat(item.precioUnitarioUSD.toString()),
+  }))
+
+  // 4. Calcular totales de pagos, gastos y comisiones
+  const totalPagosRD = pagosChina.reduce((sum, pago) => {
+    if (!pago.montoRDNeto) return sum
+    const monto = typeof pago.montoRDNeto === "number"
+      ? pago.montoRDNeto
+      : parseFloat(pago.montoRDNeto.toString())
+    return sum + monto
+  }, 0)
+
+  const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    const monto = typeof gasto.montoRD === "number"
+      ? gasto.montoRD
+      : parseFloat(gasto.montoRD.toString())
+    return sum + monto
+  }, 0)
+
+  const totalComisionesRD = pagosChina.reduce((sum, pago) => {
+    const comision = typeof pago.comisionBancoRD === "number"
+      ? pago.comisionBancoRD
+      : parseFloat(pago.comisionBancoRD.toString())
+    return sum + comision
+  }, 0)
+
+  // 5. Distribuir costos usando el sistema profesional
+  const metodoPagos = metodosDistribucion?.pagos || "valor_fob"
+  const metodoGastos = metodosDistribucion?.gastos || "peso"
+  const metodoComisiones = metodosDistribucion?.comisiones || "valor_fob"
+
+  const pagosDistribuidos = distributeCost(
+    productosParaDistribucion,
+    totalPagosRD,
+    metodoPagos,
+    tasaPromedio
+  )
+
+  const gastosDistribuidos = distributeCost(
+    productosParaDistribucion,
+    totalGastosRD,
+    metodoGastos,
+    tasaPromedio
+  )
+
+  const comisionesDistribuidas = distributeCost(
+    productosParaDistribucion,
+    totalComisionesRD,
+    metodoComisiones,
+    tasaPromedio
+  )
+
+  // 6. Combinar resultados
+  return itemsNormalizados.map(item => {
+    // Buscar distribuciones para este producto
+    const pagosDist = pagosDistribuidos.find(d => d.productId === item.id)
+    const gastosDist = gastosDistribuidos.find(d => d.productId === item.id)
+    const comisionesDist = comisionesDistribuidas.find(d => d.productId === item.id)
+
+    // Costos distribuidos por unidad
+    const pagosUnitario = pagosDist?.costoUnitario || 0
+    const gastosUnitario = gastosDist?.costoUnitario || 0
+    const comisionesUnitario = comisionesDist?.costoUnitario || 0
+
+    // Costo FOB en RD$
+    const costoFOBRD = item.subtotalUSD * tasaPromedio
+
+    // Costos distribuidos totales (para este producto)
+    const pagosDistribuidosRD = pagosDist?.costoDistribuido || 0
+    const gastosDistribuidosRD = gastosDist?.costoDistribuido || 0
+    const comisionesDistribuidasRD = comisionesDist?.costoDistribuido || 0
+
+    // NOTA IMPORTANTE: Según la lógica de analisis-costos/route.ts (línea 164):
+    // costoFinal = costoFobRD + pagosUnitario + gastosUnitario + comisionesUnitario
+    //
+    // Esto puede parecer redundante (¿FOB + Pagos?) pero es correcto porque:
+    // - costoFOBRD = Precio base del producto
+    // - pagosDistribuidos = Distribución de TODOS los pagos hechos (incluye anticipos, pagos finales, etc.)
+    // - Los "pagos" representan el dinero real enviado, que puede diferir del FOB teórico
+    //   debido a descuentos, ajustes, o pagos parciales
+    //
+    // Por lo tanto, sumamos todo para obtener el costo total real
+    const costoTotalRD = costoFOBRD + pagosDistribuidosRD + gastosDistribuidosRD + comisionesDistribuidasRD
+
+    // Costo unitario
+    const costoUnitarioRD = item.cantidadTotal > 0
+      ? costoTotalRD / item.cantidadTotal
+      : 0
+
+    return {
+      id: item.id,
+      sku: item.sku,
+      nombre: item.nombre,
+      cantidadTotal: item.cantidadTotal,
+      precioUnitarioUSD: item.precioUnitarioUSD,
+      subtotalUSD: item.subtotalUSD,
+      costoFOBRD: RD(costoFOBRD).value,
+      pagosDistribuidosRD: RD(pagosDistribuidosRD).value,
+      gastosDistribuidosRD: RD(gastosDistribuidosRD).value,
+      comisionesDistribuidasRD: RD(comisionesDistribuidasRD).value,
+      costoTotalRD: RD(costoTotalRD).value,
+      costoUnitarioRD: RD(costoUnitarioRD).value,
+      tasaCambio: tasaPromedio,
+      metodosUsados: {
+        pagos: metodoPagos,
+        gastos: metodoGastos,
+        comisiones: metodoComisiones,
+      },
+    }
+  })
 }

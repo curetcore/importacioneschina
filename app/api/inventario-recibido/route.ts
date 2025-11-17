@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { inventarioRecibidoSchema } from "@/lib/validations"
-import { distribuirGastosLogisticos } from "@/lib/calculations"
+import { calcularCostosCompletos } from "@/lib/calculations"
 import { generateUniqueId } from "@/lib/id-generator"
 import { Prisma } from "@prisma/client"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
@@ -153,8 +153,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calcular costos distribuidos por producto
-    const itemsConCostos = distribuirGastosLogisticos(oc.items, oc.gastosLogisticos, oc.pagosChina)
+    // NUEVO: Calcular costos COMPLETOS usando el sistema profesional de distribución
+    // que incluye FOB + pagos + gastos + comisiones (consistente con análisis-costos)
+    const itemsConCostos = calcularCostosCompletos(oc.items, oc.pagosChina, oc.gastosLogisticos)
 
     let costoUnitarioFinalRD: number
     let costoTotalRecepcionRD: number
@@ -169,6 +170,17 @@ export async function POST(request: NextRequest) {
 
       costoUnitarioFinalRD = itemConCosto.costoUnitarioRD
       costoTotalRecepcionRD = costoUnitarioFinalRD * validatedData.cantidadRecibida
+
+      console.info(`✅ Costo calculado para ${itemConCosto.sku}:`, {
+        costoUnitario: costoUnitarioFinalRD,
+        desglose: {
+          fob: itemConCosto.costoFOBRD,
+          pagos: itemConCosto.pagosDistribuidosRD,
+          gastos: itemConCosto.gastosDistribuidosRD,
+          comisiones: itemConCosto.comisionesDistribuidasRD,
+        },
+        metodosUsados: itemConCosto.metodosUsados,
+      })
     } else {
       // Caso 2: No se especificó producto - calcular promedio ponderado de todos los items
       // (Para compatibilidad con recepciones antiguas o de lotes mixtos)
@@ -177,6 +189,12 @@ export async function POST(request: NextRequest) {
 
       costoUnitarioFinalRD = totalUnidades > 0 ? totalCosto / totalUnidades : 0
       costoTotalRecepcionRD = costoUnitarioFinalRD * validatedData.cantidadRecibida
+
+      console.info(`✅ Costo promedio calculado para OC ${oc.oc}:`, {
+        costoUnitarioPromedio: costoUnitarioFinalRD,
+        totalUnidades,
+        totalCosto,
+      })
     }
 
     // Crear la recepción con los costos calculados
