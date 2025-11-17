@@ -54,11 +54,6 @@ export async function GET(request: NextRequest) {
                 deletedAt: null, // Only active payments
               },
             },
-            gastosLogisticos: {
-              where: {
-                deletedAt: null, // Only active expenses
-              },
-            },
           },
         },
         item: true,
@@ -68,7 +63,50 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // 3. Group inventory by OC for cost distribution
+    // 2b. Fetch all gastos with their associated OCs (many-to-many relationship)
+    const gastosWithOCs = await db.gastoLogistico.findMany({
+      where: {
+        deletedAt: null, // Only active expenses
+        ordenesCompra: {
+          some: {
+            ocChina: {
+              deletedAt: null, // Only from active OCs
+              ...(ocId ? { id: ocId } : {}), // Filter by OC if specified
+            },
+          },
+        },
+      },
+      include: {
+        ordenesCompra: {
+          include: {
+            ocChina: true,
+          },
+        },
+      },
+    })
+
+    // 3. Calculate proportional gasto distribution across OCs
+    // When a gasto is associated with multiple OCs, its cost is distributed proportionally
+    const gastosPorOC = new Map<string, number>()
+
+    gastosWithOCs.forEach(gasto => {
+      const numOCs = gasto.ordenesCompra.length
+
+      if (numOCs === 0) {
+        console.warn(`⚠️ Gasto ${gasto.id} no tiene OCs asociadas`)
+        return
+      }
+
+      // Distribute the gasto cost equally across all associated OCs
+      const costoPorOC = parseFloat(gasto.montoRD.toString()) / numOCs
+
+      gasto.ordenesCompra.forEach(junction => {
+        const currentTotal = gastosPorOC.get(junction.ocId) || 0
+        gastosPorOC.set(junction.ocId, currentTotal + costoPorOC)
+      })
+    })
+
+    // 4. Group inventory by OC for cost distribution
     const inventariosPorOC = new Map<string, typeof inventarios>()
     inventarios.forEach(inv => {
       if (!inventariosPorOC.has(inv.ocId)) {
@@ -77,7 +115,7 @@ export async function GET(request: NextRequest) {
       inventariosPorOC.get(inv.ocId)?.push(inv)
     })
 
-    // 4. Calculate cost breakdown for each product
+    // 5. Calculate cost breakdown for each product
     const analisis = inventarios
       .map(inv => {
         const item = inv.item
@@ -114,10 +152,8 @@ export async function GET(request: NextRequest) {
           (sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"),
           0
         )
-        const totalGastosOC = inv.ocChina.gastosLogisticos.reduce(
-          (sum, gasto) => sum + parseFloat(gasto.montoRD.toString()),
-          0
-        )
+        // Get the proportionally distributed gasto total for this OC
+        const totalGastosOC = gastosPorOC.get(inv.ocId) || 0
         const totalComisionesOC = inv.ocChina.pagosChina.reduce(
           (sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()),
           0
