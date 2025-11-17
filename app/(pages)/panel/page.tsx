@@ -101,11 +101,6 @@ export default function PanelPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="border-b border-gray-200 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Panel</h1>
-        </div>
-
         {/* 1. KPIs PRINCIPALES */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">KPIs Principales</h2>

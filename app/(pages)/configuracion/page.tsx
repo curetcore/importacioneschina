@@ -179,10 +179,6 @@ export default function ConfiguracionPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Configuración</h1>
-        </div>
-
         <Tabs defaultValue="configuracion" className="w-full">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="configuracion" className="gap-2">
