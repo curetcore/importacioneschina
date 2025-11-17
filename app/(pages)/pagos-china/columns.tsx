@@ -1,0 +1,187 @@
+"use client"
+
+import { ColumnDef } from "@tanstack/react-table"
+import { Button } from "@/components/ui/button"
+import { AttachmentsList } from "@/components/ui/attachments-list"
+import { formatDate, formatCurrency } from "@/lib/utils"
+import { Edit, Trash2, Paperclip } from "lucide-react"
+
+interface FileAttachment {
+  nombre: string
+  url: string
+  tipo: string
+  size: number
+  uploadedAt: string
+}
+
+export interface Pago {
+  id: string
+  idPago: string
+  ocId: string
+  fechaPago: string
+  tipoPago: string
+  metodoPago: string
+  moneda: "USD" | "CNY" | "RD$"
+  montoOriginal: number
+  tasaCambio: number
+  comisionBancoRD: number
+  montoRD: number
+  montoRDNeto: number
+  adjuntos?: FileAttachment[]
+  ocChina: {
+    oc: string
+    proveedor: string
+  }
+}
+
+interface ColumnActions {
+  onEdit: (pago: Pago) => void
+  onDelete: (pago: Pago) => void
+  onAddAttachments: (pago: Pago) => void
+}
+
+export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
+  {
+    accessorKey: "idPago",
+    header: "ID Pago",
+    cell: ({ row }) => (
+      <div className="font-medium text-gray-900 whitespace-nowrap">
+        {row.original.idPago}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "ocChina",
+    header: "OC / Proveedor",
+    cell: ({ row }) => (
+      <div className="whitespace-nowrap">
+        <div className="font-medium text-gray-900">{row.original.ocChina.oc}</div>
+        <div className="text-gray-500 text-xs">{row.original.ocChina.proveedor}</div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "fechaPago",
+    header: "Fecha",
+    cell: ({ row }) => (
+      <div className="text-gray-500 whitespace-nowrap">
+        {formatDate(row.original.fechaPago)}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "tipoPago",
+    header: "Tipo",
+    cell: ({ row }) => (
+      <div className="text-gray-700 whitespace-nowrap">
+        {row.original.tipoPago}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "metodoPago",
+    header: "Método",
+    cell: ({ row }) => (
+      <div className="text-gray-700 whitespace-nowrap">
+        {row.original.metodoPago}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "moneda",
+    header: "Moneda",
+    cell: ({ row }) => (
+      <div className="text-center">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {row.original.moneda}
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "montoOriginal",
+    header: "Monto Original",
+    cell: ({ row }) => (
+      <div className="text-right font-medium text-gray-900 whitespace-nowrap">
+        {formatCurrency(row.original.montoOriginal, row.original.moneda)}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "tasaCambio",
+    header: "Tasa",
+    cell: ({ row }) => (
+      <div className="text-right text-gray-700 whitespace-nowrap">
+        {parseFloat(row.original.tasaCambio.toString()).toFixed(2)}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "montoRDNeto",
+    header: "Monto RD$ (Neto)",
+    cell: ({ row }) => (
+      <div className="text-right">
+        <div className="font-medium text-gray-900 whitespace-nowrap">
+          {formatCurrency(row.original.montoRDNeto)}
+        </div>
+        {row.original.comisionBancoRD > 0 && (
+          <div className="text-gray-600 text-xs whitespace-nowrap">
+            + {formatCurrency(row.original.comisionBancoRD)} com.
+          </div>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "adjuntos",
+    header: "Adjuntos",
+    cell: ({ row }) => (
+      <div className="whitespace-nowrap">
+        {row.original.adjuntos && row.original.adjuntos.length > 0 ? (
+          <AttachmentsList attachments={row.original.adjuntos} compact />
+        ) : (
+          <Button
+            variant="ghost"
+            className="h-8 px-2 text-gray-400"
+            onClick={(e) => {
+              e.stopPropagation()
+              actions.onAddAttachments(row.original)
+            }}
+          >
+            <Paperclip className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: "acciones",
+    header: "Acciones",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          onClick={(e) => {
+            e.stopPropagation()
+            actions.onEdit(row.original)
+          }}
+        >
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={(e) => {
+            e.stopPropagation()
+            actions.onDelete(row.original)
+          }}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    ),
+    enableSorting: false,
+  },
+]
