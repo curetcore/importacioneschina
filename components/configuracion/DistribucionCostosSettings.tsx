@@ -17,11 +17,8 @@ interface DistribConfig {
 }
 
 const costTypeLabels: Record<string, { label: string; description: string; icon: any }> = {
-  pagos: {
-    label: "Pagos a Proveedor",
-    description: "Distribución de los pagos realizados al proveedor",
-    icon: DollarSign,
-  },
+  // NOTA: "pagos" NO se incluye aquí porque los pagos al proveedor SIEMPRE
+  // se asignan directamente por valor FOB (no necesitan distribución)
   gastos_flete: {
     label: "Gastos de Flete",
     description: "Costos de transporte internacional (marítimo/aéreo)",
@@ -131,6 +128,33 @@ export function DistribucionCostosSettings() {
             <p>
               <strong>Por Unidades:</strong> Los costos se distribuyen igualmente entre todas las
               unidades. Se usa como respaldo cuando no hay datos de peso/volumen.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Important note about payments */}
+      <Card className="bg-green-50 border-green-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <DollarSign className="w-5 h-5" />
+            Pagos a Proveedor - Asignación Automática
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-green-900">
+            <p>
+              Los <strong>Pagos a Proveedor</strong> NO requieren configuración de distribución.
+            </p>
+            <p className="mt-2">
+              Se asignan <strong>automáticamente y directamente</strong> por valor FOB: cada producto
+              recibe exactamente la porción de los pagos que corresponde a su costo FOB, sin
+              necesidad de distribución adicional.
+            </p>
+            <p className="mt-2 text-xs">
+              Ejemplo: Si el Producto A cuesta $1,000 USD y el Producto B cuesta $2,000 USD del
+              total de $3,000 USD pagados, el Producto A recibe 33.3% de los pagos y el Producto B
+              recibe 66.7%.
             </p>
           </div>
         </CardContent>

@@ -123,8 +123,9 @@ export async function GET(request: NextRequest) {
           0
         )
 
-        // Distribute costs using configured methods with intelligent fallback
-        const pagosMethod = getDistribMethod("pagos")
+        // IMPORTANT: Los pagos NO se distribuyen - se asignan directamente por valor FOB
+        // porque el costo FOB ya define exactamente cuánto cuesta cada producto
+        // Solo los gastos logísticos y comisiones necesitan distribución
         const gastosMethod = getDistribMethod("gastos_flete") // Using flete as default for gastos
         const comisionesMethod = getDistribMethod("comisiones")
 
@@ -134,17 +135,31 @@ export async function GET(request: NextRequest) {
           totalGastos: totalGastosOC,
           totalComisiones: totalComisionesOC,
           productos: productsForDistribution.length,
-          metodoPagos: pagosMethod,
           metodoGastos: gastosMethod,
           metodoComisiones: comisionesMethod,
         })
 
-        const pagosDistribution = distributeCost(
-          productsForDistribution,
-          totalPagosOC,
-          pagosMethod,
-          tasaPromedio
+        // Pagos: Asignación directa por valor FOB (NO distribución)
+        // Cada producto recibe exactamente: (su valor FOB / total FOB) × total pagos
+        const totalFOBValue = productsForDistribution.reduce(
+          (sum, p) => sum + p.precioUnitarioUSD * p.cantidad,
+          0
         )
+        const pagosDistribution = productsForDistribution.map(product => {
+          const productFOBValue = product.precioUnitarioUSD * product.cantidad
+          const porcentaje = totalFOBValue > 0 ? productFOBValue / totalFOBValue : 0
+          const costoDistribuido = totalPagosOC * porcentaje
+          const costoUnitario = product.cantidad > 0 ? costoDistribuido / product.cantidad : 0
+
+          return {
+            productId: product.id,
+            porcentaje,
+            costoDistribuido,
+            costoUnitario,
+          }
+        })
+
+        // Gastos y comisiones: Distribución configurable
         const gastosDistribution = distributeCost(
           productsForDistribution,
           totalGastosOC,
@@ -205,7 +220,8 @@ export async function GET(request: NextRequest) {
             gastos: gastosUnitario,
             comisiones: comisionesUnitario,
             // Add distribution methods used for transparency
-            metodoPagos: pagosMethod,
+            // Pagos siempre por valor FOB (asignación directa, no distribución)
+            metodoPagos: "valor_fob" as const,
             metodoGastos: gastosMethod,
             metodoComisiones: comisionesMethod,
           },
