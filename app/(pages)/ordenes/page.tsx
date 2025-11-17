@@ -2,8 +2,10 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -55,66 +57,67 @@ interface OCChina {
 export default function OrdenesPage() {
   const router = useRouter()
   const { addToast } = useToast()
-  const [ocs, setOcs] = useState<OCChina[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
   const [ocToEdit, setOcToEdit] = useState<OCChina | null>(null)
   const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [proveedorFilter, setProveedorFilter] = useState("")
-  const [proveedoresOptions, setProveedoresOptions] = useState<SelectOption[]>([])
 
-  const fetchOCs = (page = 1) => {
-    setLoading(true)
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    })
-    if (searchQuery) params.append("search", searchQuery)
-    if (proveedorFilter) params.append("proveedor", proveedorFilter)
-
-    fetch(`/api/oc-china?${params.toString()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setOcs(result.data)
-          setTotalPages(result.pagination.pages)
-          setCurrentPage(result.pagination.page)
-        }
-        setLoading(false)
+  // Fetch OCs with pagination and filters
+  const { data: ocsData, isLoading } = useQuery({
+    queryKey: ["oc-china", currentPage, searchQuery, proveedorFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20",
       })
-      .catch(() => setLoading(false))
-  }
+      if (searchQuery) params.append("search", searchQuery)
+      if (proveedorFilter) params.append("proveedor", proveedorFilter)
 
-  const fetchProveedores = () => {
-    fetch("/api/oc-china")
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          const uniqueProveedores = Array.from(new Set(result.data.map((oc: OCChina) => oc.proveedor)))
-          setProveedoresOptions([
-            { value: "", label: "Todos los proveedores" },
-            ...uniqueProveedores.map((p) => ({ value: p as string, label: p as string })),
-          ])
-        }
-      })
-  }
+      const response = await fetch(`/api/oc-china?${params.toString()}`)
+      const result = await response.json()
 
-  useEffect(() => {
-    fetchProveedores()
-  }, [])
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar órdenes")
+      }
 
+      return result
+    },
+  })
+
+  const ocs = ocsData?.data || []
+  const totalPages = ocsData?.pagination?.pages || 1
+
+  // Fetch all OCs for provider filter options
+  const { data: allOcsData } = useQuery({
+    queryKey: ["oc-china-all"],
+    queryFn: async () => {
+      const response = await fetch("/api/oc-china")
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar proveedores")
+      }
+      return result.data
+    },
+  })
+
+  const proveedoresOptions: SelectOption[] = useMemo(() => {
+    if (!allOcsData) return [{ value: "", label: "Todos los proveedores" }]
+
+    const uniqueProveedores = Array.from(new Set(allOcsData.map((oc: OCChina) => oc.proveedor)))
+    return [
+      { value: "", label: "Todos los proveedores" },
+      ...uniqueProveedores.map((p) => ({ value: p as string, label: p as string })),
+    ]
+  }, [allOcsData])
+
+  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-    fetchOCs(1)
   }, [searchQuery, proveedorFilter])
-
-  useEffect(() => {
-    fetchOCs(currentPage)
-  }, [currentPage])
 
   const handleEdit = (oc: OCChina) => {
     setOcToEdit(oc)
@@ -143,7 +146,8 @@ export default function OrdenesPage() {
       })
 
       setOcToDelete(null)
-      fetchOCs(currentPage)
+      queryClient.invalidateQueries({ queryKey: ["oc-china"] })
+      queryClient.invalidateQueries({ queryKey: ["oc-china-all"] })
     } catch (error) {
       addToast({
         type: "error",
@@ -171,7 +175,7 @@ export default function OrdenesPage() {
     }
 
     // Preparar datos para exportación
-    const dataToExport = ocs.map((oc) => ({
+    const dataToExport = ocs.map((oc: OCChina) => ({
       "OC": oc.oc,
       "Proveedor": oc.proveedor,
       "Fecha": formatDate(oc.fechaOC),
@@ -194,22 +198,22 @@ export default function OrdenesPage() {
   const stats = useMemo(() => {
     const totalOCs = ocs.length
 
-    const totalItems = ocs.reduce((sum, oc) => sum + (oc.items?.length || 0), 0)
+    const totalItems = ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.length || 0), 0)
 
-    const totalUnidades = ocs.reduce((sum, oc) => {
-      return sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0)
+    const totalUnidades = ocs.reduce((sum: number, oc: OCChina) => {
+      return sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + item.cantidadTotal, 0) || 0)
     }, 0)
 
-    const totalFOB = ocs.reduce((sum, oc) => {
-      return sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0)
+    const totalFOB = ocs.reduce((sum: number, oc: OCChina) => {
+      return sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0)
     }, 0)
 
-    const pendientes = ocs.filter(oc => !oc._count || oc._count.items === 0).length
+    const pendientes = ocs.filter((oc: OCChina) => !oc._count || oc._count.items === 0).length
 
     return { totalOCs, totalItems, totalUnidades, totalFOB, pendientes }
   }, [ocs])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -341,9 +345,9 @@ export default function OrdenesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {ocs.map((oc) => {
-                        const totalUnidades = oc.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0
-                        const totalFOB = oc.items?.reduce((sum, item) => sum + item.subtotalUSD, 0) || 0
+                      {ocs.map((oc: OCChina) => {
+                        const totalUnidades = oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0
+                        const totalFOB = oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.subtotalUSD, 0) || 0
                         const numProductos = oc.items?.length || 0
 
                         return (
@@ -393,13 +397,13 @@ export default function OrdenesPage() {
                           Total
                         </td>
                         <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {ocs.reduce((sum, oc) => sum + (oc.items?.length || 0), 0)}
+                          {ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.length || 0), 0)}
                         </td>
                         <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
+                          {ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
                         </td>
                         <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {formatCurrency(ocs.reduce((sum, oc) => sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
+                          {formatCurrency(ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap"></td>
                         <td className="py-3 px-4 whitespace-nowrap"></td>
@@ -422,7 +426,8 @@ export default function OrdenesPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchOCs(currentPage)
+            queryClient.invalidateQueries({ queryKey: ["oc-china"] })
+            queryClient.invalidateQueries({ queryKey: ["oc-china-all"] })
             handleFormClose()
           }}
           ocToEdit={ocToEdit}

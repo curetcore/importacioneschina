@@ -2,7 +2,9 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -43,72 +45,76 @@ interface InventarioRecibido {
 
 export default function InventarioRecibidoPage() {
   const { addToast } = useToast()
-  const [inventarios, setInventarios] = useState<InventarioRecibido[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
   const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
   const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [ocFilter, setOcFilter] = useState("")
   const [bodegaFilter, setBodegaFilter] = useState("")
-  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
 
   const bodegaOptions: SelectOption[] = [
     { value: "", label: "Todas las bodegas" },
     ...bodegas.map(b => ({ value: b, label: b })),
   ]
 
-  const fetchInventarios = (page = 1) => {
-    setLoading(true)
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    })
-    if (searchQuery) params.append("search", searchQuery)
-    if (ocFilter) params.append("ocId", ocFilter)
-    if (bodegaFilter) params.append("bodega", bodegaFilter)
-
-    fetch(`/api/inventario-recibido?${params.toString()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setInventarios(result.data)
-          setTotalPages(result.pagination.pages)
-          setCurrentPage(result.pagination.page)
-        }
-        setLoading(false)
+  // Fetch inventarios with pagination and filters
+  const { data: inventariosData, isLoading } = useQuery({
+    queryKey: ["inventario-recibido", currentPage, searchQuery, ocFilter, bodegaFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20",
       })
-      .catch(() => setLoading(false))
-  }
+      if (searchQuery) params.append("search", searchQuery)
+      if (ocFilter) params.append("ocId", ocFilter)
+      if (bodegaFilter) params.append("bodega", bodegaFilter)
 
-  const fetchOCs = () => {
-    fetch("/api/oc-china")
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setOcsOptions([
-            { value: "", label: "Todas las OCs" },
-            ...result.data.map((oc: { id: string; oc: string; proveedor: string }) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
-          ])
-        }
-      })
-  }
+      const response = await fetch(`/api/inventario-recibido?${params.toString()}`)
+      const result = await response.json()
 
-  useEffect(() => {
-    fetchOCs()
-  }, [])
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar inventarios")
+      }
 
+      return result
+    },
+  })
+
+  const inventarios = inventariosData?.data || []
+  const totalPages = inventariosData?.pagination?.pages || 1
+
+  // Fetch all OCs for filter options
+  const { data: allOcsData } = useQuery({
+    queryKey: ["oc-china-all"],
+    queryFn: async () => {
+      const response = await fetch("/api/oc-china")
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar OCs")
+      }
+      return result.data
+    },
+  })
+
+  const ocsOptions: SelectOption[] = useMemo(() => {
+    if (!allOcsData) return [{ value: "", label: "Todas las OCs" }]
+
+    return [
+      { value: "", label: "Todas las OCs" },
+      ...allOcsData.map((oc: { id: string; oc: string; proveedor: string }) => ({
+        value: oc.id,
+        label: `${oc.oc} - ${oc.proveedor}`
+      })),
+    ]
+  }, [allOcsData])
+
+  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-    fetchInventarios(1)
   }, [searchQuery, ocFilter, bodegaFilter])
-
-  useEffect(() => {
-    fetchInventarios(currentPage)
-  }, [currentPage])
 
   const handleEdit = (inventario: InventarioRecibido) => {
     setInventarioToEdit(inventario)
@@ -137,7 +143,7 @@ export default function InventarioRecibidoPage() {
       })
 
       setInventarioToDelete(null)
-      fetchInventarios(currentPage)
+      queryClient.invalidateQueries({ queryKey: ["inventario-recibido"] })
     } catch (error) {
       addToast({
         type: "error",
@@ -164,7 +170,7 @@ export default function InventarioRecibidoPage() {
       return
     }
 
-    const dataToExport = inventarios.map((inventario) => ({
+    const dataToExport = inventarios.map((inventario: InventarioRecibido) => ({
       "ID Recepción": inventario.idRecepcion,
       "OC": inventario.ocChina.oc,
       "Proveedor": inventario.ocChina.proveedor,
@@ -189,26 +195,26 @@ export default function InventarioRecibidoPage() {
   const stats = useMemo(() => {
     const totalRecepciones = inventarios.length
 
-    const totalUnidades = inventarios.reduce((sum, inv) => sum + inv.cantidadRecibida, 0)
+    const totalUnidades = inventarios.reduce((sum: number, inv: InventarioRecibido) => sum + inv.cantidadRecibida, 0)
 
-    const totalCostoRD = inventarios.reduce((sum, inv) => {
+    const totalCostoRD = inventarios.reduce((sum: number, inv: InventarioRecibido) => {
       return sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString())
     }, 0)
 
     // Calcular bodega con más recepciones
-    const bodegaCounts = inventarios.reduce((acc, inv) => {
+    const bodegaCounts = inventarios.reduce((acc: Record<string, number>, inv: InventarioRecibido) => {
       acc[inv.bodegaInicial] = (acc[inv.bodegaInicial] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
-    const bodegaMasUsada = Object.entries(bodegaCounts).sort((a, b) => b[1] - a[1])[0]
+    const bodegaMasUsada = (Object.entries(bodegaCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
     const bodegaMasUsadaNombre = bodegaMasUsada?.[0] || "N/A"
     const bodegaMasUsadaCantidad = bodegaMasUsada?.[1] || 0
 
     return { totalRecepciones, totalUnidades, totalCostoRD, bodegaMasUsadaNombre, bodegaMasUsadaCantidad }
   }, [inventarios])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -346,7 +352,7 @@ export default function InventarioRecibidoPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inventarios.map((inventario) => {
+                    {inventarios.map((inventario: InventarioRecibido) => {
                       return (
                       <tr key={inventario.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{inventario.idRecepcion}</td>
@@ -409,13 +415,13 @@ export default function InventarioRecibidoPage() {
                         Total
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
-                        {inventarios.reduce((sum, inv) => sum + inv.cantidadRecibida, 0).toLocaleString()}
+                        {inventarios.reduce((sum: number, inv: InventarioRecibido) => sum + inv.cantidadRecibida, 0).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
                         -
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
-                        {formatCurrency(inventarios.reduce((sum, inv) => sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString()), 0))}
+                        {formatCurrency(inventarios.reduce((sum: number, inv: InventarioRecibido) => sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString()), 0))}
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap"></td>
                     </tr>
@@ -438,7 +444,7 @@ export default function InventarioRecibidoPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchInventarios(currentPage)
+            queryClient.invalidateQueries({ queryKey: ["inventario-recibido"] })
             handleFormClose()
           }}
           inventarioToEdit={inventarioToEdit}

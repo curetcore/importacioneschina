@@ -2,7 +2,9 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,18 +49,15 @@ interface GastoLogistico {
 
 export default function GastosLogisticosPage() {
   const { addToast } = useToast()
-  const [gastos, setGastos] = useState<GastoLogistico[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
   const [gastoToEdit, setGastoToEdit] = useState<GastoLogistico | null>(null)
   const [gastoToDelete, setGastoToDelete] = useState<GastoLogistico | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [ocFilter, setOcFilter] = useState("")
   const [tipoGastoFilter, setTipoGastoFilter] = useState("")
-  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
   const [selectedGastoForAttachments, setSelectedGastoForAttachments] = useState<GastoLogistico | null>(null)
 
@@ -67,54 +66,61 @@ export default function GastosLogisticosPage() {
     ...tiposGasto.map(t => ({ value: t, label: t })),
   ]
 
-  const fetchGastos = (page = 1) => {
-    setLoading(true)
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    })
-    if (searchQuery) params.append("search", searchQuery)
-    if (ocFilter) params.append("ocId", ocFilter)
-    if (tipoGastoFilter) params.append("tipoGasto", tipoGastoFilter)
-
-    fetch(`/api/gastos-logisticos?${params.toString()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setGastos(result.data)
-          setTotalPages(result.pagination.pages)
-          setCurrentPage(result.pagination.page)
-        }
-        setLoading(false)
+  // Fetch gastos with pagination and filters
+  const { data: gastosData, isLoading } = useQuery({
+    queryKey: ["gastos-logisticos", currentPage, searchQuery, ocFilter, tipoGastoFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20",
       })
-      .catch(() => setLoading(false))
-  }
+      if (searchQuery) params.append("search", searchQuery)
+      if (ocFilter) params.append("ocId", ocFilter)
+      if (tipoGastoFilter) params.append("tipoGasto", tipoGastoFilter)
 
-  const fetchOCs = () => {
-    fetch("/api/oc-china")
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setOcsOptions([
-            { value: "", label: "Todas las OCs" },
-            ...result.data.map((oc: { id: string; oc: string; proveedor: string }) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
-          ])
-        }
-      })
-  }
+      const response = await fetch(`/api/gastos-logisticos?${params.toString()}`)
+      const result = await response.json()
 
-  useEffect(() => {
-    fetchOCs()
-  }, [])
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar gastos")
+      }
 
+      return result
+    },
+  })
+
+  const gastos = gastosData?.data || []
+  const totalPages = gastosData?.pagination?.pages || 1
+
+  // Fetch all OCs for filter options
+  const { data: allOcsData } = useQuery({
+    queryKey: ["oc-china-all"],
+    queryFn: async () => {
+      const response = await fetch("/api/oc-china")
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar OCs")
+      }
+      return result.data
+    },
+  })
+
+  const ocsOptions: SelectOption[] = useMemo(() => {
+    if (!allOcsData) return [{ value: "", label: "Todas las OCs" }]
+
+    return [
+      { value: "", label: "Todas las OCs" },
+      ...allOcsData.map((oc: { id: string; oc: string; proveedor: string }) => ({
+        value: oc.id,
+        label: `${oc.oc} - ${oc.proveedor}`
+      })),
+    ]
+  }, [allOcsData])
+
+  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-    fetchGastos(1)
   }, [searchQuery, ocFilter, tipoGastoFilter])
-
-  useEffect(() => {
-    fetchGastos(currentPage)
-  }, [currentPage])
 
   const handleEdit = (gasto: GastoLogistico) => {
     setGastoToEdit(gasto)
@@ -143,7 +149,7 @@ export default function GastosLogisticosPage() {
       })
 
       setGastoToDelete(null)
-      fetchGastos(currentPage)
+      queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
     } catch (error) {
       addToast({
         type: "error",
@@ -170,7 +176,7 @@ export default function GastosLogisticosPage() {
       return
     }
 
-    const dataToExport = gastos.map((gasto) => ({
+    const dataToExport = gastos.map((gasto: GastoLogistico) => ({
       "ID Gasto": gasto.idGasto,
       "OC": gasto.ocChina.oc,
       "Proveedor": gasto.ocChina.proveedor,
@@ -192,24 +198,24 @@ export default function GastosLogisticosPage() {
   const stats = useMemo(() => {
     const totalGastos = gastos.length
 
-    const totalRD = gastos.reduce((sum, gasto) => sum + parseFloat(gasto.montoRD.toString()), 0)
+    const totalRD = gastos.reduce((sum: number, gasto: GastoLogistico) => sum + parseFloat(gasto.montoRD.toString()), 0)
 
     const promedioGasto = totalGastos > 0 ? totalRD / totalGastos : 0
 
     // Calcular el tipo de gasto más frecuente
-    const tiposCounts = gastos.reduce((acc, gasto) => {
+    const tiposCounts = gastos.reduce((acc: Record<string, number>, gasto: GastoLogistico) => {
       acc[gasto.tipoGasto] = (acc[gasto.tipoGasto] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
-    const tipoMasComun = Object.entries(tiposCounts).sort((a, b) => b[1] - a[1])[0]
+    const tipoMasComun = (Object.entries(tiposCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
     const tipoMasComunNombre = tipoMasComun?.[0] || "N/A"
     const tipoMasComunCantidad = tipoMasComun?.[1] || 0
 
     return { totalGastos, totalRD, promedioGasto, tipoMasComunNombre, tipoMasComunCantidad }
   }, [gastos])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -347,7 +353,7 @@ export default function GastosLogisticosPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gastos.map((gasto) => (
+                    {gastos.map((gasto: GastoLogistico) => (
                     <tr key={gasto.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{gasto.idGasto}</td>
                       <td className="py-3 px-4 whitespace-nowrap">
@@ -405,7 +411,7 @@ export default function GastosLogisticosPage() {
                         Total
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-gray-900 whitespace-nowrap">
-                        {formatCurrency(gastos.reduce((sum, gasto) => sum + parseFloat(gasto.montoRD.toString()), 0))}
+                        {formatCurrency(gastos.reduce((sum: number, gasto: GastoLogistico) => sum + parseFloat(gasto.montoRD.toString()), 0))}
                       </td>
                       <td className="py-3 px-4"></td>
                     </tr>
@@ -428,7 +434,7 @@ export default function GastosLogisticosPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchGastos(currentPage)
+            queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
             handleFormClose()
           }}
           gastoToEdit={gastoToEdit}
@@ -455,7 +461,7 @@ export default function GastosLogisticosPage() {
             recordName={`Gasto ${selectedGastoForAttachments.idGasto} - ${selectedGastoForAttachments.tipoGasto}`}
             currentAttachments={selectedGastoForAttachments.adjuntos || []}
             onSuccess={() => {
-              fetchGastos(currentPage)
+              queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
               setSelectedGastoForAttachments(null)
             }}
           />

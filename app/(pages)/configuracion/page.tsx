@@ -2,7 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Edit, Trash2, Settings, Users } from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
+import { useApiQuery } from "@/lib/hooks/useApiQuery"
 
 interface Configuracion {
   id: string
@@ -55,8 +57,7 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
 
 export default function ConfiguracionPage() {
   const { addToast } = useToast()
-  const [configuraciones, setConfiguraciones] = useState<ConfigGroup[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
   const [configToEdit, setConfigToEdit] = useState<Configuracion | null>(null)
   const [configToDelete, setConfigToDelete] = useState<Configuracion | null>(null)
@@ -68,49 +69,24 @@ export default function ConfiguracionPage() {
   const [proveedorToEdit, setProveedorToEdit] = useState<any>(null)
   const [proveedorToDelete, setProveedorToDelete] = useState<any>(null)
   const [deleteProveedorLoading, setDeleteProveedorLoading] = useState(false)
-  const [refreshProveedores, setRefreshProveedores] = useState(0)
 
-  const fetchConfiguraciones = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch("/api/configuracion")
-      const result = await response.json()
+  // Use React Query for data fetching
+  const { data: rawData, isLoading } = useApiQuery<Record<string, Configuracion[]>>(
+    ["configuracion"],
+    "/api/configuracion"
+  )
 
-      if (result.success) {
-        const grouped: ConfigGroup[] = Object.entries(result.data)
-          .filter(([key]) => key !== "proveedores") // Excluir proveedores (ahora es módulo CRM separado)
-          .map(([key, items]) => ({
-            categoria: key,
-            titulo: categoriaLabels[key]?.titulo || key,
-            descripcion: categoriaLabels[key]?.descripcion || "",
-            items: items as Configuracion[],
-          }))
-        setConfiguraciones(grouped)
-      } else {
-        // Si la API retorna success: false, mostrar error
-        addToast({
-          type: "error",
-          title: "Error al cargar configuraciones",
-          description: result.error || "Error desconocido",
-          details: JSON.stringify(result, null, 2),
-        })
-      }
-      setLoading(false)
-    } catch (error) {
-      console.error("Error fetching configuraciones:", error)
-      addToast({
-        type: "error",
-        title: "Error al cargar configuraciones",
-        description: getErrorMessage(error),
-        details: getErrorDetails(error),
-      })
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchConfiguraciones()
-  }, [])
+  // Transform the data into grouped format
+  const configuraciones: ConfigGroup[] = rawData
+    ? Object.entries(rawData)
+        .filter(([key]) => key !== "proveedores") // Excluir proveedores (ahora es módulo CRM separado)
+        .map(([key, items]) => ({
+          categoria: key,
+          titulo: categoriaLabels[key]?.titulo || key,
+          descripcion: categoriaLabels[key]?.descripcion || "",
+          items: items as Configuracion[],
+        }))
+    : []
 
   const handleAdd = (categoria: string) => {
     setSelectedCategoria(categoria)
@@ -142,7 +118,7 @@ export default function ConfiguracionPage() {
       })
 
       setConfigToDelete(null)
-      fetchConfiguraciones()
+      queryClient.invalidateQueries({ queryKey: ["configuracion"] })
     } catch (error: any) {
       addToast({
         type: "error",
@@ -179,7 +155,7 @@ export default function ConfiguracionPage() {
       })
 
       setProveedorToDelete(null)
-      setRefreshProveedores(prev => prev + 1)
+      queryClient.invalidateQueries({ queryKey: ["proveedores"] })
     } catch (error: any) {
       addToast({
         type: "error",
@@ -192,7 +168,7 @@ export default function ConfiguracionPage() {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando configuraciones...</div>
@@ -293,7 +269,7 @@ export default function ConfiguracionPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="proveedores" key={refreshProveedores}>
+          <TabsContent value="proveedores">
             <ProveedoresList
               onAdd={() => {
                 setProveedorToEdit(null)
@@ -315,7 +291,7 @@ export default function ConfiguracionPage() {
         open={formOpen}
         onOpenChange={handleFormClose}
         onSuccess={() => {
-          fetchConfiguraciones()
+          queryClient.invalidateQueries({ queryKey: ["configuracion"] })
           handleFormClose()
         }}
         configToEdit={configToEdit}
@@ -341,7 +317,7 @@ export default function ConfiguracionPage() {
           if (!open) setProveedorToEdit(null)
         }}
         onSuccess={() => {
-          setRefreshProveedores(prev => prev + 1)
+          queryClient.invalidateQueries({ queryKey: ["proveedores"] })
         }}
         proveedorToEdit={proveedorToEdit}
       />

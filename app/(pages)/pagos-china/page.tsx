@@ -2,7 +2,9 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -50,18 +52,15 @@ interface Pago {
 
 export default function PagosChinaPage() {
   const { addToast } = useToast()
-  const [pagos, setPagos] = useState<Pago[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
   const [pagoToEdit, setPagoToEdit] = useState<Pago | null>(null)
   const [pagoToDelete, setPagoToDelete] = useState<Pago | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [ocFilter, setOcFilter] = useState("")
   const [monedaFilter, setMonedaFilter] = useState("")
-  const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
   const [selectedPagoForAttachments, setSelectedPagoForAttachments] = useState<Pago | null>(null)
 
@@ -72,54 +71,61 @@ export default function PagosChinaPage() {
     { value: "RD$", label: "RD$" },
   ]
 
-  const fetchPagos = (page = 1) => {
-    setLoading(true)
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: "20",
-    })
-    if (searchQuery) params.append("search", searchQuery)
-    if (ocFilter) params.append("ocId", ocFilter)
-    if (monedaFilter) params.append("moneda", monedaFilter)
-
-    fetch(`/api/pagos-china?${params.toString()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setPagos(result.data)
-          setTotalPages(result.pagination.pages)
-          setCurrentPage(result.pagination.page)
-        }
-        setLoading(false)
+  // Fetch pagos with pagination and filters
+  const { data: pagosData, isLoading } = useQuery({
+    queryKey: ["pagos-china", currentPage, searchQuery, ocFilter, monedaFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "20",
       })
-      .catch(() => setLoading(false))
-  }
+      if (searchQuery) params.append("search", searchQuery)
+      if (ocFilter) params.append("ocId", ocFilter)
+      if (monedaFilter) params.append("moneda", monedaFilter)
 
-  const fetchOCs = () => {
-    fetch("/api/oc-china")
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setOcsOptions([
-            { value: "", label: "Todas las OCs" },
-            ...result.data.map((oc: { id: string; oc: string; proveedor: string }) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })),
-          ])
-        }
-      })
-  }
+      const response = await fetch(`/api/pagos-china?${params.toString()}`)
+      const result = await response.json()
 
-  useEffect(() => {
-    fetchOCs()
-  }, [])
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar pagos")
+      }
 
+      return result
+    },
+  })
+
+  const pagos = pagosData?.data || []
+  const totalPages = pagosData?.pagination?.pages || 1
+
+  // Fetch all OCs for filter options
+  const { data: allOcsData } = useQuery({
+    queryKey: ["oc-china-all"],
+    queryFn: async () => {
+      const response = await fetch("/api/oc-china")
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar OCs")
+      }
+      return result.data
+    },
+  })
+
+  const ocsOptions: SelectOption[] = useMemo(() => {
+    if (!allOcsData) return [{ value: "", label: "Todas las OCs" }]
+
+    return [
+      { value: "", label: "Todas las OCs" },
+      ...allOcsData.map((oc: { id: string; oc: string; proveedor: string }) => ({
+        value: oc.id,
+        label: `${oc.oc} - ${oc.proveedor}`
+      })),
+    ]
+  }, [allOcsData])
+
+  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-    fetchPagos(1)
   }, [searchQuery, ocFilter, monedaFilter])
-
-  useEffect(() => {
-    fetchPagos(currentPage)
-  }, [currentPage])
 
   const handleEdit = (pago: Pago) => {
     setPagoToEdit(pago)
@@ -148,7 +154,7 @@ export default function PagosChinaPage() {
       })
 
       setPagoToDelete(null)
-      fetchPagos(currentPage)
+      queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
     } catch (error) {
       addToast({
         type: "error",
@@ -176,7 +182,7 @@ export default function PagosChinaPage() {
     }
 
     // Preparar datos para exportación
-    const dataToExport = pagos.map((pago) => ({
+    const dataToExport = pagos.map((pago: Pago) => ({
       "ID Pago": pago.idPago,
       "OC": pago.ocChina.oc,
       "Proveedor": pago.ocChina.proveedor,
@@ -202,28 +208,28 @@ export default function PagosChinaPage() {
 
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
-    const totalRD = pagos.reduce((sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
+    const totalRD = pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
 
     const totalUSD = pagos
-      .filter(p => p.moneda === "USD")
-      .reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+      .filter((p: Pago) => p.moneda === "USD")
+      .reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
 
     const totalCNY = pagos
-      .filter(p => p.moneda === "CNY")
-      .reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+      .filter((p: Pago) => p.moneda === "CNY")
+      .reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
 
     // Calcular tasa promedio ponderada (weighted average)
-    const pagosConMoneda = pagos.filter(p => p.moneda === "USD" || p.moneda === "CNY")
-    const totalWeighted = pagosConMoneda.reduce((sum, p) => {
+    const pagosConMoneda = pagos.filter((p: Pago) => p.moneda === "USD" || p.moneda === "CNY")
+    const totalWeighted = pagosConMoneda.reduce((sum: number, p: Pago) => {
       return sum + (parseFloat(p.montoOriginal.toString()) * parseFloat(p.tasaCambio.toString()))
     }, 0)
-    const totalAmount = pagosConMoneda.reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+    const totalAmount = pagosConMoneda.reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
     const tasaPromedio = totalAmount > 0 ? totalWeighted / totalAmount : 0
 
     return { totalRD, totalUSD, totalCNY, tasaPromedio }
   }, [pagos])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -247,14 +253,14 @@ export default function PagosChinaPage() {
             icon={<Banknote className="w-4 h-4" />}
             label="Total USD"
             value={formatCurrency(stats.totalUSD, "USD")}
-            subtitle={`${pagos.filter(p => p.moneda === "USD").length} pagos`}
+            subtitle={`${pagos.filter((p: Pago) => p.moneda === "USD").length} pagos`}
           />
 
           <StatCard
             icon={<Coins className="w-4 h-4" />}
             label="Total CNY"
             value={formatCurrency(stats.totalCNY, "CNY")}
-            subtitle={`${pagos.filter(p => p.moneda === "CNY").length} pagos`}
+            subtitle={`${pagos.filter((p: Pago) => p.moneda === "CNY").length} pagos`}
           />
 
           <StatCard
@@ -363,7 +369,7 @@ export default function PagosChinaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pagos.map((pago) => (
+                    {pagos.map((pago: Pago) => (
                     <tr key={pago.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{pago.idPago}</td>
                       <td className="py-3 px-4 whitespace-nowrap">
@@ -433,11 +439,11 @@ export default function PagosChinaPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(pagos.reduce((sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0))}
+                          {formatCurrency(pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0))}
                         </div>
-                        {pagos.reduce((sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0) > 0 && (
+                        {pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0) > 0 && (
                           <div className="text-gray-600 text-xs">
-                            + {formatCurrency(pagos.reduce((sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0))} comisión
+                            + {formatCurrency(pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.comisionBancoRD.toString()), 0))} comisión
                           </div>
                         )}
                       </td>
@@ -462,7 +468,7 @@ export default function PagosChinaPage() {
           open={formOpen}
           onOpenChange={handleFormClose}
           onSuccess={() => {
-            fetchPagos(currentPage)
+            queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
             handleFormClose()
           }}
           pagoToEdit={pagoToEdit}
@@ -489,7 +495,7 @@ export default function PagosChinaPage() {
             recordName={`Pago ${selectedPagoForAttachments.idPago} - OC ${selectedPagoForAttachments.ocChina.oc}`}
             currentAttachments={selectedPagoForAttachments.adjuntos || []}
             onSuccess={() => {
-              fetchPagos(currentPage)
+              queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
               setSelectedPagoForAttachments(null)
             }}
           />
