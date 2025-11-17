@@ -28,7 +28,7 @@ model OCChina {
   // Relaciones
   items                 OCChinaItem[]
   pagosChina            PagosChina[]
-  gastosLogisticos      GastosLogisticos[]
+  gastosLogisticos      GastoLogisticoOC[]
   inventarioRecibido    InventarioRecibido[]
 
   // Timestamps
@@ -125,7 +125,6 @@ model PagosChina {
 model GastosLogisticos {
   id                    String   @id @default(cuid())
   idGasto               String   @unique @map("id_gasto")
-  ocId                  String   @map("oc_id")
   fechaGasto            DateTime @map("fecha_gasto")
   tipoGasto             String   @map("tipo_gasto")
   proveedorServicio     String?  @map("proveedor_servicio")
@@ -136,8 +135,8 @@ model GastosLogisticos {
   // Adjuntos (facturas, recibos, documentos)
   adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
 
-  // Relaciones
-  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  // Relaciones many-to-many con OCs
+  ordenesCompra         GastoLogisticoOC[]
 
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
@@ -145,11 +144,31 @@ model GastosLogisticos {
   deletedAt             DateTime? @map("deleted_at")
 
   @@map("gastos_logisticos")
-  @@index([ocId])
   @@index([tipoGasto])
   @@index([metodoPago])
   @@index([fechaGasto])
   @@index([deletedAt])
+}
+
+// TABLA 3.5: RELACIÓN MANY-TO-MANY ENTRE GASTOS Y OCS
+// Un gasto puede estar asociado a múltiples órdenes de compra
+// (Ej: un contenedor con productos de varias OCs)
+model GastoLogisticoOC {
+  id                    String            @id @default(cuid())
+  gastoId               String            @map("gasto_id")
+  ocId                  String            @map("oc_id")
+
+  // Relaciones
+  gasto                 GastosLogisticos  @relation(fields: [gastoId], references: [id], onDelete: Cascade)
+  ocChina               OCChina           @relation(fields: [ocId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt             DateTime          @default(now()) @map("created_at")
+
+  @@unique([gastoId, ocId])
+  @@map("gastos_logisticos_oc")
+  @@index([gastoId])
+  @@index([ocId])
 }
 
 // TABLA 4: INVENTARIO RECIBIDO
