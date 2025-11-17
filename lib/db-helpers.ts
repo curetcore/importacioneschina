@@ -1,6 +1,6 @@
 import { prisma, prismaDemo } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth-options"
 
 /**
  * Soft delete helper - Marca un registro como eliminado sin borrarlo físicamente
