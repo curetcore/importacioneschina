@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { updateProveedorSchema } from "@/lib/validations/proveedor"
 import { z } from "zod"
 
 // GET /api/proveedores/[id] - Obtener proveedor por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const proveedor = await prisma.proveedor.findUnique({
+    const db = await getPrismaClient()
+    const proveedor = await db.proveedor.findUnique({
       where: { id: params.id },
     })
 
@@ -39,13 +40,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT /api/proveedores/[id] - Actualizar proveedor
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const body = await request.json()
 
     // Validar datos
     const validatedData = updateProveedorSchema.parse(body)
 
     // Verificar que el proveedor existe
-    const existingProveedor = await prisma.proveedor.findUnique({
+    const existingProveedor = await db.proveedor.findUnique({
       where: { id: params.id },
     })
 
@@ -61,7 +63,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Si se está cambiando el código, verificar que no exista
     if (validatedData.codigo && validatedData.codigo !== existingProveedor.codigo) {
-      const codigoExists = await prisma.proveedor.findUnique({
+      const codigoExists = await db.proveedor.findUnique({
         where: { codigo: validatedData.codigo },
       })
 

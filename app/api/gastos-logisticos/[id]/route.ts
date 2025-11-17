@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { gastosLogisticosSchema } from "@/lib/validations"
-import { softDelete } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 // GET /api/gastos-logisticos/[id]
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const gasto = await prisma.gastosLogisticos.findFirst({
+    const gasto = await db.gastosLogisticos.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -41,10 +41,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT /api/gastos-logisticos/[id]
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const body = await request.json()
 
-    const existing = await prisma.gastosLogisticos.findUnique({
+    const existing = await db.gastosLogisticos.findUnique({
       where: { id },
     })
 
@@ -60,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Extraer adjuntos (no validado por Zod)
     const { adjuntos } = body
 
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id: validatedData.ocId },
     })
 
@@ -70,7 +71,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Actualizar el gasto
     // NOTA: idGasto NO se puede modificar (es autogenerado e inmutable)
-    const updatedGasto = await prisma.gastosLogisticos.update({
+    const updatedGasto = await db.gastosLogisticos.update({
       where: { id },
       data: {
         // idGasto es inmutable - se mantiene el valor existente
@@ -100,9 +101,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/gastos-logisticos/[id]
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const existing = await prisma.gastosLogisticos.findUnique({
+    const existing = await db.gastosLogisticos.findUnique({
       where: { id },
     })
 
@@ -114,7 +116,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const estadoAnterior = { ...existing }
 
     // Soft delete del gasto
-    await softDelete("gastosLogisticos", id)
+    const now = new Date()
+    await db.gastosLogisticos.update({
+      where: { id },
+      data: { deletedAt: now },
+    })
 
     // Audit log
     await auditDelete("GastosLogisticos", estadoAnterior as any, request)

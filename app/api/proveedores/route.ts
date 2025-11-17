@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { proveedorSchema } from "@/lib/validations/proveedor"
 import { z } from "zod"
 
 // GET /api/proveedores - Obtener todos los proveedores
 export async function GET(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const activo = searchParams.get("activo")
 
     const whereClause = activo !== null ? { activo: activo === "true" } : {}
 
-    const proveedores = await prisma.proveedor.findMany({
+    const proveedores = await db.proveedor.findMany({
       where: whereClause,
       orderBy: {
         nombre: "asc",
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
 // POST /api/proveedores - Crear nuevo proveedor
 export async function POST(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const body = await request.json()
 
     // Validar datos
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
     let codigo = validatedData.codigo
     if (!codigo) {
       // Obtener el último proveedor para generar el siguiente código
-      const lastProveedor = await prisma.proveedor.findFirst({
+      const lastProveedor = await db.proveedor.findFirst({
         orderBy: { codigo: "desc" },
         select: { codigo: true },
       })
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear proveedor
-    const proveedor = await prisma.proveedor.create({
+    const proveedor = await db.proveedor.create({
       data: {
         codigo,
         nombre: validatedData.nombre,

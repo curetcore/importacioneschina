@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { pagosChinaSchema } from "@/lib/validations"
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations"
 import { generateUniqueId } from "@/lib/id-generator"
@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   if (rateLimitError) return rateLimitError
 
   try {
+    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get("page") || "1")
     const requestedLimit = parseInt(searchParams.get("limit") || "20")
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [pagos, total] = await Promise.all([
-      prisma.pagosChina.findMany({
+      db.pagosChina.findMany({
         where,
         skip,
         take: limit,
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.pagosChina.count({ where }),
+      db.pagosChina.count({ where }),
     ])
 
     return NextResponse.json({
@@ -85,6 +86,7 @@ export async function POST(request: NextRequest) {
   if (rateLimitError) return rateLimitError
 
   try {
+    const db = await getPrismaClient()
     const body = await request.json()
 
     // Generar ID automático secuencial (thread-safe)
@@ -97,7 +99,7 @@ export async function POST(request: NextRequest) {
     const { adjuntos } = body
 
     // Verificar que la OC existe
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id: validatedData.ocId },
     })
 
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
     const montoRDNeto = calcularMontoRDNeto(montoRD, validatedData.comisionBancoRD)
 
     // Crear el pago
-    const nuevoPago = await prisma.pagosChina.create({
+    const nuevoPago = await db.pagosChina.create({
       data: {
         idPago,
         ocId: validatedData.ocId,

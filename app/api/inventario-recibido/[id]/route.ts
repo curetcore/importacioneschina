@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma, Prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
+import { Prisma } from "@prisma/client"
 import { inventarioRecibidoSchema } from "@/lib/validations"
 import { distribuirGastosLogisticos } from "@/lib/calculations"
-import { softDelete } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const inventario = await prisma.inventarioRecibido.findFirst({
+    const inventario = await db.inventarioRecibido.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -40,11 +41,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const body = await request.json()
 
     // Verificar que el registro existe
-    const existing = await prisma.inventarioRecibido.findUnique({
+    const existing = await db.inventarioRecibido.findUnique({
       where: { id },
     })
 
@@ -59,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const validatedData = inventarioRecibidoSchema.parse(body)
 
     // Verificar que la OC existe y cargar datos necesarios
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id: validatedData.ocId },
       include: {
         items: true,
@@ -85,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
 
       // Validar sobre-recepción (excluyendo el registro actual)
-      const cantidadYaRecibida = await prisma.inventarioRecibido.aggregate({
+      const cantidadYaRecibida = await db.inventarioRecibido.aggregate({
         where: {
           ocId: validatedData.ocId,
           itemId: validatedData.itemId,
@@ -143,7 +145,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Actualizar la recepción con todos los campos y costos recalculados
     // NOTA: idRecepcion NO se puede modificar (es autogenerado e inmutable)
-    const updated = await prisma.inventarioRecibido.update({
+    const updated = await db.inventarioRecibido.update({
       where: { id },
       data: {
         // idRecepcion es inmutable - se mantiene el valor existente
@@ -181,9 +183,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const existing = await prisma.inventarioRecibido.findUnique({
+    const existing = await db.inventarioRecibido.findUnique({
       where: { id },
     })
 
@@ -195,7 +198,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const estadoAnterior = { ...existing }
 
     // Soft delete del inventario
-    await softDelete("inventarioRecibido", id)
+    const now = new Date()
+    await db.inventarioRecibido.update({
+      where: { id },
+      data: { deletedAt: now },
+    })
 
     // Audit log
     await auditDelete("InventarioRecibido", estadoAnterior as any, request)

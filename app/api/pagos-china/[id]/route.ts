@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { pagosChinaSchema } from "@/lib/validations"
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations"
 import { Prisma } from "@prisma/client"
-import { softDelete } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 // GET /api/pagos-china/[id] - Obtener un pago específico
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const pago = await prisma.pagosChina.findFirst({
+    const pago = await db.pagosChina.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -43,11 +43,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT /api/pagos-china/[id] - Actualizar un pago
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const body = await request.json()
 
     // Verificar que el pago existe
-    const existing = await prisma.pagosChina.findUnique({
+    const existing = await db.pagosChina.findUnique({
       where: { id },
     })
 
@@ -65,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { adjuntos } = body
 
     // Verificar que la OC existe
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id: validatedData.ocId },
     })
 
@@ -84,7 +85,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Actualizar el pago con campos recalculados
     // NOTA: idPago NO se puede modificar (es autogenerado e inmutable)
-    const updatedPago = await prisma.pagosChina.update({
+    const updatedPago = await db.pagosChina.update({
       where: { id },
       data: {
         // idPago es inmutable - se mantiene el valor existente
@@ -117,10 +118,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/pagos-china/[id] - Eliminar un pago
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
     // Verificar que el pago existe
-    const existing = await prisma.pagosChina.findUnique({
+    const existing = await db.pagosChina.findUnique({
       where: { id },
     })
 
@@ -132,7 +134,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const estadoAnterior = { ...existing }
 
     // Soft delete del pago
-    await softDelete("pagosChina", id)
+    const now = new Date()
+    await db.pagosChina.update({
+      where: { id },
+      data: { deletedAt: now },
+    })
 
     // Audit log
     await auditDelete("PagosChina", estadoAnterior as any, request)
