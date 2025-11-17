@@ -1,7 +1,8 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { prisma } from "@/lib/prisma"
+import { prisma, prismaDemo } from "@/lib/prisma"
+import { DEMO_USER_EMAIL } from "@/lib/db-helpers"
 
 // Rate limiting simple en memoria (Problema #10)
 // Para producción, considerar usar Redis o similar
@@ -58,7 +59,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Demasiados intentos fallidos. Intenta nuevamente en 15 minutos.")
         }
 
-        const user = await prisma.user.findUnique({
+        // Usar la base de datos correcta según el email
+        const db = credentials.email === DEMO_USER_EMAIL ? prismaDemo : prisma
+
+        const user = await db.user.findUnique({
           where: { email: credentials.email },
         })
 
@@ -77,7 +81,7 @@ export const authOptions: NextAuthOptions = {
         resetRateLimit(credentials.email)
 
         // Actualizar último login
-        await prisma.user.update({
+        await db.user.update({
           where: { id: user.id },
           data: { lastLogin: new Date() },
         })
