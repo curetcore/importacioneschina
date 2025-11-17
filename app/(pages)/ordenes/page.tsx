@@ -27,7 +27,7 @@ import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 import { DataTable } from "@/components/ui/data-table"
-import { getOrdenesColumns, OCChina } from "./columns"
+import { getOrdenesColumns, OCChina, OCChinaItem } from "./columns"
 import {
   Plus,
   ClipboardList,
@@ -48,15 +48,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-interface OCChinaItem {
-  id: string
-  sku: string
-  nombre: string
-  cantidadTotal: number
-  precioUnitarioUSD: number
-  subtotalUSD: number
-}
 
 export default function OrdenesPage() {
   const router = useRouter()

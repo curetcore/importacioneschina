@@ -14,7 +14,7 @@ interface FileAttachment {
   uploadedAt: string
 }
 
-interface OCChinaItem {
+export interface OCChinaItem {
   id: string
   sku: string
   nombre: string
