@@ -17,21 +17,22 @@
 ## 📋 Tabla de Contenidos
 
 1. [Características Principales](#-características-principales)
-2. [Métricas del Proyecto](#-métricas-del-proyecto)
-3. [Seguridad y Autenticación](#-seguridad-y-autenticación)
-4. [Arquitectura del Sistema](#-arquitectura-del-sistema)
-5. [Análisis de Componentes](#-análisis-de-componentes)
-6. [Modelo de Datos](#️-modelo-de-datos)
-7. [Instalación y Configuración](#-instalación)
-8. [Cálculos y Distribución de Costos](#-cálculos-y-distribución-de-costos)
-9. [Flujos de Datos Principales](#-flujos-de-datos-principales)
-10. [Uso del Sistema](#-uso-del-sistema)
-11. [Documentación Técnica](#-documentación-técnica)
-12. [API Endpoints](#-api-endpoints)
-13. [Deployment](#-deployment)
-14. [Robustez y Principios de Diseño](#-robustez-y-principios-de-diseño)
-15. [TypeScript y Tipos](#-typescript-y-tipos)
-16. [Patrones de Diseño](#-patrones-de-diseño)
+2. [Plan de Modernización de Librerías](#-plan-de-modernización-de-librerías)
+3. [Métricas del Proyecto](#-métricas-del-proyecto)
+4. [Seguridad y Autenticación](#-seguridad-y-autenticación)
+5. [Arquitectura del Sistema](#-arquitectura-del-sistema)
+6. [Análisis de Componentes](#-análisis-de-componentes)
+7. [Modelo de Datos](#️-modelo-de-datos)
+8. [Instalación y Configuración](#-instalación)
+9. [Cálculos y Distribución de Costos](#-cálculos-y-distribución-de-costos)
+10. [Flujos de Datos Principales](#-flujos-de-datos-principales)
+11. [Uso del Sistema](#-uso-del-sistema)
+12. [Documentación Técnica](#-documentación-técnica)
+13. [API Endpoints](#-api-endpoints)
+14. [Deployment](#-deployment)
+15. [Robustez y Principios de Diseño](#-robustez-y-principios-de-diseño)
+16. [TypeScript y Tipos](#-typescript-y-tipos)
+17. [Patrones de Diseño](#-patrones-de-diseño)
 
 ---
 
@@ -101,6 +102,262 @@
 - ✅ **Manejo de errores robusto** - Error boundaries y type guards
 
 > 📖 **Ver [ROBUSTEZ_SISTEMA.md](./ROBUSTEZ_SISTEMA.md)** para análisis completo de diseño
+
+---
+
+## 🚀 Plan de Modernización de Librerías
+
+Plan completo de integración de librerías modernas para mejorar performance, DX (Developer Experience), y funcionalidad del sistema. Implementación gradual sin romper el código existente.
+
+### Estado General: 🟢 Fase 1 Completada
+
+**Progreso Total:** 5/21 librerías implementadas (23.8%)
+
+---
+
+### 📦 Fase 1: Fundación y Quick Wins ✅
+**Objetivo:** Mejorar UX inmediatamente y establecer bases sólidas
+**Tiempo estimado:** 4-6 horas
+**Impacto:** 🔥 Alto
+**Estado:** ✅ COMPLETADO
+
+- [x] **xlsx** - Exportación a Excel (✅ IMPLEMENTADO)
+- [x] **sonner** - Sistema de notificaciones toast mejorado (✅ IMPLEMENTADO)
+- [x] **date-fns** - Manejo robusto de fechas y formateo (✅ IMPLEMENTADO)
+- [x] **currency.js** - Cálculos precisos de moneda (✅ IMPLEMENTADO)
+- [x] **clsx** - Utilidad para classNames condicionales (✅ YA EXISTÍA)
+
+**Beneficios logrados:**
+- ✅ Notificaciones más elegantes con Sonner (animaciones suaves, stacking automático)
+- ✅ Cálculos financieros sin errores de floating point usando currency.js
+- ✅ Manejo de fechas robusto con date-fns (validaciones, comparaciones, rangos, locale español)
+- ✅ Exportación a Excel funcional en todos los módulos principales
+
+---
+
+### 📝 Fase 2: Formularios Modernos
+**Objetivo:** Simplificar formularios y validaciones
+**Tiempo estimado:** 12-16 horas
+**Impacto:** 🔥 Alto
+
+- [ ] **react-hook-form** - Manejo de formularios con mejor performance
+- [ ] **zod** - Validación type-safe de esquemas
+- [ ] **@hookform/resolvers** - Integración zod + react-hook-form
+
+**Archivos a migrar:**
+- `components/forms/OCChinaForm.tsx`
+- `components/forms/PagosChinaForm.tsx`
+- `components/forms/GastosLogisticosForm.tsx`
+- `components/forms/InventarioRecibidoForm.tsx`
+- `components/forms/ConfiguracionForm.tsx`
+- `components/forms/ProveedorForm.tsx`
+
+**Beneficios esperados:**
+- ~60% menos código en formularios
+- Menos re-renders (mejor performance)
+- Validación consistente y type-safe
+- Mensajes de error automáticos
+
+---
+
+### 🔄 Fase 3: Data Management & Caching
+**Objetivo:** Optimizar fetching de datos y cache inteligente
+**Tiempo estimado:** 8-10 horas
+**Impacto:** 🔥 Alto
+
+- [ ] **@tanstack/react-query** - Client-side caching y data fetching
+- [ ] **@tanstack/react-query-devtools** - Debugging tools
+
+**Endpoints a migrar:**
+- `/api/oc-china` → useQuery
+- `/api/pagos-china` → useQuery
+- `/api/gastos-logisticos` → useQuery
+- `/api/inventario-recibido` → useQuery
+- `/api/proveedores` → useQuery
+- `/api/configuracion` → useQuery
+- `/api/dashboard` → useQuery
+
+**Beneficios esperados:**
+- Cache automático (menos requests al servidor)
+- Revalidación inteligente
+- Loading/error states simplificados
+- Optimistic updates
+- Eliminar ~200 líneas de código de manejo de loading
+
+---
+
+### 📊 Fase 4: Tablas Profesionales
+**Objetivo:** Tablas con sorting, filtering, pagination avanzada
+**Tiempo estimado:** 10-14 horas
+**Impacto:** 🔥 Alto
+
+- [ ] **@tanstack/react-table** - Tablas con features avanzadas
+
+**Tablas a migrar:**
+- `app/(pages)/ordenes/page.tsx` - Tabla de órdenes
+- `app/(pages)/pagos-china/page.tsx` - Tabla de pagos
+- `app/(pages)/gastos-logisticos/page.tsx` - Tabla de gastos
+- `app/(pages)/inventario-recibido/page.tsx` - Tabla de inventario
+- `app/(pages)/configuracion/page.tsx` - Tabla de configuración
+- `components/registros/ProveedoresList.tsx` - Lista de proveedores
+
+**Beneficios esperados:**
+- Sorting multi-columna
+- Filtering avanzado
+- Column visibility toggle
+- Row selection
+- Export mejorado
+- Reemplaza ~500 líneas de código custom
+
+---
+
+### 📈 Fase 5: Visualización de Datos
+**Objetivo:** Gráficos y dashboards interactivos
+**Tiempo estimado:** 14-18 horas
+**Impacto:** 🟡 Medio-Alto
+
+- [ ] **recharts** - Librería de gráficos para React
+- [ ] **@tremor/react** - Componentes de dashboard (opcional, alternativa a recharts)
+
+**Componentes a crear:**
+- Dashboard de tendencias de pagos por mes
+- Gráfico de gastos logísticos por tipo
+- Comparativa de proveedores (costos, tiempos)
+- Análisis de tasas de cambio histórico
+- Distribución de inventario por bodega
+- Gráfico de costos FOB vs Landed Cost
+
+**Beneficios esperados:**
+- Visualización clara de tendencias
+- Toma de decisiones basada en datos
+- Dashboard ejecutivo profesional
+
+---
+
+### 📄 Fase 6: Generación de Reportes
+**Objetivo:** PDFs e impresión profesional
+**Tiempo estimado:** 12-16 horas
+**Impacto:** 🟡 Medio
+
+- [ ] **jspdf** - Generación de PDFs en el cliente
+- [ ] **jspdf-autotable** - Tablas automáticas en PDFs
+- [ ] **react-to-print** - Impresión optimizada de componentes
+
+**Reportes a implementar:**
+- PDF de Orden de Compra completa
+- PDF de Reporte de Pagos
+- PDF de Gastos Logísticos por período
+- PDF de Inventario Recibido
+- Resumen ejecutivo mensual
+- Reporte de proveedor específico
+
+**Beneficios esperados:**
+- Documentos profesionales para contabilidad
+- Reportes imprimibles para presentaciones
+- Backup en PDF de transacciones importantes
+
+---
+
+### 🔧 Fase 7: Utilidades y Helpers
+**Objetivo:** Funciones auxiliares para operaciones comunes
+**Tiempo estimado:** 6-8 horas
+**Impacto:** 🟢 Medio
+
+- [ ] **lodash-es** - Utilidades para arrays, objetos, números
+- [ ] **validator** - Validación y sanitización de inputs
+- [ ] **numeral** - Formateo avanzado de números
+
+**Uso propuesto:**
+- `groupBy`, `sumBy` para agregaciones de KPIs
+- Validación de emails, URLs, números
+- Formateo de números grandes (1.5M, 2.3K)
+- Sanitización de inputs del usuario
+
+**Beneficios esperados:**
+- Código más limpio y legible
+- Funciones probadas y optimizadas
+- Prevención de vulnerabilidades (XSS, injection)
+
+---
+
+### ⚡ Fase 8: UX Avanzada
+**Objetivo:** Mejoras de experiencia de usuario avanzadas
+**Tiempo estimado:** 8-10 horas
+**Impacto:** 🟢 Medio
+
+- [ ] **cmdk** - Command Palette (Cmd+K)
+- [ ] **react-hot-keys-hook** - Keyboard shortcuts
+
+**Features a implementar:**
+- Command palette para navegación rápida
+- Búsqueda global de OCs, productos, proveedores
+- Shortcuts de teclado para acciones comunes
+- Quick actions desde cualquier página
+
+**Beneficios esperados:**
+- Navegación más rápida (power users)
+- Búsqueda instantánea cross-módulo
+- Productividad aumentada
+
+---
+
+### 📋 Resumen por Fase
+
+| Fase | Librerías | Tiempo | Impacto | Estado |
+|------|-----------|--------|---------|--------|
+| **Fase 1** | 5 librerías | 4-6h | 🔥 Alto | 🟢 100% ✅ |
+| **Fase 2** | 3 librerías | 12-16h | 🔥 Alto | ⚪ 0% |
+| **Fase 3** | 2 librerías | 8-10h | 🔥 Alto | ⚪ 0% |
+| **Fase 4** | 1 librería | 10-14h | 🔥 Alto | ⚪ 0% |
+| **Fase 5** | 2 librerías | 14-18h | 🟡 Medio | ⚪ 0% |
+| **Fase 6** | 3 librerías | 12-16h | 🟡 Medio | ⚪ 0% |
+| **Fase 7** | 3 librerías | 6-8h | 🟢 Bajo | ⚪ 0% |
+| **Fase 8** | 2 librerías | 8-10h | 🟢 Bajo | ⚪ 0% |
+| **TOTAL** | **21 librerías** | **74-98h** | - | **23.8%** |
+
+---
+
+### 🎯 Principios de Implementación
+
+1. **Sin romper el estilo existente** - Mantener diseño Tailwind + shadcn/ui
+2. **Migración gradual** - Implementar por fases, sin big-bang
+3. **Backward compatible** - Código viejo sigue funcionando durante migración
+4. **100% funcional** - Solo features probadas y estables
+5. **Documentado** - Cada cambio documentado en commits
+6. **Testing incremental** - Probar cada fase antes de siguiente
+
+---
+
+### 📦 Instalación Completa (cuando esté todo listo)
+
+```bash
+# Fase 1: Fundación
+npm install sonner date-fns currency.js clsx
+
+# Fase 2: Formularios
+npm install react-hook-form zod @hookform/resolvers
+
+# Fase 3: Data Management
+npm install @tanstack/react-query @tanstack/react-query-devtools
+
+# Fase 4: Tablas
+npm install @tanstack/react-table
+
+# Fase 5: Visualización
+npm install recharts
+# O alternativa premium:
+npm install @tremor/react
+
+# Fase 6: Reportes
+npm install jspdf jspdf-autotable react-to-print
+
+# Fase 7: Utilidades
+npm install lodash-es validator numeral
+npm install -D @types/lodash-es @types/numeral
+
+# Fase 8: UX Avanzada
+npm install cmdk react-hotkeys-hook
+```
 
 ---
 

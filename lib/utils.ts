@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { format, parseISO, isValid, startOfMonth, endOfMonth, isWithinInterval, differenceInDays, addDays, subDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,18 +37,90 @@ export function formatNumber(num: number | string): string {
   }).format(value);
 }
 
+/**
+ * Formatea una fecha usando date-fns
+ * @param date - Fecha como Date o string ISO
+ * @returns Fecha formateada como "DD/MM/YYYY"
+ */
 export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("es-DO", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(dateObj);
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  if (!isValid(dateObj)) return "Fecha inválida";
+  return format(dateObj, "dd/MM/yyyy");
 }
 
+/**
+ * Formatea una fecha en formato corto (ISO)
+ * @param date - Fecha como Date o string
+ * @returns Fecha en formato "YYYY-MM-DD"
+ */
 export function formatDateShort(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return dateObj.toISOString().split("T")[0];
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  if (!isValid(dateObj)) return "";
+  return format(dateObj, "yyyy-MM-dd");
+}
+
+/**
+ * Formatea una fecha en formato largo legible
+ * @param date - Fecha como Date o string
+ * @returns Fecha formateada como "15 de enero de 2024"
+ */
+export function formatDateLong(date: Date | string): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  if (!isValid(dateObj)) return "Fecha inválida";
+  return format(dateObj, "d 'de' MMMM 'de' yyyy", { locale: es });
+}
+
+/**
+ * Obtiene el primer día del mes de una fecha
+ */
+export function getMonthStart(date: Date | string): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  return startOfMonth(dateObj);
+}
+
+/**
+ * Obtiene el último día del mes de una fecha
+ */
+export function getMonthEnd(date: Date | string): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  return endOfMonth(dateObj);
+}
+
+/**
+ * Verifica si una fecha está dentro de un rango
+ */
+export function isDateInRange(date: Date | string, start: Date | string, end: Date | string): boolean {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  const startObj = typeof start === "string" ? parseISO(start) : start;
+  const endObj = typeof end === "string" ? parseISO(end) : end;
+
+  return isWithinInterval(dateObj, { start: startObj, end: endObj });
+}
+
+/**
+ * Calcula la diferencia en días entre dos fechas
+ */
+export function getDaysDifference(date1: Date | string, date2: Date | string): number {
+  const dateObj1 = typeof date1 === "string" ? parseISO(date1) : date1;
+  const dateObj2 = typeof date2 === "string" ? parseISO(date2) : date2;
+
+  return differenceInDays(dateObj1, dateObj2);
+}
+
+/**
+ * Agrega días a una fecha
+ */
+export function addDaysToDate(date: Date | string, days: number): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  return addDays(dateObj, days);
+}
+
+/**
+ * Resta días a una fecha
+ */
+export function subtractDaysFromDate(date: Date | string, days: number): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date;
+  return subDays(dateObj, days);
 }
 
 export function sleep(ms: number): Promise<void> {

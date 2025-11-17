@@ -1,5 +1,28 @@
 import { Prisma } from "@prisma/client";
 import type { JsonValue } from "@prisma/client/runtime/library";
+import currency from "currency.js";
+
+// Configuración de currency.js para RD$ (Peso Dominicano)
+const RD = (value: number | string | Prisma.Decimal) => currency(value, {
+  symbol: "RD$",
+  precision: 2,
+  separator: ",",
+  decimal: ".",
+});
+
+const USD = (value: number | string | Prisma.Decimal) => currency(value, {
+  symbol: "US$",
+  precision: 2,
+  separator: ",",
+  decimal: ".",
+});
+
+/**
+ * Convierte Prisma.Decimal a number de forma segura
+ */
+function toNumber(value: number | Prisma.Decimal): number {
+  return typeof value === "number" ? value : parseFloat(value.toString());
+}
 
 export interface TallaDistribucion {
   [talla: string]: number;
@@ -10,33 +33,35 @@ export function calcularMontoRD(
   moneda: string,
   tasaCambio: number | Prisma.Decimal = 1
 ): number {
-  const monto = typeof montoOriginal === "number" ? montoOriginal : parseFloat(montoOriginal.toString());
-  const tasa = typeof tasaCambio === "number" ? tasaCambio : parseFloat(tasaCambio.toString());
+  const monto = toNumber(montoOriginal);
+  const tasa = toNumber(tasaCambio);
 
   if (moneda === "RD$") {
     return monto;
   }
 
-  // Validar tasa de cambio (Problema #6)
+  // Validar tasa de cambio
   if (tasa <= 0) {
     console.error(`❌ Tasa de cambio inválida: ${tasa} para moneda ${moneda}`);
     return 0;
   }
 
-  return monto * tasa;
+  // Usar currency.js para evitar errores de floating point
+  return RD(monto).multiply(tasa).value;
 }
 
 export function calcularMontoRDNeto(
   montoRD: number | Prisma.Decimal,
   comisionBancoRD: number | Prisma.Decimal
 ): number {
-  const monto = typeof montoRD === "number" ? montoRD : parseFloat(montoRD.toString());
-  const comision = typeof comisionBancoRD === "number" ? comisionBancoRD : parseFloat(comisionBancoRD.toString());
+  const monto = toNumber(montoRD);
+  const comision = toNumber(comisionBancoRD);
 
   // SUMA la comisión para obtener el COSTO TOTAL real
   // montoRDNeto = lo que realmente pagaste (monto convertido + comisión bancaria)
   // Ejemplo: $1000 × 58.5 = 58,500 + 500 comisión = 59,000 RD$ (costo total)
-  return monto + comision;
+  // Usar currency.js para precisión
+  return RD(monto).add(comision).value;
 }
 
 export function calcularTotalInversion(
@@ -46,7 +71,9 @@ export function calcularTotalInversion(
   // Validar que los valores no sean negativos
   const pagos = totalPagosRD < 0 ? 0 : totalPagosRD;
   const gastos = totalGastosRD < 0 ? 0 : totalGastosRD;
-  return pagos + gastos;
+
+  // Usar currency.js para precisión
+  return RD(pagos).add(gastos).value;
 }
 
 export function calcularCostoUnitarioFinal(
@@ -55,7 +82,9 @@ export function calcularCostoUnitarioFinal(
 ): number {
   // Validar que los valores sean positivos
   if (cantidadRecibida <= 0 || totalInversionRD < 0) return 0;
-  return Math.round((totalInversionRD / cantidadRecibida) * 100) / 100;
+
+  // Usar currency.js para división precisa
+  return RD(totalInversionRD).divide(cantidadRecibida).value;
 }
 
 export function calcularDiferenciaUnidades(
@@ -82,7 +111,9 @@ export function calcularCostoTotalRecepcion(
 ): number {
   // Validar que los valores no sean negativos
   if (cantidadRecibida < 0 || costoUnitarioFinalRD < 0) return 0;
-  return Math.round(cantidadRecibida * costoUnitarioFinalRD * 100) / 100;
+
+  // Usar currency.js para multiplicación precisa
+  return RD(costoUnitarioFinalRD).multiply(cantidadRecibida).value;
 }
 
 export function calcularCostoFOBUnitario(
@@ -91,10 +122,14 @@ export function calcularCostoFOBUnitario(
 ): number {
   // Validar que cantidadOrdenada sea positiva
   if (cantidadOrdenada <= 0) return 0;
-  const total = typeof costoFOBTotal === "number" ? costoFOBTotal : parseFloat(costoFOBTotal.toString());
+
+  const total = toNumber(costoFOBTotal);
+
   // Validar que el total no sea negativo
   if (total < 0) return 0;
-  return Math.round((total / cantidadOrdenada) * 100) / 100;
+
+  // Usar currency.js para división precisa
+  return USD(total).divide(cantidadOrdenada).value;
 }
 
 export interface OCCalculada {
@@ -137,9 +172,9 @@ export function calcularOC(data: {
   const porcentajeRecepcion = calcularPorcentajeRecepcion(cantidadRecibida, data.cantidadOrdenada);
 
   return {
-    totalPagosRD: Math.round(totalPagosRD * 100) / 100,
-    totalGastosRD: Math.round(totalGastosRD * 100) / 100,
-    totalInversionRD: Math.round(totalInversionRD * 100) / 100,
+    totalPagosRD: RD(totalPagosRD).value,
+    totalGastosRD: RD(totalGastosRD).value,
+    totalInversionRD: RD(totalInversionRD).value,
     cantidadRecibida,
     diferenciaUnidades,
     costoUnitarioFinalRD,
@@ -282,11 +317,11 @@ export function distribuirGastosLogisticos(
 
     return {
       ...item,
-      porcentajeFOB: Math.round(porcentajeFOB * 100) / 100,
-      gastosLogisticosRD: Math.round(gastosLogisticosRD * 100) / 100,
-      costoFOBRD: Math.round(costoFOBRD * 100) / 100,
-      costoTotalRD: Math.round(costoTotalRD * 100) / 100,
-      costoUnitarioRD: Math.round(costoUnitarioRD * 100) / 100,
+      porcentajeFOB: currency(porcentajeFOB).value,
+      gastosLogisticosRD: RD(gastosLogisticosRD).value,
+      costoFOBRD: RD(costoFOBRD).value,
+      costoTotalRD: RD(costoTotalRD).value,
+      costoUnitarioRD: RD(costoUnitarioRD).value,
     }
   })
 }
@@ -329,13 +364,13 @@ export function calcularResumenFinanciero(
 
   return {
     totalUnidades,
-    totalFOBUSD: Math.round(totalFOBUSD * 100) / 100,
-    totalPagadoRD: Math.round(totalPagadoRD * 100) / 100,
-    totalGastosRD: Math.round(totalGastosRD * 100) / 100,
-    totalCostoRD: Math.round(totalCostoRD * 100) / 100,
-    tasaCambioPromedio: Math.round(tasaCambioPromedio * 100) / 100,
+    totalFOBUSD: USD(totalFOBUSD).value,
+    totalPagadoRD: RD(totalPagadoRD).value,
+    totalGastosRD: RD(totalGastosRD).value,
+    totalCostoRD: RD(totalCostoRD).value,
+    tasaCambioPromedio: currency(tasaCambioPromedio).value,
     costoUnitarioPromedioRD: totalUnidades > 0
-      ? Math.round((totalCostoRD / totalUnidades) * 100) / 100
+      ? RD(totalCostoRD).divide(totalUnidades).value
       : 0,
   }
 }
