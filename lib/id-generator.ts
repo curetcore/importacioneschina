@@ -4,9 +4,12 @@
  * Este módulo resuelve el problema de race condition cuando múltiples usuarios
  * intentan crear registros simultáneamente. Usa transacciones de Prisma para
  * garantizar que cada ID sea único.
+ *
+ * IMPORTANTE: Usa getPrismaClient() para garantizar que los IDs se generen
+ * en la base de datos correcta (producción o demo según el usuario).
  */
 
-import { prisma } from "./prisma"
+import { getPrismaClient } from "./db-helpers"
 import { Prisma } from "@prisma/client"
 
 /**
@@ -30,8 +33,11 @@ export async function generateUniqueId(
   fieldName: string,
   prefix: string
 ): Promise<string> {
+  // Obtener el cliente Prisma correcto (producción o demo según el usuario)
+  const db = await getPrismaClient()
+
   // Usamos una transacción para garantizar atomicidad
-  return await prisma.$transaction(
+  return await db.$transaction(
     async tx => {
       // 1. Obtener el último ID usando orderBy DESC y lock de lectura
       const lastRecord = await (tx as any)[modelName].findFirst({

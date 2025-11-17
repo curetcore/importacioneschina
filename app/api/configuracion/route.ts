@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { auditCreate } from "@/lib/audit-logger"
 
 const configuracionSchema = z.object({
   categoria: z.enum([
@@ -46,14 +48,7 @@ export async function GET(request: NextRequest) {
       data: categoria ? configuraciones : grouped,
     })
   } catch (error) {
-    console.error("Error en GET /api/configuracion:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener configuraciones",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -75,13 +70,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ya existe una configuración con ese valor en esta categoría",
-        },
-        { status: 400 }
-      )
+      throw Errors.conflict("Ya existe una configuración con ese valor en esta categoría")
     }
 
     const configuracion = await db.configuracion.create({
@@ -92,6 +81,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Audit log
+    await auditCreate("Configuracion", configuracion as any, request)
+
     return NextResponse.json(
       {
         success: true,
@@ -100,25 +92,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error("Error en POST /api/configuracion:", error)
-
-    if (error && typeof error === "object" && "errors" in error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de entrada inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al crear configuración",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

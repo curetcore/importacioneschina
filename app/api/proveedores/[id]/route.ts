@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { updateProveedorSchema } from "@/lib/validations/proveedor"
-import { z } from "zod"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 
 // GET /api/proveedores/[id] - Obtener proveedor por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -12,13 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     })
 
     if (!proveedor) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Proveedor no encontrado",
-        },
-        { status: 404 }
-      )
+      throw Errors.notFound("Proveedor", params.id)
     }
 
     return NextResponse.json({
@@ -26,14 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       data: proveedor,
     })
   } catch (error) {
-    console.error("❌ Error al obtener proveedor:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido al obtener proveedor",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -52,13 +40,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     if (!existingProveedor) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Proveedor no encontrado",
-        },
-        { status: 404 }
-      )
+      throw Errors.notFound("Proveedor", params.id)
     }
 
     // Si se está cambiando el código, verificar que no exista
@@ -68,13 +50,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
 
       if (codigoExists) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ya existe un proveedor con ese código",
-          },
-          { status: 400 }
-        )
+        throw Errors.conflict("Ya existe un proveedor con ese código")
       }
     }
 
@@ -118,31 +94,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       },
     })
 
+    // Audit log
+    await auditUpdate("Proveedor", existingProveedor as any, proveedor as any, request)
+
     return NextResponse.json({
       success: true,
       data: proveedor,
     })
   } catch (error) {
-    console.error("❌ Error al actualizar proveedor:", error)
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido al actualizar proveedor",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -150,19 +110,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const db = await getPrismaClient()
+
     // Verificar que el proveedor existe
     const proveedor = await db.proveedor.findUnique({
       where: { id: params.id },
     })
 
     if (!proveedor) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Proveedor no encontrado",
-        },
-        { status: 404 }
-      )
+      throw Errors.notFound("Proveedor", params.id)
     }
 
     // Soft delete: marcar como inactivo
@@ -171,18 +126,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       data: { activo: false },
     })
 
+    // Audit log
+    await auditDelete("Proveedor", proveedor as any, request)
+
     return NextResponse.json({
       success: true,
       data: proveedorDeleted,
+      message: "Proveedor marcado como inactivo exitosamente",
     })
   } catch (error) {
-    console.error("❌ Error al eliminar proveedor:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido al eliminar proveedor",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

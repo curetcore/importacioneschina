@@ -1,6 +1,9 @@
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 
 /**
+ * IMPORTANTE: Este módulo usa getPrismaClient() para garantizar que los logs
+ * de auditoría se guarden en la base de datos correcta (producción o demo).
+ *
  * Tipos de acciones auditables
  */
 export enum AuditAction {
@@ -66,7 +69,10 @@ export interface AuditLogOptions {
  */
 export async function logAudit(options: AuditLogOptions): Promise<void> {
   try {
-    await prisma.auditLog.create({
+    // Obtener el cliente Prisma correcto (producción o demo según el usuario)
+    const db = await getPrismaClient()
+
+    await db.auditLog.create({
       data: {
         entidad: options.entidad,
         entidadId: options.entidadId,

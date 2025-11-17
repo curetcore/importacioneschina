@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 
 const updateSchema = z.object({
   valor: z.string().min(1, "El valor es requerido").optional(),
@@ -21,13 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Configuración no encontrada",
-        },
-        { status: 404 }
-      )
+      throw Errors.notFound("Configuración", id)
     }
 
     const validatedData = updateSchema.parse(body)
@@ -44,13 +40,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
 
       if (duplicate) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ya existe una configuración con ese valor en esta categoría",
-          },
-          { status: 400 }
-        )
+        throw Errors.conflict("Ya existe una configuración con ese valor en esta categoría")
       }
     }
 
@@ -59,31 +49,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       data: validatedData,
     })
 
+    // Audit log
+    await auditUpdate("Configuracion", existing as any, updated as any, request)
+
     return NextResponse.json({
       success: true,
       data: updated,
     })
   } catch (error) {
-    console.error("Error en PUT /api/configuracion/[id]:", error)
-
-    if (error && typeof error === "object" && "errors" in error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de entrada inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al actualizar configuración",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -98,25 +72,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     })
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Configuración no encontrada",
-        },
-        { status: 404 }
-      )
+      throw Errors.notFound("Configuración", id)
     }
 
     // Verificar si está en uso antes de eliminar
     const inUse = await checkConfigurationInUse(db, existing.categoria, existing.valor)
 
     if (inUse.isUsed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `No se puede eliminar "${existing.valor}" porque está en uso en: ${inUse.usedIn.join(", ")}`,
-        },
-        { status: 400 }
+      throw Errors.conflict(
+        `No se puede eliminar "${existing.valor}" porque está en uso en: ${inUse.usedIn.join(", ")}`
       )
     }
 
@@ -126,19 +90,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       data: { activo: false },
     })
 
+    // Audit log
+    await auditDelete("Configuracion", existing as any, request)
+
     return NextResponse.json({
       success: true,
       message: "Configuración eliminada exitosamente",
     })
   } catch (error) {
-    console.error("Error en DELETE /api/configuracion/[id]:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al eliminar configuración",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 

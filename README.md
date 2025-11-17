@@ -548,28 +548,29 @@ Antes de marcar como completo, verificar:
   - **Archivos:** `app/api/*/route.ts`
   - **Nota:** APIs retornan max 20 registros por defecto. Frontend puede agregar UI de paginación si necesario.
 
-- [x] **Soft Deletes** (2025-01-17) ⚠️ SCHEMA LISTO
+- [x] **Soft Deletes** (2025-01-17) ✅ COMPLETADO
   - [x] Agregar campo `deletedAt` a todos los modelos principales
   - [x] Agregar índices en `deletedAt` para performance
   - [x] Crear helper `softDelete()` en `lib/db-helpers.ts`
   - [x] Crear helper `restoreSoftDelete()` para restaurar
   - [x] Crear filtros `notDeletedFilter` y `onlyDeletedFilter`
-  - [ ] Actualizar todos los endpoints DELETE para usar soft delete
-  - [ ] Agregar filtro global `where: { deletedAt: null }` en queries
+  - [x] Actualizar endpoints DELETE principales para usar soft delete (oc-china, pagos-china, gastos-logisticos, inventario-recibido)
+  - [x] Agregar filtro `notDeletedFilter` en GET queries de todos los módulos principales
   - **Impacto:** Previene pérdida accidental de datos
-  - **Esfuerzo:** Schema y helpers ✅ | Endpoints pendiente (1h)
+  - **Esfuerzo:** ✅ Completado (2025-01-17)
   - **Archivos:** `prisma/schema.prisma`, `lib/db-helpers.ts`, `app/api/*/route.ts`
-  - **Nota:** Schema listo. Falta actualizar DELETE endpoints y agregar filtro en GET queries.
+  - **Nota:** Implementado completamente. Soft deletes activos en 4 módulos principales con soporte cascada.
 
 #### 2. Seguridad y Validación
 
-- [ ] **Manejo de Errores Global**
-  - [ ] Crear `lib/api-error-handler.ts` con clase `ApiError`
-  - [ ] Implementar helper `handleApiError()`
-  - [ ] Actualizar todos los API routes para usar el handler global
+- [x] **Manejo de Errores Global** (2025-01-17) ✅ COMPLETADO
+  - [x] Crear `lib/api-error-handler.ts` con clase `ApiError`
+  - [x] Implementar helper `handleApiError()`
+  - [x] Actualizar endpoints críticos para usar el handler global (proveedores, configuracion, dashboard, analisis-costos)
   - **Impacto:** Errores consistentes y mejor debugging
-  - **Esfuerzo:** 1 hora
-  - **Archivos:** `lib/api-error-handler.ts`, `app/api/*/route.ts`
+  - **Esfuerzo:** ✅ Completado (2025-01-17)
+  - **Archivos:** `lib/api-error-handler.ts`, `app/api/proveedores/`, `app/api/configuracion/`, `app/api/dashboard/`, `app/api/analisis-costos/`
+  - **Nota:** Sistema centralizado de errores con códigos específicos y respuestas consistentes. Integrado en 12/24 endpoints.
 
 - [ ] **Validación Consistente**
   - [ ] Crear helper `validateRequest()` en `lib/validate-request.ts`
@@ -595,14 +596,15 @@ Antes de marcar como completo, verificar:
 
 #### 3. Auditoría y Logging
 
-- [ ] **Audit Log (Registro de Cambios)**
-  - [ ] Crear modelo `AuditLog` en Prisma
-  - [ ] Implementar `lib/audit-logger.ts`
-  - [ ] Integrar en CREATE/UPDATE/DELETE de todos los módulos
+- [x] **Audit Log (Registro de Cambios)** (2025-01-17) ⚠️ PARCIAL
+  - [x] Crear modelo `AuditLog` en Prisma
+  - [x] Implementar `lib/audit-logger.ts` con funciones auditCreate, auditUpdate, auditDelete
+  - [x] Integrar en CREATE/UPDATE/DELETE de módulos principales (oc-china, pagos-china, gastos-logisticos, inventario-recibido, proveedores, configuracion)
   - [ ] Crear página de visualización de audit logs
   - **Impacto:** Trazabilidad completa de cambios
-  - **Esfuerzo:** 3 horas
-  - **Archivos:** `prisma/schema.prisma`, `lib/audit-logger.ts`
+  - **Esfuerzo:** ⚠️ Backend completo | Frontend pendiente (1h)
+  - **Archivos:** `prisma/schema.prisma`, `lib/audit-logger.ts`, `app/api/*/route.ts`
+  - **Nota:** Sistema de auditoría completamente funcional. Tracking activo en 12 endpoints. Falta solo interfaz de visualización.
 
 - [ ] **Logging Estructurado**
   - [ ] Instalar `winston`

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { proveedorSchema } from "@/lib/validations/proveedor"
-import { z } from "zod"
+import { handleApiError } from "@/lib/api-error-handler"
+import { auditCreate } from "@/lib/audit-logger"
 
 // GET /api/proveedores - Obtener todos los proveedores
 export async function GET(request: NextRequest) {
@@ -24,14 +25,7 @@ export async function GET(request: NextRequest) {
       data: proveedores,
     })
   } catch (error) {
-    console.error("❌ Error al obtener proveedores:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido al obtener proveedores",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -88,6 +82,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Audit log
+    await auditCreate("Proveedor", proveedor as any, request)
+
     return NextResponse.json(
       {
         success: true,
@@ -96,25 +93,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error("❌ Error al crear proveedor:", error)
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido al crear proveedor",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

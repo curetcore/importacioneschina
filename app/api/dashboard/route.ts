@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { calcularOC } from "@/lib/calculations"
+import { handleApiError } from "@/lib/api-error-handler"
 
 export async function GET() {
   try {
@@ -443,13 +444,6 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error("Error en GET /api/dashboard:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener datos del dashboard",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
