@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Lock, Mail, Play } from "lucide-react"
@@ -34,30 +35,6 @@ export default function LoginPage() {
       }
     } catch (error) {
       setError("Error al iniciar sesión")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDemoLogin = async () => {
-    setError("")
-    setLoading(true)
-
-    try {
-      const result = await signIn("credentials", {
-        email: "demo@sistema.com",
-        password: "Demo123!",
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        router.push("/panel")
-        router.refresh()
-      }
-    } catch (error) {
-      setError("Error al acceder al demo")
     } finally {
       setLoading(false)
     }
@@ -129,19 +106,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-6 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"
-              onClick={handleDemoLogin}
-              disabled={loading}
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Probar Demo
-            </Button>
+            <Link href="/demo" className="block w-full mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"
+                disabled={loading}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Probar Demo
+              </Button>
+            </Link>
 
             <p className="text-xs text-center text-gray-500 mt-3">
-              Accede al modo demo con datos de prueba
+              Accede al modo demo sin necesidad de credenciales
             </p>
           </div>
 
