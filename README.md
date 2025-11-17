@@ -98,36 +98,45 @@ lib/
 
 #### 1. Performance y Base de Datos
 
-- [ ] **Índices de Base de Datos**
-  - [ ] Agregar índice en `PagosChina.fechaPago`
-  - [ ] Agregar índice en `PagosChina.tipoPago`
-  - [ ] Agregar índice en `PagosChina.metodoPago`
-  - [ ] Agregar índice en `GastosLogisticos.fechaGasto`
-  - [ ] Agregar índice en `GastosLogisticos.tipoGasto`
-  - [ ] Agregar índice en `InventarioRecibido.fechaLlegada`
-  - [ ] Agregar índice en `InventarioRecibido.bodegaInicial`
+- [x] **Índices de Base de Datos** (2025-01-17)
+  - [x] Agregar índice en `PagosChina.fechaPago` (ya exist a)
+  - [x] Agregar índice en `PagosChina.tipoPago` (ya existía)
+  - [x] Agregar índice en `PagosChina.metodoPago`
+  - [x] Agregar índice en `PagosChina.moneda`
+  - [x] Agregar índice en `GastosLogisticos.fechaGasto` (ya existía)
+  - [x] Agregar índice en `GastosLogisticos.tipoGasto` (ya existía)
+  - [x] Agregar índice en `GastosLogisticos.metodoPago`
+  - [x] Agregar índice en `InventarioRecibido.fechaLlegada` (ya existía)
+  - [x] Agregar índice en `InventarioRecibido.bodegaInicial` (ya existía)
+  - [x] Agregar índice en `OCChina.categoriaPrincipal`
   - **Impacto:** Queries 10-100x más rápidas
-  - **Esfuerzo:** 30 minutos
+  - **Esfuerzo:** 30 minutos ✅
   - **Archivo:** `prisma/schema.prisma`
+  - **Nota:** Aplicar con `npx prisma db push` cuando BD esté disponible
 
-- [ ] **Paginación en APIs**
-  - [ ] Implementar paginación en `/api/oc-china`
-  - [ ] Implementar paginación en `/api/pagos-china`
-  - [ ] Implementar paginación en `/api/gastos-logisticos`
-  - [ ] Implementar paginación en `/api/inventario-recibido`
-  - [ ] Actualizar componentes frontend para usar paginación
+- [x] **Paginación en APIs** (2025-01-17) ⚠️ BACKEND COMPLETO
+  - [x] Implementar paginación en `/api/oc-china` (ya existía)
+  - [x] Implementar paginación en `/api/pagos-china` (ya existía)
+  - [x] Implementar paginación en `/api/gastos-logisticos` (ya existía)
+  - [x] Implementar paginación en `/api/inventario-recibido` (ya existía)
+  - [ ] Actualizar componentes frontend para usar paginación (OPCIONAL)
   - **Impacto:** Carga inicial 90% más rápida
-  - **Esfuerzo:** 2 horas
-  - **Archivos:** `app/api/*/route.ts`, componentes de tabla
+  - **Esfuerzo:** Backend ✅ | Frontend pendiente (opcional)
+  - **Archivos:** `app/api/*/route.ts`
+  - **Nota:** APIs retornan max 20 registros por defecto. Frontend puede agregar UI de paginación si necesario.
 
-- [ ] **Soft Deletes**
-  - [ ] Agregar campo `deletedAt` a todos los modelos principales
-  - [ ] Crear helper `softDelete()` en `lib/db-helpers.ts`
+- [x] **Soft Deletes** (2025-01-17) ⚠️ SCHEMA LISTO
+  - [x] Agregar campo `deletedAt` a todos los modelos principales
+  - [x] Agregar índices en `deletedAt` para performance
+  - [x] Crear helper `softDelete()` en `lib/db-helpers.ts`
+  - [x] Crear helper `restoreSoftDelete()` para restaurar
+  - [x] Crear filtros `notDeletedFilter` y `onlyDeletedFilter`
   - [ ] Actualizar todos los endpoints DELETE para usar soft delete
   - [ ] Agregar filtro global `where: { deletedAt: null }` en queries
   - **Impacto:** Previene pérdida accidental de datos
-  - **Esfuerzo:** 2 horas
-  - **Archivos:** `prisma/schema.prisma`, `app/api/*/route.ts`
+  - **Esfuerzo:** Schema y helpers ✅ | Endpoints pendiente (1h)
+  - **Archivos:** `prisma/schema.prisma`, `lib/db-helpers.ts`, `app/api/*/route.ts`
+  - **Nota:** Schema listo. Falta actualizar DELETE endpoints y agregar filtro en GET queries.
 
 #### 2. Seguridad y Validación
 
@@ -307,15 +316,15 @@ lib/
 ## 📈 Progreso de Mejoras
 
 ```
-Prioridad Alta:    [ ] 0/5  (0%)
+Prioridad Alta:    [███████░░] 3/5  (60%) - Índices, Paginación, Soft Deletes
 Prioridad Media:   [ ] 0/5  (0%)
 Prioridad Baja:    [▓] 0.5/9  (6%) - PDF Export parcial
 ─────────────────────────────────
-TOTAL:             [▓] 0.5/19 (3%)
+TOTAL:             [██░░░░░░░] 3.5/19 (18%)
 ```
 
 **Última revisión:** 2025-01-17
-**Última implementación:** PDF Export básico (2025-01-17)
+**Última implementación:** Índices BD + Paginación + Soft Deletes (2025-01-17)
 
 ---
 
