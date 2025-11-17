@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import {
   distributeCost,
   ProductDistributionData,
@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const ocId = searchParams.get("ocId")
 
     // 1. Fetch distribution configuration
-    const distribConfig = await prisma.configuracionDistribucionCostos.findMany({
+    const distribConfig = await db.configuracionDistribucionCostos.findMany({
       where: { activo: true },
     })
 
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Fetch all inventory with items
-    const inventarios = await prisma.inventarioRecibido.findMany({
+    const inventarios = await db.inventarioRecibido.findMany({
       where: ocId ? { ocId } : {},
       include: {
         ocChina: {

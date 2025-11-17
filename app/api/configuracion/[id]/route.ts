@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
 
 const updateSchema = z.object({
@@ -11,11 +11,12 @@ const updateSchema = z.object({
 // PUT /api/configuracion/[id] - Actualizar configuración
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const body = await request.json()
 
     // Verificar que existe
-    const existing = await prisma.configuracion.findUnique({
+    const existing = await db.configuracion.findUnique({
       where: { id },
     })
 
@@ -33,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Si se está cambiando el valor, verificar que no exista otro con ese valor
     if (validatedData.valor && validatedData.valor !== existing.valor) {
-      const duplicate = await prisma.configuracion.findUnique({
+      const duplicate = await db.configuracion.findUnique({
         where: {
           categoria_valor: {
             categoria: existing.categoria,
@@ -53,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
 
-    const updated = await prisma.configuracion.update({
+    const updated = await db.configuracion.update({
       where: { id },
       data: validatedData,
     })
@@ -89,9 +90,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/configuracion/[id] - Eliminar configuración (soft delete)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
 
-    const existing = await prisma.configuracion.findUnique({
+    const existing = await db.configuracion.findUnique({
       where: { id },
     })
 
@@ -106,7 +108,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Verificar si está en uso antes de eliminar
-    const inUse = await checkConfigurationInUse(existing.categoria, existing.valor)
+    const inUse = await checkConfigurationInUse(db, existing.categoria, existing.valor)
 
     if (inUse.isUsed) {
       return NextResponse.json(
@@ -119,7 +121,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Soft delete - marcar como inactivo
-    await prisma.configuracion.update({
+    await db.configuracion.update({
       where: { id },
       data: { activo: false },
     })
@@ -142,6 +144,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
 // Función auxiliar para verificar si una configuración está en uso
 async function checkConfigurationInUse(
+  db: any,
   categoria: string,
   valor: string
 ): Promise<{ isUsed: boolean; usedIn: string[] }> {
@@ -150,31 +153,31 @@ async function checkConfigurationInUse(
   try {
     switch (categoria) {
       case "proveedores":
-        const ocsWithProveedor = await prisma.oCChina.count({
+        const ocsWithProveedor = await db.oCChina.count({
           where: { proveedor: valor },
         })
         if (ocsWithProveedor > 0) usedIn.push(`${ocsWithProveedor} órdenes de compra`)
         break
 
       case "categorias":
-        const ocsWithCategoria = await prisma.oCChina.count({
+        const ocsWithCategoria = await db.oCChina.count({
           where: { categoriaPrincipal: valor },
         })
         if (ocsWithCategoria > 0) usedIn.push(`${ocsWithCategoria} órdenes de compra`)
         break
 
       case "tiposPago":
-        const pagosWithTipo = await prisma.pagosChina.count({
+        const pagosWithTipo = await db.pagosChina.count({
           where: { tipoPago: valor },
         })
         if (pagosWithTipo > 0) usedIn.push(`${pagosWithTipo} pagos`)
         break
 
       case "metodosPago":
-        const pagosWithMetodo = await prisma.pagosChina.count({
+        const pagosWithMetodo = await db.pagosChina.count({
           where: { metodoPago: valor },
         })
-        const gastosWithMetodo = await prisma.gastosLogisticos.count({
+        const gastosWithMetodo = await db.gastosLogisticos.count({
           where: { metodoPago: valor },
         })
         if (pagosWithMetodo > 0) usedIn.push(`${pagosWithMetodo} pagos`)
@@ -182,14 +185,14 @@ async function checkConfigurationInUse(
         break
 
       case "tiposGasto":
-        const gastosWithTipo = await prisma.gastosLogisticos.count({
+        const gastosWithTipo = await db.gastosLogisticos.count({
           where: { tipoGasto: valor },
         })
         if (gastosWithTipo > 0) usedIn.push(`${gastosWithTipo} gastos logísticos`)
         break
 
       case "bodegas":
-        const inventarioWithBodega = await prisma.inventarioRecibido.count({
+        const inventarioWithBodega = await db.inventarioRecibido.count({
           where: { bodegaInicial: valor },
         })
         if (inventarioWithBodega > 0)

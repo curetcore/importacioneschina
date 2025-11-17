@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 
 interface FileAttachment {
   nombre: string
@@ -12,6 +12,7 @@ interface FileAttachment {
 // PUT /api/pagos-china/[id]/attachments - Agregar adjuntos a un pago existente
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const body = await request.json()
     const { adjuntos } = body as { adjuntos: FileAttachment[] }
@@ -27,7 +28,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Verificar que el pago existe
-    const pago = await prisma.pagosChina.findUnique({
+    const pago = await db.pagosChina.findUnique({
       where: { id },
       select: { adjuntos: true },
     })
@@ -47,7 +48,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const updatedAttachments = [...existingAttachments, ...adjuntos]
 
     // Actualizar en la base de datos
-    const updated = await prisma.pagosChina.update({
+    const updated = await db.pagosChina.update({
       where: { id },
       data: {
         adjuntos: updatedAttachments as any,
@@ -82,6 +83,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/pagos-china/[id]/attachments - Eliminar un adjunto específico
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     const { id } = params
     const { searchParams } = new URL(request.url)
     const fileUrl = searchParams.get("fileUrl")
@@ -97,7 +99,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Verificar que el pago existe
-    const pago = await prisma.pagosChina.findUnique({
+    const pago = await db.pagosChina.findUnique({
       where: { id },
       select: { adjuntos: true },
     })
@@ -117,7 +119,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const updatedAttachments = existingAttachments.filter(att => att.url !== fileUrl)
 
     // Actualizar en la base de datos
-    const updated = await prisma.pagosChina.update({
+    const updated = await db.pagosChina.update({
       where: { id },
       data: {
         adjuntos: updatedAttachments as any,

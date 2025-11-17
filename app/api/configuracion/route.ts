@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
 
 const configuracionSchema = z.object({
@@ -18,12 +18,13 @@ const configuracionSchema = z.object({
 // GET /api/configuracion - Obtener todas las configuraciones o filtrar por categoría
 export async function GET(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get("categoria")
 
     const whereClause = categoria ? { categoria, activo: true } : { activo: true }
 
-    const configuraciones = await prisma.configuracion.findMany({
+    const configuraciones = await db.configuracion.findMany({
       where: whereClause,
       orderBy: [{ categoria: "asc" }, { orden: "asc" }, { valor: "asc" }],
     })
@@ -59,11 +60,12 @@ export async function GET(request: NextRequest) {
 // POST /api/configuracion - Crear nueva configuración
 export async function POST(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const body = await request.json()
     const validatedData = configuracionSchema.parse(body)
 
     // Verificar si ya existe
-    const existing = await prisma.configuracion.findUnique({
+    const existing = await db.configuracion.findUnique({
       where: {
         categoria_valor: {
           categoria: validatedData.categoria,
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const configuracion = await prisma.configuracion.create({
+    const configuracion = await db.configuracion.create({
       data: {
         categoria: validatedData.categoria,
         valor: validatedData.valor,

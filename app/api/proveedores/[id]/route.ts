@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Actualizar proveedor
-    const proveedor = await prisma.proveedor.update({
+    const proveedor = await db.proveedor.update({
       where: { id: params.id },
       data: {
         ...(validatedData.codigo && { codigo: validatedData.codigo }),
@@ -149,8 +149,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/proveedores/[id] - Eliminar proveedor (soft delete)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const db = await getPrismaClient()
     // Verificar que el proveedor existe
-    const proveedor = await prisma.proveedor.findUnique({
+    const proveedor = await db.proveedor.findUnique({
       where: { id: params.id },
     })
 
@@ -165,7 +166,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Soft delete: marcar como inactivo
-    const proveedorDeleted = await prisma.proveedor.update({
+    const proveedorDeleted = await db.proveedor.update({
       where: { id: params.id },
       data: { activo: false },
     })
