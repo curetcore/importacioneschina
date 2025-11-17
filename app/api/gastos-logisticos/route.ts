@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
         },
       }),
       ...(ocId && {
-        ocId: ocId,
+        ordenesCompra: {
+          some: {
+            ocId: ocId,
+          },
+        },
       }),
       ...(tipoGasto && {
         tipoGasto: tipoGasto,
@@ -52,10 +56,14 @@ export async function GET(request: NextRequest) {
           fechaGasto: "desc",
         },
         include: {
-          ocChina: {
-            select: {
-              oc: true,
-              proveedor: true,
+          ordenesCompra: {
+            include: {
+              ocChina: {
+                select: {
+                  oc: true,
+                  proveedor: true,
+                },
+              },
             },
           },
         },
@@ -97,20 +105,21 @@ export async function POST(request: NextRequest) {
     // Extraer adjuntos (no validado por Zod)
     const { adjuntos } = body
 
-    // Verificar que la OC existe
-    const oc = await db.oCChina.findUnique({
-      where: { id: validatedData.ocId },
-    })
+    // Verificar que TODAS las OCs existen
+    for (const ocId of validatedData.ocIds) {
+      const oc = await db.oCChina.findUnique({
+        where: { id: ocId },
+      })
 
-    if (!oc) {
-      throw Errors.notFound("Orden de compra", validatedData.ocId)
+      if (!oc) {
+        throw Errors.notFound("Orden de compra", ocId)
+      }
     }
 
     // Crear el gasto
     const nuevoGasto = await db.gastosLogisticos.create({
       data: {
         idGasto,
-        ocId: validatedData.ocId,
         fechaGasto: validatedData.fechaGasto,
         tipoGasto: validatedData.tipoGasto,
         proveedorServicio: validatedData.proveedorServicio,
@@ -118,12 +127,21 @@ export async function POST(request: NextRequest) {
         montoRD: new Prisma.Decimal(validatedData.montoRD),
         notas: validatedData.notas,
         adjuntos: adjuntos || null,
+        ordenesCompra: {
+          create: validatedData.ocIds.map((ocId) => ({
+            ocId,
+          })),
+        },
       },
       include: {
-        ocChina: {
-          select: {
-            oc: true,
-            proveedor: true,
+        ordenesCompra: {
+          include: {
+            ocChina: {
+              select: {
+                oc: true,
+                proveedor: true,
+              },
+            },
           },
         },
       },
