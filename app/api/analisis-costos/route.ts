@@ -32,18 +32,40 @@ export async function GET(request: NextRequest) {
       return distribMap.get(costType) || "unidades"
     }
 
-    // 2. Fetch all inventory with items
+    // 2. Fetch all ACTIVE inventory with items (exclude soft-deleted)
     const inventarios = await db.inventarioRecibido.findMany({
-      where: ocId ? { ocId } : {},
+      where: {
+        ...(ocId ? { ocId } : {}),
+        deletedAt: null, // Only active inventory
+      },
       include: {
         ocChina: {
+          where: {
+            deletedAt: null, // Only active OCs
+          },
           include: {
-            items: true, // Get ALL items from the OC
-            pagosChina: true,
-            gastosLogisticos: true,
+            items: {
+              where: {
+                deletedAt: null, // Only active items
+              },
+            },
+            pagosChina: {
+              where: {
+                deletedAt: null, // Only active payments
+              },
+            },
+            gastosLogisticos: {
+              where: {
+                deletedAt: null, // Only active expenses
+              },
+            },
           },
         },
-        item: true,
+        item: {
+          where: {
+            deletedAt: null, // Only active items
+          },
+        },
       },
       orderBy: {
         fechaLlegada: "desc",
