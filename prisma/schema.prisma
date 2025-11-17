@@ -314,3 +314,48 @@ model AuditLog {
   @@index([createdAt])
   @@index([entidad, entidadId])  // Índice compuesto para buscar logs de un registro específico
 }
+
+// TABLA 10: NOTIFICACIONES - Sistema de notificaciones en tiempo real
+model Notificacion {
+  id                    String   @id @default(cuid())
+
+  // Tipo y contenido
+  tipo                  String   // "audit", "alert", "error", "success", "warning"
+  titulo                String   // Título corto de la notificación
+  descripcion           String?  @db.Text  // Descripción detallada
+  icono                 String?  // Emoji o ícono a mostrar
+
+  // Relación con entidad (opcional)
+  entidad               String?  // "OCChina", "PagosChina", etc.
+  entidadId             String?  @map("entidad_id")  // ID del registro relacionado
+  url                   String?  // URL a la que navegar al hacer click
+
+  // Relación con audit log (opcional)
+  auditLogId            String?  @map("audit_log_id")  // ID del audit log relacionado
+
+  // Estado
+  leida                 Boolean  @default(false)  // Si fue leída por el usuario
+  leidaAt               DateTime? @map("leida_at")  // Cuándo fue leída
+
+  // Usuario destinatario (futuro: multi-usuario)
+  usuarioId             String?  @map("usuario_id")  // null = todos los usuarios
+
+  // Prioridad (futuro)
+  prioridad             String   @default("normal")  // "low", "normal", "high", "urgent"
+
+  // Expiración (futuro)
+  expiresAt             DateTime? @map("expires_at")  // Cuando debe dejar de mostrarse
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("notificaciones")
+  @@index([tipo])
+  @@index([leida])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@index([entidad, entidadId])
+  @@index([auditLogId])
+  @@index([leida, createdAt])  // Índice compuesto para queries comunes
+}

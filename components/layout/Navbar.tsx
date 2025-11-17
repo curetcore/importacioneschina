@@ -1,7 +1,8 @@
 "use client"
 
-import { Bell, User, LogOut } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
+import NotificationDropdown from "./NotificationDropdown"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -25,9 +26,7 @@ export default function Navbar() {
                 <span className="text-sm text-gray-700">{session.user.name}</span>
               </div>
             )}
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Bell size={20} className="text-gray-600" />
-            </button>
+            <NotificationDropdown />
             <button
               onClick={handleLogout}
               className="p-2 hover:bg-red-50 rounded-lg transition-colors group"

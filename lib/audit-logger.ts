@@ -1,4 +1,5 @@
 import { getPrismaClient } from "@/lib/db-helpers"
+import { createNotificationFromAudit } from "@/lib/notification-service"
 
 /**
  * IMPORTANTE: Este módulo usa getPrismaClient() para garantizar que los logs
@@ -67,12 +68,12 @@ export interface AuditLogOptions {
  *   ipAddress: request.headers.get("x-forwarded-for"),
  * })
  */
-export async function logAudit(options: AuditLogOptions): Promise<void> {
+export async function logAudit(options: AuditLogOptions): Promise<string | null> {
   try {
     // Obtener el cliente Prisma correcto (producción o demo según el usuario)
     const db = await getPrismaClient()
 
-    await db.auditLog.create({
+    const auditLog = await db.auditLog.create({
       data: {
         entidad: options.entidad,
         entidadId: options.entidadId,
@@ -88,9 +89,12 @@ export async function logAudit(options: AuditLogOptions): Promise<void> {
         userAgent: options.userAgent || undefined,
       },
     })
+
+    return auditLog.id
   } catch (error) {
     // No queremos que un error en el audit log rompa la operación principal
     console.error("[Audit Log Error]", error)
+    return null
   }
 }
 
@@ -177,17 +181,24 @@ export function createAuditDescription(
 export async function auditCreate(
   entidad: string,
   data: Record<string, any>,
-  request?: Request
+  request?: Request,
+  usuarioEmail?: string
 ): Promise<void> {
-  await logAudit({
+  const auditLogId = await logAudit({
     entidad,
     entidadId: data.id,
     accion: AuditAction.CREATE,
     cambiosDespues: data,
     descripcion: createAuditDescription(AuditAction.CREATE, entidad, data),
+    usuarioEmail,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
+
+  // Crear notificación automáticamente
+  if (auditLogId) {
+    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.CREATE, usuarioEmail)
+  }
 }
 
 /**
@@ -197,7 +208,8 @@ export async function auditUpdate(
   entidad: string,
   before: Record<string, any>,
   after: Record<string, any>,
-  request?: Request
+  request?: Request,
+  usuarioEmail?: string
 ): Promise<void> {
   const camposModificados = detectChangedFields(before, after)
 
@@ -206,7 +218,7 @@ export async function auditUpdate(
     return
   }
 
-  await logAudit({
+  const auditLogId = await logAudit({
     entidad,
     entidadId: after.id,
     accion: AuditAction.UPDATE,
@@ -214,9 +226,15 @@ export async function auditUpdate(
     cambiosDespues: after,
     camposModificados,
     descripcion: createAuditDescription(AuditAction.UPDATE, entidad, after),
+    usuarioEmail,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
+
+  // Crear notificación automáticamente
+  if (auditLogId) {
+    await createNotificationFromAudit(auditLogId, entidad, after.id, AuditAction.UPDATE, usuarioEmail)
+  }
 }
 
 /**
@@ -225,15 +243,22 @@ export async function auditUpdate(
 export async function auditDelete(
   entidad: string,
   data: Record<string, any>,
-  request?: Request
+  request?: Request,
+  usuarioEmail?: string
 ): Promise<void> {
-  await logAudit({
+  const auditLogId = await logAudit({
     entidad,
     entidadId: data.id,
     accion: AuditAction.DELETE,
     cambiosAntes: data,
     descripcion: createAuditDescription(AuditAction.DELETE, entidad, data),
+    usuarioEmail,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
+
+  // Crear notificación automáticamente
+  if (auditLogId) {
+    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.DELETE, usuarioEmail)
+  }
 }
