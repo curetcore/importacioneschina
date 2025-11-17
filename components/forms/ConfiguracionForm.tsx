@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
 import { useToast } from "@/components/ui/toast"
 import { apiPost, apiPut, getErrorMessage, getErrorDetails } from "@/lib/api-client"
+import { configuracionSchema, type ConfiguracionInput } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface Configuracion {
@@ -41,46 +44,48 @@ export function ConfiguracionForm({
   categoria
 }: ConfiguracionFormProps) {
   const { addToast } = useToast()
-  const [loading, setLoading] = useState(false)
   const isEditMode = !!configToEdit
 
-  const [formData, setFormData] = useState({
-    categoria: categoria || "",
-    valor: "",
-    orden: 0,
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ConfiguracionInput>({
+    resolver: zodResolver(configuracionSchema),
+    defaultValues: {
+      categoria: categoria || "",
+      valor: "",
+      orden: 0,
+    },
   })
 
+  const categoriaValue = watch("categoria")
+
+  // Reset form when dialog opens/closes or edit data changes
   useEffect(() => {
     if (configToEdit) {
-      setFormData({
+      reset({
         categoria: configToEdit.categoria,
         valor: configToEdit.valor,
         orden: configToEdit.orden,
       })
     } else {
-      setFormData({
+      reset({
         categoria: categoria || "",
         valor: "",
         orden: 0,
       })
     }
-  }, [configToEdit, categoria])
+  }, [configToEdit, categoria, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+  const onSubmit = async (data: ConfiguracionInput) => {
     try {
-      if (!formData.categoria) {
-        throw new Error("Debes seleccionar una categoría")
-      }
-      if (!formData.valor.trim()) {
-        throw new Error("El valor es requerido")
-      }
-
       const result = isEditMode
-        ? await apiPut(`/api/configuracion/${configToEdit.id}`, formData, { timeout: 15000 })
-        : await apiPost("/api/configuracion", formData, { timeout: 15000 })
+        ? await apiPut(`/api/configuracion/${configToEdit.id}`, data, { timeout: 15000 })
+        : await apiPost("/api/configuracion", data, { timeout: 15000 })
 
       if (!result.success) {
         throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la configuración`)
@@ -89,10 +94,10 @@ export function ConfiguracionForm({
       addToast({
         type: "success",
         title: isEditMode ? "Configuración actualizada" : "Configuración creada",
-        description: `${formData.valor} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
+        description: `${data.valor} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
       })
 
-      setFormData({ categoria: categoria || "", valor: "", orden: 0 })
+      reset({ categoria: categoria || "", valor: "", orden: 0 })
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
@@ -102,13 +107,11 @@ export function ConfiguracionForm({
         description: getErrorMessage(error),
         details: getErrorDetails(error),
       })
-    } finally {
-      setLoading(false)
     }
   }
 
   const handleCancel = () => {
-    setFormData({ categoria: categoria || "", valor: "", orden: 0 })
+    reset({ categoria: categoria || "", valor: "", orden: 0 })
     onOpenChange(false)
   }
 
@@ -120,7 +123,7 @@ export function ConfiguracionForm({
           <DialogTitle>{isEditMode ? "Editar Item" : "Nuevo Item"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 space-y-4">
             <div>
               <label htmlFor="categoria" className="block text-sm font-medium text-gray-700 mb-1">
@@ -128,11 +131,14 @@ export function ConfiguracionForm({
               </label>
               <Select
                 options={categoriaOptions}
-                value={formData.categoria}
-                onChange={(value) => setFormData({ ...formData, categoria: value })}
+                value={categoriaValue}
+                onChange={(value) => setValue("categoria", value)}
                 placeholder="Selecciona una categoría"
-                disabled={loading || isEditMode || !!categoria}
+                disabled={isSubmitting || isEditMode || !!categoria}
               />
+              {errors.categoria && (
+                <p className="text-xs text-red-600 mt-1">{errors.categoria.message}</p>
+              )}
             </div>
 
             <div>
@@ -141,11 +147,13 @@ export function ConfiguracionForm({
               </label>
               <Input
                 id="valor"
-                value={formData.valor}
-                onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
+                {...register("valor")}
                 placeholder="Ej: Zapatos"
-                disabled={loading}
+                disabled={isSubmitting}
               />
+              {errors.valor && (
+                <p className="text-xs text-red-600 mt-1">{errors.valor.message}</p>
+              )}
             </div>
 
             <div>
@@ -157,11 +165,13 @@ export function ConfiguracionForm({
                 type="number"
                 min="0"
                 step="1"
-                value={formData.orden}
-                onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) || 0 })}
+                {...register("orden")}
                 placeholder="0"
-                disabled={loading}
+                disabled={isSubmitting}
               />
+              {errors.orden && (
+                <p className="text-xs text-red-600 mt-1">{errors.orden.message}</p>
+              )}
               <p className="text-xs text-gray-500 mt-1">Define el orden en que aparecerá en las listas</p>
             </div>
           </div>
@@ -171,12 +181,12 @@ export function ConfiguracionForm({
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}

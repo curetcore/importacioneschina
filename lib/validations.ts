@@ -148,3 +148,12 @@ export const bodegas = [
 ] as const;
 
 export const monedas = ["USD", "CNY", "RD$"] as const;
+
+// Schema para Configuración
+export const configuracionSchema = z.object({
+  categoria: z.string().min(1, "La categoría es requerida"),
+  valor: z.string().min(1, "El valor es requerido"),
+  orden: z.coerce.number().int().nonnegative("El orden no puede ser negativo").default(0),
+});
+
+export type ConfiguracionInput = z.infer<typeof configuracionSchema>;
