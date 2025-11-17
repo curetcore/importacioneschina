@@ -25,7 +25,14 @@ const PagosChinaForm = dynamicImport(() => import("@/components/forms/PagosChina
 const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
   loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
 })
-import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download } from "lucide-react"
+import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download, Search, Settings2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function PagosChinaPage() {
   const { addToast } = useToast()
@@ -36,6 +43,8 @@ export default function PagosChinaPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
   const [selectedPagoForAttachments, setSelectedPagoForAttachments] = useState<Pago | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
   // Fetch all pagos
   const { data: pagos = [], isLoading } = useQuery({
@@ -147,6 +156,20 @@ export default function PagosChinaPage() {
     []
   )
 
+  // Filtrar pagos por búsqueda
+  const filteredPagos = useMemo(() => {
+    if (!searchQuery.trim()) return pagos
+
+    const query = searchQuery.toLowerCase()
+    return pagos.filter((pago: Pago) =>
+      pago.idPago.toLowerCase().includes(query) ||
+      pago.ocChina.oc.toLowerCase().includes(query) ||
+      pago.ocChina.proveedor.toLowerCase().includes(query) ||
+      pago.tipoPago.toLowerCase().includes(query) ||
+      pago.metodoPago.toLowerCase().includes(query)
+    )
+  }, [pagos, searchQuery])
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalRD = pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
@@ -216,9 +239,48 @@ export default function PagosChinaPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <DollarSign size={18} />
-              Pagos ({pagos.length})
+              Pagos ({filteredPagos.length}{searchQuery ? ` de ${pagos.length}` : ''})
             </CardTitle>
             <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar ID, OC, proveedor..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 w-64 text-xs"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-8 px-3 text-xs">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Columnas
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  {columns
+                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
+                    .map((column) => {
+                      const id = (column as any).accessorKey as string
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={id}
+                          className="capitalize"
+                          checked={columnVisibility[id] !== false}
+                          onCheckedChange={(value) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [id]: value,
+                            }))
+                          }
+                        >
+                          {id}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -251,13 +313,25 @@ export default function PagosChinaPage() {
                   Nuevo Pago
                 </Button>
               </div>
+            ) : filteredPagos.length === 0 ? (
+              <div className="text-center py-12">
+                <Search size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  No hay pagos que coincidan con "{searchQuery}"
+                </p>
+                <Button onClick={() => setSearchQuery("")} variant="outline">
+                  Limpiar búsqueda
+                </Button>
+              </div>
             ) : (
               <DataTable
                 columns={columns}
-                data={pagos}
-                searchKey="idPago"
-                searchPlaceholder="Buscar por ID de pago..."
+                data={filteredPagos}
                 pageSize={20}
+                showToolbar={false}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
               />
             )}
           </CardContent>
