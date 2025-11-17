@@ -660,6 +660,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               value={item.tallaDistribucion || null}
                               onChange={value => updateItem(index, "tallaDistribucion", value)}
                               disabled={isSubmitting}
+                              expectedTotal={item.cantidadTotal || 0}
                             />
                           </div>
 

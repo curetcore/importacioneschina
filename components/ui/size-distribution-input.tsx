@@ -9,6 +9,7 @@ interface SizeDistributionInputProps {
   value: Record<string, number> | null
   onChange: (value: Record<string, number> | null) => void
   disabled?: boolean
+  expectedTotal?: number // Cantidad total esperada para validación
 }
 
 // Tallas comunes predefinidas
@@ -36,6 +37,7 @@ export function SizeDistributionInput({
   value,
   onChange,
   disabled = false,
+  expectedTotal,
 }: SizeDistributionInputProps) {
   const [sizes, setSizes] = useState<Record<string, number>>(value || {})
   const [customSize, setCustomSize] = useState("")
@@ -95,6 +97,11 @@ export function SizeDistributionInput({
 
   // Calculate total
   const total = Object.values(sizes).reduce((sum, qty) => sum + qty, 0)
+
+  // Validation: check if total matches expected
+  const hasExpectedTotal = expectedTotal !== undefined && expectedTotal > 0
+  const isValid = !hasExpectedTotal || total === expectedTotal
+  const hasSizes = Object.keys(sizes).length > 0
 
   // Sort sizes for display (numbers first, then letters)
   const sortedSizes = Object.keys(sizes).sort((a, b) => {
@@ -179,11 +186,24 @@ export function SizeDistributionInput({
 
       {/* Active sizes with quantities */}
       {sortedSizes.length > 0 && (
-        <div className="border rounded-lg p-3 bg-gray-50">
+        <div className={`border rounded-lg p-3 ${isValid ? "bg-gray-50" : "bg-red-50 border-red-300"}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">Distribución de Tallas</span>
-            {total > 0 && (
-              <span className="text-sm font-semibold text-blue-600">Total: {total} unidades</span>
+            {hasExpectedTotal ? (
+              <div className="text-sm font-semibold">
+                <span className={isValid ? "text-green-600" : "text-red-600"}>
+                  Total: {total} {isValid ? "✓" : "⚠"}
+                </span>
+                {!isValid && (
+                  <span className="text-xs text-red-600 ml-2">
+                    (Esperado: {expectedTotal})
+                  </span>
+                )}
+              </div>
+            ) : (
+              total > 0 && (
+                <span className="text-sm font-semibold text-blue-600">Total: {total} unidades</span>
+              )
             )}
           </div>
 
@@ -220,6 +240,29 @@ export function SizeDistributionInput({
       {sortedSizes.length === 0 && (
         <div className="text-center py-4 text-sm text-gray-500 border border-dashed rounded">
           Haz clic en las tallas de arriba para empezar
+        </div>
+      )}
+
+      {/* Warning when totals don't match */}
+      {hasExpectedTotal && hasSizes && !isValid && (
+        <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm">
+          <div className="flex items-start gap-2">
+            <span className="text-red-600 font-bold text-lg">⚠</span>
+            <div className="flex-1">
+              <div className="font-semibold text-red-900 mb-1">Las cantidades no coinciden</div>
+              <div className="text-red-700">
+                <span className="font-medium">Cantidad total del pedido:</span> {expectedTotal} unidades
+              </div>
+              <div className="text-red-700">
+                <span className="font-medium">Suma de tallas:</span> {total} unidades
+              </div>
+              <div className="text-red-600 font-medium mt-1">
+                {total < expectedTotal
+                  ? `Faltan ${expectedTotal - total} unidades por distribuir`
+                  : `Hay ${total - expectedTotal} unidades de más`}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
