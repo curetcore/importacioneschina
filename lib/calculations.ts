@@ -208,6 +208,7 @@ interface PagoChina {
   montoOriginal: number | Prisma.Decimal
   moneda: string
   tasaCambio: number | Prisma.Decimal
+  comisionBancoRD: number | Prisma.Decimal
 }
 
 export interface ItemConCostos extends Omit<OCChinaItem, "precioUnitarioUSD" | "subtotalUSD"> {
