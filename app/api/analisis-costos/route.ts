@@ -103,10 +103,21 @@ export async function GET(request: NextRequest) {
           0
         )
 
-        // Distribute costs using configured methods
+        // Distribute costs using configured methods with intelligent fallback
         const pagosMethod = getDistribMethod("pagos")
         const gastosMethod = getDistribMethod("gastos_flete") // Using flete as default for gastos
         const comisionesMethod = getDistribMethod("comisiones")
+
+        // Log distribution context for debugging
+        console.info(`📊 Distribuyendo costos para OC ${inv.ocChina.oc}:`, {
+          totalPagos: totalPagosOC,
+          totalGastos: totalGastosOC,
+          totalComisiones: totalComisionesOC,
+          productos: productsForDistribution.length,
+          metodoPagos: pagosMethod,
+          metodoGastos: gastosMethod,
+          metodoComisiones: comisionesMethod,
+        })
 
         const pagosDistribution = distributeCost(
           productsForDistribution,

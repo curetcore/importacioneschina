@@ -167,7 +167,19 @@ export function distributeByUnit(
 }
 
 /**
- * Main distribution function - routes to appropriate method
+ * Check if distribution results are valid (not all zeros)
+ */
+function isValidDistribution(results: DistributionResult[]): boolean {
+  return results.some(r => r.costoDistribuido > 0)
+}
+
+/**
+ * Main distribution function - routes to appropriate method with intelligent fallback
+ *
+ * Fallback hierarchy when data is missing:
+ * 1. Try requested method (peso, volumen, valor_fob, unidades)
+ * 2. If fails (all zeros), try valor_fob (works for all products with price)
+ * 3. If fails, try unidades (always works if there are products)
  */
 export function distributeCost(
   products: ProductDistributionData[],
@@ -175,19 +187,56 @@ export function distributeCost(
   method: DistributionMethod,
   exchangeRate: number = 1
 ): DistributionResult[] {
+  // If no cost to distribute, return zeros
+  if (totalCost === 0 || products.length === 0) {
+    return products.map(p => ({
+      productId: p.id,
+      porcentaje: 0,
+      costoDistribuido: 0,
+      costoUnitario: 0,
+    }))
+  }
+
+  // Try primary method
+  let results: DistributionResult[]
   switch (method) {
     case "peso":
-      return distributeByWeight(products, totalCost)
+      results = distributeByWeight(products, totalCost)
+      break
     case "volumen":
-      return distributeByVolume(products, totalCost)
+      results = distributeByVolume(products, totalCost)
+      break
     case "valor_fob":
-      return distributeByFOBValue(products, totalCost, exchangeRate)
+      results = distributeByFOBValue(products, totalCost, exchangeRate)
+      break
     case "unidades":
-      return distributeByUnit(products, totalCost)
+      results = distributeByUnit(products, totalCost)
+      break
     default:
-      // Default to unit distribution
-      return distributeByUnit(products, totalCost)
+      results = distributeByUnit(products, totalCost)
   }
+
+  // Validate results - if all zeros, try fallback methods
+  if (!isValidDistribution(results)) {
+    console.warn(`⚠️ Método "${method}" resultó en distribución vacía, usando fallback`)
+
+    // Try FOB value as first fallback (works when products have prices)
+    if (method !== "valor_fob") {
+      results = distributeByFOBValue(products, totalCost, exchangeRate)
+      if (isValidDistribution(results)) {
+        console.info(`✓ Fallback exitoso: usando "valor_fob" en lugar de "${method}"`)
+        return results
+      }
+    }
+
+    // Last resort: distribute by units (always works)
+    if (method !== "unidades") {
+      results = distributeByUnit(products, totalCost)
+      console.info(`✓ Fallback final: usando "unidades" en lugar de "${method}"`)
+    }
+  }
+
+  return results
 }
 
 /**
