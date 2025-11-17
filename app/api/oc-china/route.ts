@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { generateUniqueId } from "@/lib/id-generator";
 import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
+import { withRateLimit, RateLimits } from "@/lib/rate-limit";
 
 interface OCItemInput {
   sku: string;
@@ -58,6 +59,10 @@ function validarTallaDistribucion(tallas: unknown): InputJsonValue | undefined {
 
 // GET /api/oc-china - Obtener todas las órdenes de compra
 export async function GET(request: NextRequest) {
+  // Rate limiting para queries (60 req/min)
+  const rateLimitError = await withRateLimit(request, RateLimits.query);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -128,6 +133,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/oc-china - Crear nueva orden de compra con items
 export async function POST(request: NextRequest) {
+  // Rate limiting para mutations (20 req/10s)
+  const rateLimitError = await withRateLimit(request, RateLimits.mutation);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const body = await request.json();
 

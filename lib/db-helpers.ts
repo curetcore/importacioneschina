@@ -13,7 +13,7 @@ export async function softDelete(
   const prismaModel = prisma[model] as any
 
   if (!prismaModel || typeof prismaModel.update !== "function") {
-    throw new Error(`Modelo "${model}" no encontrado o no soporta soft delete`)
+    throw new Error(`Modelo "${String(model)}" no encontrado o no soporta soft delete`)
   }
 
   const now = new Date()
@@ -37,7 +37,7 @@ export async function restoreSoftDelete(
   const prismaModel = prisma[model] as any
 
   if (!prismaModel || typeof prismaModel.update !== "function") {
-    throw new Error(`Modelo "${model}" no encontrado o no soporta restore`)
+    throw new Error(`Modelo "${String(model)}" no encontrado o no soporta restore`)
   }
 
   return await prismaModel.update({

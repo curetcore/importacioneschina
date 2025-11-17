@@ -156,14 +156,15 @@ lib/
   - **Esfuerzo:** 1 hora
   - **Archivos:** `lib/validate-request.ts`, `app/api/*/route.ts`
 
-- [ ] **Rate Limiting**
-  - [ ] Instalar `@upstash/ratelimit` y `@upstash/redis`
-  - [ ] Configurar Redis (Upstash o local)
-  - [ ] Implementar rate limiting en `middleware.ts`
-  - [ ] Configurar límites por endpoint (10 req/10s general, 3 req/min para uploads)
+- [x] **Rate Limiting** (2025-01-17) ✅
+  - [x] Implementar sistema de rate limiting en memoria con `lib/rate-limit.ts`
+  - [x] Crear presets para diferentes tipos de endpoints (upload, mutation, query, auth)
+  - [x] Aplicar rate limiting a endpoints críticos (GET/POST en 4 módulos principales)
+  - [x] Documentar uso con `lib/RATE-LIMIT-USAGE.md`
   - **Impacto:** Protección contra abuso y DDoS
-  - **Esfuerzo:** 1 hora
-  - **Archivos:** `middleware.ts`, `.env`
+  - **Esfuerzo:** 1 hora ✅
+  - **Archivos:** `lib/rate-limit.ts`, `app/api/*/route.ts`
+  - **Nota:** Implementado con Map en memoria. Para producción con alto tráfico, migrar a Redis (instrucciones en RATE-LIMIT-USAGE.md)
 
 ---
 
@@ -316,15 +317,15 @@ lib/
 ## 📈 Progreso de Mejoras
 
 ```
-Prioridad Alta:    [███████░░] 3/5  (60%) - Índices, Paginación, Soft Deletes
+Prioridad Alta:    [█████████] 5/5  (100%) ✅ - COMPLETADO
 Prioridad Media:   [ ] 0/5  (0%)
 Prioridad Baja:    [▓] 0.5/9  (6%) - PDF Export parcial
 ─────────────────────────────────
-TOTAL:             [██░░░░░░░] 3.5/19 (18%)
+TOTAL:             [███░░░░░░] 5.5/19 (29%)
 ```
 
 **Última revisión:** 2025-01-17
-**Última implementación:** Índices BD + Paginación + Soft Deletes (2025-01-17)
+**Última implementación:** Rate Limiting (2025-01-17)
 
 ---
 

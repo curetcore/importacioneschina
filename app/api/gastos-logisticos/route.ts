@@ -3,9 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { gastosLogisticosSchema } from "@/lib/validations";
 import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
+import { withRateLimit, RateLimits } from "@/lib/rate-limit";
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
 export async function GET(request: NextRequest) {
+  // Rate limiting para queries (60 req/min)
+  const rateLimitError = await withRateLimit(request, RateLimits.query);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -77,6 +82,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/gastos-logisticos - Crear nuevo gasto
 export async function POST(request: NextRequest) {
+  // Rate limiting para mutations (20 req/10s)
+  const rateLimitError = await withRateLimit(request, RateLimits.mutation);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const body = await request.json();
 

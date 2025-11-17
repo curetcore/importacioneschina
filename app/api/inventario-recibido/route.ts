@@ -4,9 +4,14 @@ import { inventarioRecibidoSchema } from "@/lib/validations";
 import { distribuirGastosLogisticos } from "@/lib/calculations";
 import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
+import { withRateLimit, RateLimits } from "@/lib/rate-limit";
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
 export async function GET(request: NextRequest) {
+  // Rate limiting para queries (60 req/min)
+  const rateLimitError = await withRateLimit(request, RateLimits.query);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -79,6 +84,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/inventario-recibido - Crear nueva recepción
 export async function POST(request: NextRequest) {
+  // Rate limiting para mutations (20 req/10s)
+  const rateLimitError = await withRateLimit(request, RateLimits.mutation);
+  if (rateLimitError) return rateLimitError;
+
   try {
     const body = await request.json();
 
