@@ -41,9 +41,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
     accessorKey: "idGasto",
     header: "ID Gasto",
     cell: ({ row }) => (
-      <div className="font-medium text-gray-900 whitespace-nowrap">
-        {row.original.idGasto}
-      </div>
+      <div className="font-medium text-gray-900 whitespace-nowrap">{row.original.idGasto}</div>
     ),
   },
   {
@@ -60,9 +58,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
     accessorKey: "fechaGasto",
     header: "Fecha",
     cell: ({ row }) => (
-      <div className="text-gray-500 whitespace-nowrap">
-        {formatDate(row.original.fechaGasto)}
-      </div>
+      <div className="text-gray-500 whitespace-nowrap">{formatDate(row.original.fechaGasto)}</div>
     ),
   },
   {
@@ -80,9 +76,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
     accessorKey: "proveedorServicio",
     header: "Proveedor Servicio",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap">
-        {row.original.proveedorServicio || "-"}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap">{row.original.proveedorServicio || "-"}</div>
     ),
   },
   {
@@ -105,7 +99,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
           <Button
             variant="ghost"
             className="h-8 px-2 text-gray-400"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               actions.onAddAttachments(row.original)
             }}
@@ -125,7 +119,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onEdit(row.original)
           }}
@@ -135,7 +129,7 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onDelete(row.original)
           }}

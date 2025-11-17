@@ -19,8 +19,15 @@ interface AirtableTableProps {
   minWidth?: string
 }
 
-export function AirtableTable({ columns, data, onRowClick, minWidth = "1200px" }: AirtableTableProps) {
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null)
+export function AirtableTable({
+  columns,
+  data,
+  onRowClick,
+  minWidth = "1200px",
+}: AirtableTableProps) {
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(
+    null
+  )
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc"
@@ -61,7 +68,7 @@ export function AirtableTable({ columns, data, onRowClick, minWidth = "1200px" }
       <table className="airtable-table" style={{ minWidth }}>
         <thead>
           <tr>
-            {columns.map((column) => (
+            {columns.map(column => (
               <th
                 key={column.key}
                 className={`airtable-th ${column.align || "left"} ${column.sortable ? "sortable" : ""}`}
@@ -83,11 +90,8 @@ export function AirtableTable({ columns, data, onRowClick, minWidth = "1200px" }
               className={`airtable-tr ${onRowClick ? "clickable" : ""}`}
               onClick={() => onRowClick?.(row)}
             >
-              {columns.map((column) => (
-                <td
-                  key={column.key}
-                  className={`airtable-td ${column.align || "left"}`}
-                >
+              {columns.map(column => (
+                <td key={column.key} className={`airtable-td ${column.align || "left"}`}>
                   {column.render ? column.render(row[column.key], row) : row[column.key]}
                 </td>
               ))}
@@ -102,7 +106,7 @@ export function AirtableTable({ columns, data, onRowClick, minWidth = "1200px" }
 // Componentes auxiliares para badges y estados
 export function TableBadge({
   children,
-  variant = "default"
+  variant = "default",
 }: {
   children: ReactNode
   variant?: "default" | "success" | "warning" | "error" | "info"
@@ -116,14 +120,16 @@ export function TableBadge({
   }
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${variants[variant]}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${variants[variant]}`}
+    >
       {children}
     </span>
   )
 }
 
 export function TableStatusDot({
-  status
+  status,
 }: {
   status: "active" | "inactive" | "pending" | "completed"
 }) {
@@ -149,7 +155,13 @@ export function TableStatusDot({
   )
 }
 
-export function TableCount({ count, variant = "blue" }: { count: number; variant?: "blue" | "green" | "purple" | "orange" }) {
+export function TableCount({
+  count,
+  variant = "blue",
+}: {
+  count: number
+  variant?: "blue" | "green" | "purple" | "orange"
+}) {
   const variants = {
     blue: "bg-blue-100 text-blue-700 border-blue-200",
     green: "bg-green-100 text-green-700 border-green-200",
@@ -158,7 +170,9 @@ export function TableCount({ count, variant = "blue" }: { count: number; variant
   }
 
   return (
-    <span className={`inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md text-sm font-semibold border ${variants[variant]}`}>
+    <span
+      className={`inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md text-sm font-semibold border ${variants[variant]}`}
+    >
       {count}
     </span>
   )

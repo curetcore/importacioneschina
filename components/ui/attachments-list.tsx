@@ -38,7 +38,7 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
     const k = 1024
     const sizes = ["B", "KB", "MB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i]
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
   }
 
   const handleFileClick = (file: FileAttachment) => {
@@ -64,11 +64,7 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
             </button>
           ))}
         </div>
-        <FilePreviewModal
-          file={selectedFile}
-          open={previewOpen}
-          onOpenChange={setPreviewOpen}
-        />
+        <FilePreviewModal file={selectedFile} open={previewOpen} onOpenChange={setPreviewOpen} />
       </>
     )
   }
@@ -85,12 +81,8 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {getFileIcon(file.tipo)}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">
-                  {file.nombre}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {formatFileSize(file.size)}
-                </div>
+                <div className="text-sm font-medium text-gray-900 truncate">{file.nombre}</div>
+                <div className="text-xs text-gray-500">{formatFileSize(file.size)}</div>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -112,11 +104,7 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
           </div>
         ))}
       </div>
-      <FilePreviewModal
-        file={selectedFile}
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-      />
+      <FilePreviewModal file={selectedFile} open={previewOpen} onOpenChange={setPreviewOpen} />
     </>
   )
 }

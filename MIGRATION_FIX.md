@@ -9,21 +9,26 @@ La tabla `configuracion` no existe en la base de datos. Necesitas aplicar la mig
 ## 📋 Pasos (desde la Terminal de Easypanel):
 
 ### 1. Abre la terminal de tu app en Easypanel
+
 En Easypanel → Tu App → Pestaña "Terminal" o "Console"
 
 ### 2. Ejecuta el script de migración
+
 ```bash
 sh apply-migration.sh
 ```
 
 O ejecuta los comandos manualmente:
+
 ```bash
 npx prisma migrate deploy
 npx tsx prisma/seed-config.ts
 ```
 
 ### 3. Verifica los resultados
+
 Deberías ver:
+
 ```
 ✅ Migration applied: 20241115000000_add_configuracion_table
 🌱 Iniciando migración de configuraciones...
@@ -34,6 +39,7 @@ Deberías ver:
 ```
 
 ### 4. Recarga la página
+
 Ve a `/configuracion` y deberías ver las 5 categorías con sus items.
 
 ---

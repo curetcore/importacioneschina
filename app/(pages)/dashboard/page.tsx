@@ -8,7 +8,7 @@ import { BarChart, Bar } from "recharts"
 import { PieChart, Pie, Cell } from "recharts"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 interface DashboardData {
   kpis: {
@@ -24,7 +24,12 @@ interface DashboardData {
   financiero: {
     pagosPorMetodo: Array<{ name: string; value: number; cantidad: number }>
     pagosPorTipo: Array<{ name: string; value: number; cantidad: number }>
-    pagosPorMoneda: Array<{ moneda: string; totalOriginal: number; totalRD: number; cantidad: number }>
+    pagosPorMoneda: Array<{
+      moneda: string
+      totalOriginal: number
+      totalRD: number
+      cantidad: number
+    }>
     tasasPromedio: Array<{ moneda: string; tasa: number }>
   }
   gastos: {
@@ -40,44 +45,57 @@ interface DashboardData {
     inversionPorProveedor: Array<{ name: string; inversion: number; unidades: number }>
   }
   tablas: {
-    topOCs: Array<{ oc: string; proveedor: string; inversion: number; unidades: number; costoUnitario: number }>
-    transacciones: Array<{ tipo: "Pago" | "Gasto"; id: string; oc: string; fecha: Date; monto: number; descripcion: string }>
+    topOCs: Array<{
+      oc: string
+      proveedor: string
+      inversion: number
+      unidades: number
+      costoUnitario: number
+    }>
+    transacciones: Array<{
+      tipo: "Pago" | "Gasto"
+      id: string
+      oc: string
+      fecha: Date
+      monto: number
+      descripcion: string
+    }>
   }
 }
 
 // Color palette for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658"]
 
 const kpiCards = [
   {
     key: "inversionTotal",
     label: "Inversión Total",
     format: "currency",
-    subtitle: "Inversión completa en RD$"
+    subtitle: "Inversión completa en RD$",
   },
   {
     key: "unidadesOrdenadas",
     label: "Unidades Ordenadas",
     format: "number",
-    subtitle: "Total de unidades compradas"
+    subtitle: "Total de unidades compradas",
   },
   {
     key: "unidadesRecibidas",
     label: "Unidades Recibidas",
     format: "number",
-    subtitle: "Ya en bodega"
+    subtitle: "Ya en bodega",
   },
   {
     key: "costoPromedioUnitario",
     label: "Costo Promedio Unitario",
     format: "currency",
-    subtitle: "Por unidad recibida"
+    subtitle: "Por unidad recibida",
   },
   {
     key: "totalComisiones",
     label: "Comisiones Bancarias",
     format: "currency",
-    subtitle: "Total pagado en comisiones"
+    subtitle: "Total pagado en comisiones",
   },
 ]
 
@@ -121,7 +139,7 @@ export default function DashboardPage() {
 
         {/* KPIs Principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {kpiCards.map((kpi) => {
+          {kpiCards.map(kpi => {
             const value = data.kpis[kpi.key as keyof typeof data.kpis]
             return (
               <Card key={kpi.key}>
@@ -178,7 +196,7 @@ export default function DashboardPage() {
                   />
                   <YAxis
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `RD$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={value => `RD$${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}
@@ -282,7 +300,9 @@ export default function DashboardPage() {
           {/* Top Productos */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-medium">Top 5 Productos (por unidades)</CardTitle>
+              <CardTitle className="text-base font-medium">
+                Top 5 Productos (por unidades)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -299,7 +319,7 @@ export default function DashboardPage() {
                   <Tooltip
                     formatter={(value: number) => [value.toLocaleString(), "Unidades"]}
                     contentStyle={{ fontSize: 12 }}
-                    labelFormatter={(label) => {
+                    labelFormatter={label => {
                       const producto = data.inventario.topProductos.find(p => p.sku === label)
                       return producto ? `${producto.sku} - ${producto.nombre}` : label
                     }}
@@ -328,7 +348,7 @@ export default function DashboardPage() {
                   />
                   <YAxis
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `RD$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={value => `RD$${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}

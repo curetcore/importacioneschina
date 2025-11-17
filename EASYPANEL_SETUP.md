@@ -3,6 +3,7 @@
 ## Paso a Paso Completo
 
 ### 📋 Pre-requisitos
+
 - Cuenta en Easypanel
 - Acceso al repositorio GitHub `curetcore/importacioneschina`
 
@@ -11,6 +12,7 @@
 ## PARTE 1: Crear PostgreSQL
 
 ### 1.1 Crear Base de Datos
+
 1. En Easypanel → **Services** → **Create Service**
 2. Selecciona **Database** → **PostgreSQL**
 3. Configura:
@@ -24,6 +26,7 @@
 4. Click **Create**
 
 ### 1.2 Obtener Connection String
+
 1. Una vez creado, ve a la base de datos
 2. Copia la **Internal Connection String** (algo como):
    ```
@@ -36,6 +39,7 @@
 ## PARTE 2: Crear Aplicación
 
 ### 2.1 Crear App desde GitHub
+
 1. En Easypanel → **Services** → **Create Service**
 2. Selecciona **App** → **GitHub**
 3. Configura:
@@ -47,6 +51,7 @@
    ```
 
 ### 2.2 Configurar Variables de Entorno
+
 En la sección **Environment**, agrega estas variables:
 
 ```env
@@ -56,16 +61,19 @@ NODE_ENV=production
 ```
 
 **⚠️ Reemplaza:**
+
 - `TU_PASSWORD` → Password de PostgreSQL
 - `postgres` → Nombre interno del servicio de PostgreSQL (generalmente es el nombre que pusiste)
 - `TUDOMINIO` → Tu dominio de Easypanel
 
 ### 2.3 Configurar Networking
+
 1. En **Domains**, agrega tu dominio
 2. Puerto interno: `3000`
 3. Protocolo: `HTTP`
 
 ### 2.4 Deploy
+
 1. Click **Deploy**
 2. Espera a que termine el build (2-5 minutos)
 3. Verifica que el contenedor esté **Running** (verde)
@@ -75,10 +83,12 @@ NODE_ENV=production
 ## PARTE 3: Configurar Base de Datos
 
 ### 3.1 Acceder al Terminal
+
 1. Ve a tu aplicación en Easypanel
 2. Click en **Terminal** o **Console**
 
 ### 3.2 Ejecutar Migraciones
+
 Ejecuta estos comandos en orden:
 
 ```bash
@@ -93,6 +103,7 @@ npm run db:seed
 ```
 
 **O usa el script automatizado:**
+
 ```bash
 bash scripts/setup-db.sh
 ```
@@ -102,6 +113,7 @@ bash scripts/setup-db.sh
 ## PARTE 4: Verificar
 
 ### 4.1 Probar la Aplicación
+
 1. Visita tu dominio: `https://curet-importaciones.TUDOMINIO.easypanel.app`
 2. Deberías ver el **Dashboard** directamente
 3. Navega por las secciones:
@@ -112,7 +124,9 @@ bash scripts/setup-db.sh
    - ✅ Inventario → Debe mostrar 10 recepciones
 
 ### 4.2 Verificar APIs
+
 Prueba los endpoints:
+
 - `https://tu-dominio/api/oc-china`
 - `https://tu-dominio/api/pagos-china`
 - `https://tu-dominio/api/gastos-logisticos`
@@ -126,31 +140,41 @@ Todos deben devolver JSON con datos.
 ## 🔧 Solución de Problemas
 
 ### Problema: "Connection refused" o error de base de datos
+
 **Solución:**
+
 1. Verifica que PostgreSQL esté Running
 2. Verifica que `DATABASE_URL` sea la **Internal Connection String**
 3. El formato correcto es: `postgresql://user:pass@postgres-service-name:5432/dbname`
 
 ### Problema: "Prisma Client not generated"
+
 **Solución:**
+
 ```bash
 npx prisma generate
 ```
 
 ### Problema: Tablas no existen
+
 **Solución:**
+
 ```bash
 npx prisma db push --accept-data-loss
 ```
 
 ### Problema: No hay datos
+
 **Solución:**
+
 ```bash
 npm run db:seed
 ```
 
 ### Problema: Build falla en Easypanel
+
 **Solución:**
+
 1. Verifica que el branch sea correcto
 2. Asegúrate de que `Dockerfile` esté en la raíz
 3. Revisa los logs del build en Easypanel
@@ -160,6 +184,7 @@ npm run db:seed
 ## 📊 Datos de Prueba
 
 Una vez ejecutes `npm run db:seed`, tendrás:
+
 - **10 Órdenes de Compra** (OC-2025-001 a OC-2025-010)
 - **20 Pagos** (2 por OC: anticipo + pago final)
 - **~25 Gastos Logísticos** (flete, aduana, broker, etc.)
@@ -172,6 +197,7 @@ Una vez ejecutes `npm run db:seed`, tendrás:
 Cuando hagas cambios en el código:
 
 1. **Haz push a GitHub:**
+
    ```bash
    git add .
    git commit -m "tu mensaje"
@@ -191,6 +217,7 @@ Cuando hagas cambios en el código:
 ## 📞 Ayuda
 
 Si tienes problemas:
+
 1. Revisa los **logs** en Easypanel
 2. Verifica las **variables de entorno**
 3. Asegúrate de que PostgreSQL esté **Running**

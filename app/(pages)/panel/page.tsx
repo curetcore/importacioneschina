@@ -32,7 +32,12 @@ interface DashboardData {
   financiero: {
     pagosPorMetodo: Array<{ name: string; value: number; cantidad: number }>
     pagosPorTipo: Array<{ name: string; value: number; cantidad: number }>
-    pagosPorMoneda: Array<{ moneda: string; totalOriginal: number; totalRD: number; cantidad: number }>
+    pagosPorMoneda: Array<{
+      moneda: string
+      totalOriginal: number
+      totalRD: number
+      cantidad: number
+    }>
     tasasPromedio: Array<{ moneda: string; tasa: number }>
   }
   gastos: {
@@ -48,8 +53,21 @@ interface DashboardData {
     inversionPorProveedor: Array<{ name: string; inversion: number; unidades: number }>
   }
   tablas: {
-    topOCs: Array<{ oc: string; proveedor: string; inversion: number; unidades: number; costoUnitario: number }>
-    transacciones: Array<{ tipo: "Pago" | "Gasto"; id: string; oc: string; fecha: Date; monto: number; descripcion: string }>
+    topOCs: Array<{
+      oc: string
+      proveedor: string
+      inversion: number
+      unidades: number
+      costoUnitario: number
+    }>
+    transacciones: Array<{
+      tipo: "Pago" | "Gasto"
+      id: string
+      oc: string
+      fecha: Date
+      monto: number
+      descripcion: string
+    }>
   }
 }
 
@@ -59,8 +77,8 @@ export default function PanelPage() {
 
   useEffect(() => {
     fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((result) => {
+      .then(res => res.json())
+      .then(result => {
         if (result.success) {
           setData(result.data)
         }
@@ -103,11 +121,15 @@ export default function PanelPage() {
       <div className="space-y-6">
         {/* 1. KPIs PRINCIPALES */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">KPIs Principales</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            KPIs Principales
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Inversión Total</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Inversión Total
+                </p>
                 <DollarSign className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-2xl font-semibold text-gray-900">
@@ -117,7 +139,9 @@ export default function PanelPage() {
 
             <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades Ordenadas</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Unidades Ordenadas
+                </p>
                 <Package className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-2xl font-semibold text-gray-900">
@@ -127,7 +151,9 @@ export default function PanelPage() {
 
             <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Unidades Recibidas</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Unidades Recibidas
+                </p>
                 <CheckCircle2 className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-2xl font-semibold text-gray-900">
@@ -137,7 +163,9 @@ export default function PanelPage() {
 
             <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Comisiones Bancarias</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Comisiones Bancarias
+                </p>
                 <TrendingDown className="w-4 h-4 text-red-400" />
               </div>
               <p className="text-2xl font-semibold text-gray-900">
@@ -149,7 +177,9 @@ export default function PanelPage() {
 
         {/* 2. ANÁLISIS FINANCIERO */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Análisis Financiero</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Análisis Financiero
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Pagos por Método */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
@@ -172,7 +202,9 @@ export default function PanelPage() {
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-400">{item.cantidad} pagos · {percentage.toFixed(1)}%</p>
+                      <p className="text-xs text-gray-400">
+                        {item.cantidad} pagos · {percentage.toFixed(1)}%
+                      </p>
                     </div>
                   )
                 })}
@@ -200,7 +232,9 @@ export default function PanelPage() {
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-400">{item.cantidad} pagos · {percentage.toFixed(1)}%</p>
+                      <p className="text-xs text-gray-400">
+                        {item.cantidad} pagos · {percentage.toFixed(1)}%
+                      </p>
                     </div>
                   )
                 })}
@@ -217,13 +251,17 @@ export default function PanelPage() {
                 {data.financiero.pagosPorMoneda.map((item, index) => {
                   const percentage = totalPagos > 0 ? (item.totalRD / totalPagos) * 100 : 0
                   return (
-                    <div key={index} className="p-3 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors">
+                    <div
+                      key={index}
+                      className="p-3 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors"
+                    >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-gray-900">{item.moneda}</span>
                         <span className="text-xs text-gray-500">{percentage.toFixed(1)}%</span>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {formatCurrency(item.totalOriginal, item.moneda)} → {formatCurrency(item.totalRD)}
+                        {formatCurrency(item.totalOriginal, item.moneda)} →{" "}
+                        {formatCurrency(item.totalRD)}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">{item.cantidad} pagos</div>
                     </div>
@@ -243,7 +281,9 @@ export default function PanelPage() {
                   <div key={index} className="p-4 border border-gray-100 rounded-md bg-gray-50">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">{item.moneda} → RD$</span>
-                      <span className="text-xl font-semibold text-gray-900">{item.tasa.toFixed(2)}</span>
+                      <span className="text-xl font-semibold text-gray-900">
+                        {item.tasa.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -254,7 +294,9 @@ export default function PanelPage() {
 
         {/* 3. GASTOS LOGÍSTICOS */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Gastos Logísticos</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Gastos Logísticos
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Gastos por Tipo */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
@@ -270,7 +312,9 @@ export default function PanelPage() {
                       <span className="text-xs font-medium text-gray-700">{item.name}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-semibold text-gray-900">{formatCurrency(item.value)}</div>
+                      <div className="text-xs font-semibold text-gray-900">
+                        {formatCurrency(item.value)}
+                      </div>
                       <div className="text-xs text-gray-400">{item.cantidad} gastos</div>
                     </div>
                   </div>
@@ -280,7 +324,9 @@ export default function PanelPage() {
 
             {/* Top Proveedores de Servicios */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Top Proveedores de Servicios</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                Top Proveedores de Servicios
+              </h3>
               <div className="space-y-2">
                 {data.gastos.gastosPorProveedor.length > 0 ? (
                   data.gastos.gastosPorProveedor.map((item, index) => (
@@ -295,7 +341,9 @@ export default function PanelPage() {
                         <span className="text-xs font-medium text-gray-700">{item.name}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-semibold text-gray-900">{formatCurrency(item.value)}</div>
+                        <div className="text-xs font-semibold text-gray-900">
+                          {formatCurrency(item.value)}
+                        </div>
                         <div className="text-xs text-gray-400">{item.cantidad} gastos</div>
                       </div>
                     </div>
@@ -312,7 +360,9 @@ export default function PanelPage() {
 
         {/* 4. INVENTARIO & OPERACIONES */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Inventario & Operaciones</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Inventario & Operaciones
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Inventario por Bodega */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
@@ -323,13 +373,18 @@ export default function PanelPage() {
               <div className="space-y-3">
                 {data.inventario.inventarioPorBodega.length > 0 ? (
                   data.inventario.inventarioPorBodega.map((item, index) => {
-                    const total = data.inventario.inventarioPorBodega.reduce((sum, b) => sum + b.value, 0)
+                    const total = data.inventario.inventarioPorBodega.reduce(
+                      (sum, b) => sum + b.value,
+                      0
+                    )
                     const percentage = total > 0 ? (item.value / total) * 100 : 0
                     return (
                       <div key={index} className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-medium text-gray-700">{item.name}</span>
-                          <span className="text-gray-900 font-semibold">{item.value.toLocaleString()} unidades</span>
+                          <span className="text-gray-900 font-semibold">
+                            {item.value.toLocaleString()} unidades
+                          </span>
                         </div>
                         <div className="w-full bg-gray-100 rounded-full h-1.5">
                           <div
@@ -337,7 +392,9 @@ export default function PanelPage() {
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <p className="text-xs text-gray-400">{percentage.toFixed(1)}% del inventario</p>
+                        <p className="text-xs text-gray-400">
+                          {percentage.toFixed(1)}% del inventario
+                        </p>
                       </div>
                     )
                   })
@@ -379,8 +436,12 @@ export default function PanelPage() {
                     <span className="text-xs font-medium text-gray-700">% de Cumplimiento</span>
                     <span className="text-xl font-semibold text-gray-900">
                       {data.kpis.unidadesOrdenadas > 0
-                        ? ((data.kpis.unidadesRecibidas / data.kpis.unidadesOrdenadas) * 100).toFixed(1)
-                        : 0}%
+                        ? (
+                            (data.kpis.unidadesRecibidas / data.kpis.unidadesOrdenadas) *
+                            100
+                          ).toFixed(1)
+                        : 0}
+                      %
                     </span>
                   </div>
                 </div>
@@ -405,13 +466,19 @@ export default function PanelPage() {
                           <span className="text-xs font-semibold text-gray-600">{index + 1}</span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs font-medium text-gray-900 truncate">{item.sku}</div>
+                          <div className="text-xs font-medium text-gray-900 truncate">
+                            {item.sku}
+                          </div>
                           <div className="text-xs text-gray-500 truncate">{item.nombre}</div>
                         </div>
                       </div>
                       <div className="text-right ml-3 flex-shrink-0">
-                        <div className="text-xs font-semibold text-gray-900">{item.unidades.toLocaleString()}</div>
-                        <div className="text-xs text-gray-400">{formatCurrency(item.valorUSD, "USD")}</div>
+                        <div className="text-xs font-semibold text-gray-900">
+                          {item.unidades.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {formatCurrency(item.valorUSD, "USD")}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -428,12 +495,19 @@ export default function PanelPage() {
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Compras por Categoría</h3>
               <div className="space-y-3">
                 {data.inventario.comprasPorCategoria.map((item, index) => (
-                  <div key={index} className="p-3 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors">
+                  <div
+                    key={index}
+                    className="p-3 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-900">{item.name}</span>
-                      <span className="text-xs font-semibold text-gray-900">{formatCurrency(item.inversion)}</span>
+                      <span className="text-xs font-semibold text-gray-900">
+                        {formatCurrency(item.inversion)}
+                      </span>
                     </div>
-                    <div className="text-xs text-gray-500">{item.unidades.toLocaleString()} unidades</div>
+                    <div className="text-xs text-gray-500">
+                      {item.unidades.toLocaleString()} unidades
+                    </div>
                   </div>
                 ))}
               </div>
@@ -443,7 +517,9 @@ export default function PanelPage() {
 
         {/* 5. PROVEEDORES */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Proveedores</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Proveedores
+          </h2>
           <div className="bg-white border border-gray-200 rounded-lg p-5">
             <div className="flex items-center gap-2 mb-4">
               <Users className="w-4 h-4 text-gray-500" />
@@ -451,15 +527,22 @@ export default function PanelPage() {
             </div>
             <div className="space-y-4">
               {data.proveedores.inversionPorProveedor.map((item, index) => {
-                const total = data.proveedores.inversionPorProveedor.reduce((sum, p) => sum + p.inversion, 0)
+                const total = data.proveedores.inversionPorProveedor.reduce(
+                  (sum, p) => sum + p.inversion,
+                  0
+                )
                 const percentage = total > 0 ? (item.inversion / total) * 100 : 0
                 return (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-medium text-gray-700">{item.name}</span>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-900">{formatCurrency(item.inversion)}</div>
-                        <div className="text-gray-400">{item.unidades.toLocaleString()} unidades</div>
+                        <div className="font-semibold text-gray-900">
+                          {formatCurrency(item.inversion)}
+                        </div>
+                        <div className="text-gray-400">
+                          {item.unidades.toLocaleString()} unidades
+                        </div>
                       </div>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2">
@@ -478,7 +561,9 @@ export default function PanelPage() {
 
         {/* 6. TOP RANKINGS */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Top Rankings</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Top Rankings
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Top 5 OCs */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
@@ -487,10 +572,18 @@ export default function PanelPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">#</th>
-                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">OC</th>
-                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">Proveedor</th>
-                      <th className="text-right py-2 px-2 text-xs font-medium text-gray-500 uppercase">Inversión</th>
+                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">
+                        #
+                      </th>
+                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">
+                        OC
+                      </th>
+                      <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 uppercase">
+                        Proveedor
+                      </th>
+                      <th className="text-right py-2 px-2 text-xs font-medium text-gray-500 uppercase">
+                        Inversión
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -519,14 +612,18 @@ export default function PanelPage() {
                     className="flex items-center justify-between p-2 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center space-x-2 flex-1 min-w-0">
-                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${trans.tipo === "Pago" ? "bg-green-500" : "bg-orange-500"}`} />
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${trans.tipo === "Pago" ? "bg-green-500" : "bg-orange-500"}`}
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium text-gray-900">{trans.id}</div>
                         <div className="text-xs text-gray-500 truncate">{trans.descripcion}</div>
                       </div>
                     </div>
                     <div className="text-right ml-2 flex-shrink-0">
-                      <div className="text-xs font-semibold text-gray-900">{formatCurrency(trans.monto)}</div>
+                      <div className="text-xs font-semibold text-gray-900">
+                        {formatCurrency(trans.monto)}
+                      </div>
                       <div className="text-xs text-gray-400">{formatDate(trans.fecha)}</div>
                     </div>
                   </div>

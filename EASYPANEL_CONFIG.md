@@ -3,6 +3,7 @@
 ## ✅ PostgreSQL - YA CONFIGURADO
 
 **Credenciales:**
+
 ```
 Usuario: postgres
 Contraseña: Pitagora1844
@@ -12,6 +13,7 @@ Puerto: 5432
 ```
 
 **URL de Conexión:**
+
 ```
 postgresql://postgres:Pitagora1844@apps_postgres_sistemadechina:5432/apps?sslmode=disable
 ```
@@ -43,6 +45,7 @@ NODE_ENV=production
 ```
 
 **⚠️ IMPORTANTE:**
+
 - Reemplaza `TU-DOMINIO` con el dominio real que Easypanel te asigne
 - No cambies nada en `DATABASE_URL`, usa exactamente como está arriba
 
@@ -88,6 +91,7 @@ npm run db:seed
 ```
 
 **O ejecuta el script automatizado:**
+
 ```bash
 bash scripts/setup-db.sh
 ```
@@ -127,31 +131,41 @@ Todos deben devolver JSON con datos.
 ## 🆘 Si Algo No Funciona
 
 ### Error: "Prisma Client not found"
+
 **Solución:**
+
 ```bash
 npx prisma generate
 ```
 
 ### Error: "Table X doesn't exist"
+
 **Solución:**
+
 ```bash
 npx prisma db push
 ```
 
 ### No aparecen datos en las tablas
+
 **Solución:**
+
 ```bash
 npm run db:seed
 ```
 
 ### Build falla en Easypanel
+
 **Solución:**
+
 1. Verifica que el branch sea: `claude/analyze-documentation-01TWwoF2nsHBhCgA5q7AGfno`
 2. Verifica que Build Method sea: `Dockerfile`
 3. Revisa los logs de build en Easypanel
 
 ### Página muestra error 500
+
 **Solución:**
+
 1. Revisa logs de la aplicación en Easypanel
 2. Verifica que `DATABASE_URL` sea exactamente:
    ```
@@ -205,6 +219,7 @@ Después de ejecutar `npm run db:seed`:
 ## 🎯 Próximos Pasos (Después de Verificar)
 
 Una vez que todo funcione:
+
 1. Implementar formularios de creación
 2. Agregar endpoints PATCH/DELETE
 3. Implementar filtros y búsqueda

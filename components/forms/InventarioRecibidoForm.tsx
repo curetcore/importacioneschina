@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
@@ -32,7 +39,12 @@ interface InventarioRecibidoFormProps {
   inventarioToEdit?: InventarioRecibido | null
 }
 
-export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventarioToEdit }: InventarioRecibidoFormProps) {
+export function InventarioRecibidoForm({
+  open,
+  onOpenChange,
+  onSuccess,
+  inventarioToEdit,
+}: InventarioRecibidoFormProps) {
   const { addToast } = useToast()
   const isEditMode = !!inventarioToEdit
 
@@ -78,13 +90,15 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       // Cargar OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
-        .then((res) => res.json())
-        .then((result) => {
+        .then(res => res.json())
+        .then(result => {
           if (result.success) {
-            setOcsOptions(result.data.map((oc: any) => ({
-              value: oc.id,
-              label: `${oc.oc} - ${oc.proveedor}`
-            })))
+            setOcsOptions(
+              result.data.map((oc: any) => ({
+                value: oc.id,
+                label: `${oc.oc} - ${oc.proveedor}`,
+              }))
+            )
           }
           setLoadingOcs(false)
         })
@@ -94,12 +108,14 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       setLoadingConfig(true)
       fetch("/api/configuracion?categoria=bodegas")
         .then(res => res.json())
-        .then((result) => {
+        .then(result => {
           if (result.success) {
-            setBodegasOptions(result.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setBodegasOptions(
+              result.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           setLoadingConfig(false)
         })
@@ -111,8 +127,8 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
   useEffect(() => {
     if (ocIdValue) {
       fetch(`/api/oc-china/${ocIdValue}`)
-        .then((res) => res.json())
-        .then((result) => {
+        .then(res => res.json())
+        .then(result => {
           if (result.success) {
             const oc = result.data
             setSelectedOcData(oc)
@@ -121,7 +137,7 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
             if (oc.items && oc.items.length > 0) {
               const itemOptions = oc.items.map((item: any) => ({
                 value: item.id,
-                label: `${item.sku} - ${item.nombre} (${item.cantidadTotal} unidades)`
+                label: `${item.sku} - ${item.nombre} (${item.cantidadTotal} unidades)`,
               }))
               setItemsOptions(itemOptions)
             } else {
@@ -217,7 +233,9 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} el inventario`)
+        throw new Error(
+          result.error || `Error al ${isEditMode ? "actualizar" : "crear"} el inventario`
+        )
       }
 
       addToast({
@@ -232,7 +250,7 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       addToast({
         type: "error",
         title: "Error",
-        description: error.message || "Error al procesar el inventario"
+        description: error.message || "Error al procesar el inventario",
       })
     }
   }
@@ -246,7 +264,9 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
       <DialogContent className="max-w-2xl">
         <DialogClose onClose={handleCancel} />
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Editar Recepción de Inventario" : "Nueva Recepción de Inventario"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Editar Recepción de Inventario" : "Nueva Recepción de Inventario"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -254,7 +274,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
             {/* ID Recepción - Solo mostrar en modo edición */}
             {isEditMode && (
               <div>
-                <label htmlFor="idRecepcion" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="idRecepcion"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   ID Recepción
                 </label>
                 <Input
@@ -273,16 +296,14 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
               <Select
                 options={ocsOptions}
                 value={ocIdValue || ""}
-                onChange={(value) => {
+                onChange={value => {
                   setValue("ocId", value)
                   setValue("itemId", "")
                 }}
                 placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
                 disabled={isSubmitting || loadingOcs}
               />
-              {errors.ocId && (
-                <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>
-              )}
+              {errors.ocId && <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>}
             </div>
 
             {/* Selector de Producto/Item */}
@@ -294,28 +315,32 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 <Select
                   options={[
                     { value: "", label: "Todos los productos de la orden" },
-                    ...itemsOptions
+                    ...itemsOptions,
                   ]}
                   value={itemIdValue || ""}
-                  onChange={(value) => setValue("itemId", value)}
+                  onChange={value => setValue("itemId", value)}
                   placeholder="Selecciona un producto específico"
                   disabled={isSubmitting}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Si seleccionas un producto, el costo se calculará específicamente para ese producto
+                  Si seleccionas un producto, el costo se calculará específicamente para ese
+                  producto
                 </p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="fechaLlegada" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="fechaLlegada"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Fecha de Llegada <span className="text-red-500">*</span>
                 </label>
                 <DatePicker
                   id="fechaLlegada"
                   value={fechaLlegadaValue}
-                  onChange={(date) => setValue("fechaLlegada", date as any)}
+                  onChange={date => setValue("fechaLlegada", date as any)}
                   disabled={isSubmitting}
                 />
                 {errors.fechaLlegada && (
@@ -324,13 +349,16 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
               </div>
 
               <div>
-                <label htmlFor="bodegaInicial" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="bodegaInicial"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Bodega Inicial <span className="text-red-500">*</span>
                 </label>
                 <Select
                   options={bodegasOptions}
                   value={watch("bodegaInicial") || ""}
-                  onChange={(value) => setValue("bodegaInicial", value)}
+                  onChange={value => setValue("bodegaInicial", value)}
                   placeholder={loadingConfig ? "Cargando bodegas..." : "Selecciona bodega"}
                   disabled={isSubmitting || loadingConfig}
                 />
@@ -341,7 +369,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
             </div>
 
             <div>
-              <label htmlFor="cantidadRecibida" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="cantidadRecibida"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Cantidad Recibida <span className="text-red-500">*</span>
               </label>
               <Input
@@ -370,18 +401,22 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                       Costo FOB RD$
                     </label>
                     <div className="text-base font-semibold text-gray-900">
-                      RD$ {selectedItemData.costoFOBRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      RD${" "}
+                      {selectedItemData.costoFOBRD.toLocaleString("es-DO", {
+                        minimumFractionDigits: 2,
+                      })}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Total del lote
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Total del lote</p>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">
                       Gastos Distribuidos
                     </label>
                     <div className="text-base font-semibold text-gray-900">
-                      RD$ {selectedItemData.gastosLogisticosRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      RD${" "}
+                      {selectedItemData.gastosLogisticosRD.toLocaleString("es-DO", {
+                        minimumFractionDigits: 2,
+                      })}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       {selectedItemData.porcentajeFOB.toFixed(1)}% del total
@@ -392,11 +427,9 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                       Costo Unitario
                     </label>
                     <div className="text-base font-semibold text-blue-700">
-                      RD$ {costoUnitarioRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      RD$ {costoUnitarioRD.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Por unidad
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Por unidad</p>
                   </div>
                 </div>
                 {cantidadRecibidaValue && cantidadRecibidaValue > 0 && (
@@ -406,7 +439,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                         Costo Total de Esta Recepción:
                       </label>
                       <div className="text-lg font-bold text-green-700">
-                        RD$ {costoTotalRecepcionRD.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        RD${" "}
+                        {costoTotalRecepcionRD.toLocaleString("es-DO", {
+                          minimumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
@@ -421,7 +457,8 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
             {ocIdValue && !itemIdValue && selectedOcData && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <p className="text-sm text-yellow-800">
-                  No has seleccionado un producto específico. El costo se calculará como promedio de toda la orden.
+                  No has seleccionado un producto específico. El costo se calculará como promedio de
+                  toda la orden.
                 </p>
               </div>
             )}
@@ -437,9 +474,7 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                 rows={3}
                 disabled={isSubmitting}
               />
-              {errors.notas && (
-                <p className="text-xs text-red-600 mt-1">{errors.notas.message}</p>
-              )}
+              {errors.notas && <p className="text-xs text-red-600 mt-1">{errors.notas.message}</p>}
             </div>
           </div>
 
@@ -453,8 +488,10 @@ export function InventarioRecibidoForm({ open, onOpenChange, onSuccess, inventar
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
+              ) : isEditMode ? (
+                "Actualizar Recepción"
               ) : (
-                isEditMode ? "Actualizar Recepción" : "Crear Recepción"
+                "Crear Recepción"
               )}
             </Button>
           </DialogFooter>

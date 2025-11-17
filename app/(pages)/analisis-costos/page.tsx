@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -63,13 +63,13 @@ export default function AnalisisCostosPage() {
       return
     }
 
-    const dataToExport = productos.map((producto) => ({
-      "SKU": producto.sku,
-      "Producto": producto.nombre,
-      "OC": producto.oc,
-      "Proveedor": producto.proveedor,
-      "Cantidad": producto.cantidad,
-      "Bodega": producto.bodega,
+    const dataToExport = productos.map(producto => ({
+      SKU: producto.sku,
+      Producto: producto.nombre,
+      OC: producto.oc,
+      Proveedor: producto.proveedor,
+      Cantidad: producto.cantidad,
+      Bodega: producto.bodega,
       "FOB (USD)": producto.desglose.costoFobUsd,
       "Tasa Cambio": producto.desglose.tasaCambio,
       "FOB (RD$)": producto.desglose.costoFobRD,
@@ -206,7 +206,8 @@ export default function AnalisisCostosPage() {
                       </div>
                       <div className="mt-3 pt-3 border-t border-blue-200">
                         <p className="text-xs text-blue-600">
-                          <strong>Métodos de distribución:</strong> Los costos se distribuyen profesionalmente según peso, volumen, o valor FOB del producto.
+                          <strong>Métodos de distribución:</strong> Los costos se distribuyen
+                          profesionalmente según peso, volumen, o valor FOB del producto.
                         </p>
                       </div>
                     </div>

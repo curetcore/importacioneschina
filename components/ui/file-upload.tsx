@@ -127,7 +127,7 @@ export function FileUpload({
         throw new Error(result.error || "Error al eliminar el archivo")
       }
 
-      onChange(attachments.filter((a) => a.url !== attachment.url))
+      onChange(attachments.filter(a => a.url !== attachment.url))
 
       addToast({
         type: "success",
@@ -148,7 +148,7 @@ export function FileUpload({
     const k = 1024
     const sizes = ["Bytes", "KB", "MB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i]
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
   }
 
   const getFileIcon = (tipo: string) => {
@@ -189,7 +189,8 @@ export function FileUpload({
               <span className="font-medium text-red-600">Archivos no permitidos</span>
             ) : (
               <>
-                <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra archivos aquí
+                <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra
+                archivos aquí
               </>
             )}
           </div>
@@ -214,9 +215,7 @@ export function FileUpload({
                   <div className="text-sm font-medium text-gray-900 truncate">
                     {attachment.nombre}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {formatFileSize(attachment.size)}
-                  </div>
+                  <div className="text-xs text-gray-500">{formatFileSize(attachment.size)}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">

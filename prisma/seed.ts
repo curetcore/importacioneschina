@@ -1,22 +1,22 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client"
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-  console.log("🌱 Iniciando seed data...");
+  console.log("🌱 Iniciando seed data...")
 
   // Limpiar BD
-  console.log("🧹 Limpiando base de datos...");
-  await prisma.inventarioRecibido.deleteMany();
-  await prisma.gastosLogisticos.deleteMany();
-  await prisma.pagosChina.deleteMany();
-  await prisma.oCChinaItem.deleteMany();
-  await prisma.oCChina.deleteMany();
-  await prisma.configuracion.deleteMany();
-  await prisma.user.deleteMany();
+  console.log("🧹 Limpiando base de datos...")
+  await prisma.inventarioRecibido.deleteMany()
+  await prisma.gastosLogisticos.deleteMany()
+  await prisma.pagosChina.deleteMany()
+  await prisma.oCChinaItem.deleteMany()
+  await prisma.oCChina.deleteMany()
+  await prisma.configuracion.deleteMany()
+  await prisma.user.deleteMany()
 
   // Crear datos de configuración
-  console.log("⚙️ Creando configuraciones del sistema...");
+  console.log("⚙️ Creando configuraciones del sistema...")
 
   const configuraciones = [
     // Proveedores
@@ -65,7 +65,7 @@ async function main() {
     { categoria: "tiposGasto", valor: "Transporte local", orden: 7 },
     { categoria: "tiposGasto", valor: "Inspección", orden: 8 },
     { categoria: "tiposGasto", valor: "Otros gastos", orden: 9 },
-  ];
+  ]
 
   for (const config of configuraciones) {
     await prisma.configuracion.create({
@@ -75,14 +75,14 @@ async function main() {
         orden: config.orden,
         activo: true,
       },
-    });
+    })
   }
-  console.log(`✅ ${configuraciones.length} configuraciones creadas`);
+  console.log(`✅ ${configuraciones.length} configuraciones creadas`)
 
   // Crear usuario administrador
-  console.log("👤 Creando usuario administrador...");
-  const bcrypt = await import("bcryptjs");
-  const hashedPassword = await bcrypt.hash("admin123", 10);
+  console.log("👤 Creando usuario administrador...")
+  const bcrypt = await import("bcryptjs")
+  const hashedPassword = await bcrypt.hash("admin123", 10)
 
   await prisma.user.create({
     data: {
@@ -92,40 +92,40 @@ async function main() {
       role: "ADMIN",
       activo: true,
     },
-  });
-  console.log("✅ Usuario admin creado (email: admin@curet.com, password: admin123)");
+  })
+  console.log("✅ Usuario admin creado (email: admin@curet.com, password: admin123)")
 
   // Crear 10 OCs de ejemplo con items
-  console.log("📦 Creando órdenes de compra con productos...");
+  console.log("📦 Creando órdenes de compra con productos...")
 
   // Obtener proveedores desde configuración
   const proveedoresConfig = await prisma.configuracion.findMany({
     where: { categoria: "proveedores", activo: true },
     orderBy: { orden: "asc" },
-  });
-  const proveedores = proveedoresConfig.map((p) => p.valor);
+  })
+  const proveedores = proveedoresConfig.map(p => p.valor)
 
   // Obtener categorías desde configuración
   const categoriasConfig = await prisma.configuracion.findMany({
     where: { categoria: "categorias", activo: true },
     orderBy: { orden: "asc" },
-  });
-  const categorias = categoriasConfig.map((c) => c.valor);
-  const skuPrefixes = ["ZAP", "CAR", "CIN", "ACC", "ROP"];
+  })
+  const categorias = categoriasConfig.map(c => c.valor)
+  const skuPrefixes = ["ZAP", "CAR", "CIN", "ACC", "ROP"]
 
-  const ocs = [];
+  const ocs = []
   for (let i = 1; i <= 10; i++) {
-    const categoria = categorias[Math.floor(Math.random() * categorias.length)];
-    const skuPrefix = skuPrefixes[categorias.indexOf(categoria)];
+    const categoria = categorias[Math.floor(Math.random() * categorias.length)]
+    const skuPrefix = skuPrefixes[categorias.indexOf(categoria)]
 
     // Crear entre 2-5 items por OC
-    const numItems = 2 + Math.floor(Math.random() * 4);
-    const items = [];
+    const numItems = 2 + Math.floor(Math.random() * 4)
+    const items = []
 
     for (let j = 0; j < numItems; j++) {
-      const cantidadTotal = Math.floor(100 + Math.random() * 300); // 100-400 unidades
-      const precioUnitarioUSD = 8 + Math.random() * 12; // $8-20 por unidad
-      const subtotalUSD = cantidadTotal * precioUnitarioUSD;
+      const cantidadTotal = Math.floor(100 + Math.random() * 300) // 100-400 unidades
+      const precioUnitarioUSD = 8 + Math.random() * 12 // $8-20 por unidad
+      const subtotalUSD = cantidadTotal * precioUnitarioUSD
 
       const itemData: any = {
         sku: `${skuPrefix}-${String(i).padStart(3, "0")}-${String(j + 1).padStart(2, "0")}`,
@@ -136,14 +136,14 @@ async function main() {
         cantidadTotal,
         precioUnitarioUSD: new Prisma.Decimal(precioUnitarioUSD.toFixed(4)),
         subtotalUSD: new Prisma.Decimal(subtotalUSD.toFixed(2)),
-      };
+      }
 
       // Solo agregar tallaDistribucion si es el primer item (como ejemplo)
       if (j === 0) {
-        itemData.tallaDistribucion = { "S": 30, "M": 40, "L": 30 };
+        itemData.tallaDistribucion = { S: 30, M: 40, L: 30 }
       }
 
-      items.push(itemData);
+      items.push(itemData)
     }
 
     const oc = await prisma.oCChina.create({
@@ -160,22 +160,27 @@ async function main() {
       include: {
         items: true,
       },
-    });
-    ocs.push(oc);
+    })
+    ocs.push(oc)
   }
-  console.log(`✅ ${ocs.length} órdenes de compra creadas con ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`);
+  console.log(
+    `✅ ${ocs.length} órdenes de compra creadas con ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`
+  )
 
   // Crear pagos para cada OC
-  console.log("💰 Creando pagos...");
-  let pagoCount = 0;
+  console.log("💰 Creando pagos...")
+  let pagoCount = 0
   for (const oc of ocs) {
-    const costoFOBTotal = oc.items.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0);
+    const costoFOBTotal = oc.items.reduce(
+      (sum, item) => sum + parseFloat(item.subtotalUSD.toString()),
+      0
+    )
 
     // Pago 1: Anticipo 50% en USD
-    const montoAnticipo = new Prisma.Decimal(costoFOBTotal * 0.5);
-    const tasaUSD = new Prisma.Decimal(58.5);
-    const montoRD1 = new Prisma.Decimal(parseFloat(montoAnticipo.toString()) * 58.5);
-    const comision1 = new Prisma.Decimal(500);
+    const montoAnticipo = new Prisma.Decimal(costoFOBTotal * 0.5)
+    const tasaUSD = new Prisma.Decimal(58.5)
+    const montoRD1 = new Prisma.Decimal(parseFloat(montoAnticipo.toString()) * 58.5)
+    const comision1 = new Prisma.Decimal(500)
 
     await prisma.pagosChina.create({
       data: {
@@ -191,14 +196,14 @@ async function main() {
         montoRD: montoRD1,
         montoRDNeto: new Prisma.Decimal(parseFloat(montoRD1.toString()) + 500),
       },
-    });
-    pagoCount++;
+    })
+    pagoCount++
 
     // Pago 2: Pago final 50% en CNY
-    const montoCNY = new Prisma.Decimal((costoFOBTotal * 0.5) * 7.3); // USD a CNY
-    const tasaCNY = new Prisma.Decimal(8.2);
-    const montoRD2 = new Prisma.Decimal(parseFloat(montoCNY.toString()) * 8.2);
-    const comision2 = new Prisma.Decimal(250);
+    const montoCNY = new Prisma.Decimal(costoFOBTotal * 0.5 * 7.3) // USD a CNY
+    const tasaCNY = new Prisma.Decimal(8.2)
+    const montoRD2 = new Prisma.Decimal(parseFloat(montoCNY.toString()) * 8.2)
+    const comision2 = new Prisma.Decimal(250)
 
     await prisma.pagosChina.create({
       data: {
@@ -214,32 +219,32 @@ async function main() {
         montoRD: montoRD2,
         montoRDNeto: new Prisma.Decimal(parseFloat(montoRD2.toString()) + 250),
       },
-    });
-    pagoCount++;
+    })
+    pagoCount++
   }
-  console.log(`✅ ${pagoCount} pagos creados`);
+  console.log(`✅ ${pagoCount} pagos creados`)
 
   // Crear gastos logísticos
-  console.log("🚚 Creando gastos logísticos...");
+  console.log("🚚 Creando gastos logísticos...")
 
   // Obtener tipos de gasto desde configuración
   const tiposGastoConfig = await prisma.configuracion.findMany({
     where: { categoria: "tiposGasto", activo: true },
     orderBy: { orden: "asc" },
-  });
-  const tiposGasto = tiposGastoConfig.map((t) => t.valor);
+  })
+  const tiposGasto = tiposGastoConfig.map(t => t.valor)
 
   // Obtener métodos de pago desde configuración
   const metodosPagoConfig = await prisma.configuracion.findMany({
     where: { categoria: "metodosPago", activo: true },
     orderBy: { orden: "asc" },
-  });
-  const metodosPago = metodosPagoConfig.map((m) => m.valor);
+  })
+  const metodosPago = metodosPagoConfig.map(m => m.valor)
 
-  let gastoCount = 0;
+  let gastoCount = 0
   for (const oc of ocs) {
     // 2-3 gastos por OC
-    const numGastos = 2 + Math.floor(Math.random() * 2);
+    const numGastos = 2 + Math.floor(Math.random() * 2)
     for (let j = 0; j < numGastos; j++) {
       await prisma.gastosLogisticos.create({
         data: {
@@ -252,29 +257,29 @@ async function main() {
           montoRD: new Prisma.Decimal(3000 + Math.random() * 12000), // RD$ 3,000-15,000
           notas: `Gasto logístico ${j + 1} para ${oc.oc}`,
         },
-      });
-      gastoCount++;
+      })
+      gastoCount++
     }
   }
-  console.log(`✅ ${gastoCount} gastos logísticos creados`);
+  console.log(`✅ ${gastoCount} gastos logísticos creados`)
 
   // Crear recepciones de inventario (vinculadas a items específicos)
-  console.log("📥 Creando recepciones de inventario...");
+  console.log("📥 Creando recepciones de inventario...")
 
   // Obtener bodegas desde configuración
   const bodegasConfig = await prisma.configuracion.findMany({
     where: { categoria: "bodegas", activo: true },
     orderBy: { orden: "asc" },
-  });
-  const bodegas = bodegasConfig.map((b) => b.valor);
+  })
+  const bodegas = bodegasConfig.map(b => b.valor)
 
-  let recepcionCount = 0;
+  let recepcionCount = 0
 
   for (const oc of ocs) {
     // Para cada item, recibir entre 90-100% de lo ordenado
     for (let itemIndex = 0; itemIndex < oc.items.length; itemIndex++) {
-      const item = oc.items[itemIndex];
-      const cantidadRecibida = Math.floor(item.cantidadTotal * (0.90 + Math.random() * 0.10));
+      const item = oc.items[itemIndex]
+      const cantidadRecibida = Math.floor(item.cantidadTotal * (0.9 + Math.random() * 0.1))
 
       await prisma.inventarioRecibido.create({
         data: {
@@ -288,31 +293,31 @@ async function main() {
           costoTotalRecepcionRD: new Prisma.Decimal(0), // Se calculará en tiempo real
           notas: `Recepción de ${item.nombre} - ${cantidadRecibida} unidades`,
         },
-      });
-      recepcionCount++;
+      })
+      recepcionCount++
     }
   }
-  console.log(`✅ ${recepcionCount} recepciones de inventario creadas`);
+  console.log(`✅ ${recepcionCount} recepciones de inventario creadas`)
 
-  console.log("\n✨ Seed data completado exitosamente!");
-  console.log(`\n📊 Resumen:`);
-  console.log(`   - ${configuraciones.length} configuraciones del sistema`);
-  console.log(`   - 1 usuario administrador`);
-  console.log(`   - ${ocs.length} órdenes de compra`);
-  console.log(`   - ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`);
-  console.log(`   - ${pagoCount} pagos`);
-  console.log(`   - ${gastoCount} gastos logísticos`);
-  console.log(`   - ${recepcionCount} recepciones de inventario`);
-  console.log(`\n🔑 Credenciales de acceso:`);
-  console.log(`   Email: admin@curet.com`);
-  console.log(`   Password: admin123`);
+  console.log("\n✨ Seed data completado exitosamente!")
+  console.log(`\n📊 Resumen:`)
+  console.log(`   - ${configuraciones.length} configuraciones del sistema`)
+  console.log(`   - 1 usuario administrador`)
+  console.log(`   - ${ocs.length} órdenes de compra`)
+  console.log(`   - ${ocs.reduce((sum, oc) => sum + oc.items.length, 0)} productos`)
+  console.log(`   - ${pagoCount} pagos`)
+  console.log(`   - ${gastoCount} gastos logísticos`)
+  console.log(`   - ${recepcionCount} recepciones de inventario`)
+  console.log(`\n🔑 Credenciales de acceso:`)
+  console.log(`   Email: admin@curet.com`)
+  console.log(`   Password: admin123`)
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Error en seed:", e);
-    process.exit(1);
+  .catch(e => {
+    console.error("❌ Error en seed:", e)
+    process.exit(1)
   })
   .finally(async () => {
-    await prisma.$disconnect();
-  });
+    await prisma.$disconnect()
+  })

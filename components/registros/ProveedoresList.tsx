@@ -67,7 +67,7 @@ export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProp
   const renderStars = (rating: number) => {
     return (
       <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <Star
             key={star}
             className={`w-3 h-3 ${
@@ -80,11 +80,7 @@ export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProp
   }
 
   if (loading) {
-    return (
-      <div className="text-center py-12 text-sm text-gray-500">
-        Cargando proveedores...
-      </div>
-    )
+    return <div className="text-center py-12 text-sm text-gray-500">Cargando proveedores...</div>
   }
 
   return (
@@ -115,7 +111,7 @@ export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProp
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {proveedores.map((proveedor) => (
+          {proveedores.map(proveedor => (
             <Card key={proveedor.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -165,7 +161,9 @@ export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProp
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>{proveedor.ciudad ? `${proveedor.ciudad}, ${proveedor.pais}` : proveedor.pais}</span>
+                  <span>
+                    {proveedor.ciudad ? `${proveedor.ciudad}, ${proveedor.pais}` : proveedor.pais}
+                  </span>
                 </div>
 
                 {proveedor.categoriaProductos && (

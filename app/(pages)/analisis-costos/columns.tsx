@@ -32,9 +32,7 @@ export const columns: ColumnDef<ProductoCosto>[] = [
   {
     accessorKey: "sku",
     header: "SKU",
-    cell: ({ row }) => (
-      <div className="font-medium text-gray-900">{row.getValue("sku")}</div>
-    ),
+    cell: ({ row }) => <div className="font-medium text-gray-900">{row.getValue("sku")}</div>,
   },
   {
     accessorKey: "nombre",
@@ -53,11 +51,7 @@ export const columns: ColumnDef<ProductoCosto>[] = [
   {
     accessorKey: "cantidad",
     header: () => <div className="text-right">Cant.</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">
-        {row.getValue("cantidad")}
-      </div>
-    ),
+    cell: ({ row }) => <div className="text-right font-medium">{row.getValue("cantidad")}</div>,
   },
   {
     id: "costoFobUsd",
@@ -67,9 +61,7 @@ export const columns: ColumnDef<ProductoCosto>[] = [
         <div className="font-medium text-gray-900">
           {formatCurrency(row.original.desglose.costoFobUsd, "USD")}
         </div>
-        <div className="text-xs text-gray-500">
-          @{row.original.desglose.tasaCambio.toFixed(2)}
-        </div>
+        <div className="text-xs text-gray-500">@{row.original.desglose.tasaCambio.toFixed(2)}</div>
       </div>
     ),
   },

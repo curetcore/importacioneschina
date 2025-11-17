@@ -23,11 +23,8 @@ export function exportToExcel<T extends Record<string, any>>(
 
   // Ajustar ancho de columnas automáticamente
   const maxWidth = 50
-  const columnWidths = Object.keys(data[0]).map((key) => {
-    const maxLength = Math.max(
-      key.length,
-      ...data.map((row) => String(row[key] || "").length)
-    )
+  const columnWidths = Object.keys(data[0]).map(key => {
+    const maxLength = Math.max(key.length, ...data.map(row => String(row[key] || "").length))
     return { wch: Math.min(maxLength + 2, maxWidth) }
   })
   worksheet["!cols"] = columnWidths
@@ -84,8 +81,8 @@ export function exportToPDF<T extends Record<string, any>>(
 
   // Extraer headers y datos
   const headers = Object.keys(data[0])
-  const rows = data.map((row) =>
-    headers.map((header) => {
+  const rows = data.map(row =>
+    headers.map(header => {
       const value = row[header]
       if (value === null || value === undefined) return ""
       if (typeof value === "object") return JSON.stringify(value)

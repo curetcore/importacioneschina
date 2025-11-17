@@ -4,7 +4,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Calendar } from "lucide-react"
 
-export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+export interface DatePickerProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {
   value?: Date | string
   onChange?: (date: Date | null) => void
   error?: string
@@ -21,7 +22,7 @@ const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
         const date = value instanceof Date ? value : new Date(value)
         if (!isNaN(date.getTime())) {
           // Format as YYYY-MM-DD for input[type="date"]
-          const formatted = date.toISOString().split('T')[0]
+          const formatted = date.toISOString().split("T")[0]
           setInputValue(formatted)
         }
       } else {
@@ -67,9 +68,7 @@ const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
           />
           <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         </div>
-        {error && (
-          <p className="mt-1 text-xs text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       </div>
     )
   }

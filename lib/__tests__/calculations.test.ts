@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+import { Prisma } from "@prisma/client"
 import {
   calcularMontoRD,
   calcularMontoRDNeto,
@@ -12,179 +12,179 @@ import {
   calcularTasaCambioPromedio,
   distribuirGastosLogisticos,
   calcularResumenFinanciero,
-} from '../calculations'
+} from "../calculations"
 
-describe('Cálculos Financieros', () => {
-  describe('calcularMontoRD', () => {
-    it('debe retornar el mismo monto para RD$', () => {
-      expect(calcularMontoRD(1000, 'RD$')).toBe(1000)
+describe("Cálculos Financieros", () => {
+  describe("calcularMontoRD", () => {
+    it("debe retornar el mismo monto para RD$", () => {
+      expect(calcularMontoRD(1000, "RD$")).toBe(1000)
     })
 
-    it('debe convertir USD a RD$ correctamente', () => {
-      expect(calcularMontoRD(100, 'USD', 60)).toBe(6000)
+    it("debe convertir USD a RD$ correctamente", () => {
+      expect(calcularMontoRD(100, "USD", 60)).toBe(6000)
     })
 
-    it('debe manejar Prisma.Decimal', () => {
+    it("debe manejar Prisma.Decimal", () => {
       const decimal = new Prisma.Decimal(100)
-      expect(calcularMontoRD(decimal, 'USD', 58.5)).toBe(5850)
+      expect(calcularMontoRD(decimal, "USD", 58.5)).toBe(5850)
     })
 
-    it('debe retornar 0 si tasa de cambio es 0', () => {
-      expect(calcularMontoRD(100, 'USD', 0)).toBe(0)
+    it("debe retornar 0 si tasa de cambio es 0", () => {
+      expect(calcularMontoRD(100, "USD", 0)).toBe(0)
     })
 
-    it('debe retornar 0 si tasa de cambio es negativa', () => {
-      expect(calcularMontoRD(100, 'USD', -10)).toBe(0)
+    it("debe retornar 0 si tasa de cambio es negativa", () => {
+      expect(calcularMontoRD(100, "USD", -10)).toBe(0)
     })
 
-    it('debe manejar decimales con precisión', () => {
+    it("debe manejar decimales con precisión", () => {
       // Evitar errores de floating point
-      const resultado = calcularMontoRD(1000.33, 'USD', 60.5)
+      const resultado = calcularMontoRD(1000.33, "USD", 60.5)
       expect(resultado).toBeCloseTo(60519.97, 2)
     })
   })
 
-  describe('calcularMontoRDNeto', () => {
-    it('debe sumar la comisión al monto', () => {
+  describe("calcularMontoRDNeto", () => {
+    it("debe sumar la comisión al monto", () => {
       expect(calcularMontoRDNeto(10000, 500)).toBe(10500)
     })
 
-    it('debe manejar Prisma.Decimal', () => {
+    it("debe manejar Prisma.Decimal", () => {
       const monto = new Prisma.Decimal(58500)
       const comision = new Prisma.Decimal(500)
       expect(calcularMontoRDNeto(monto, comision)).toBe(59000)
     })
 
-    it('debe manejar comisión cero', () => {
+    it("debe manejar comisión cero", () => {
       expect(calcularMontoRDNeto(1000, 0)).toBe(1000)
     })
 
-    it('debe calcular correctamente con decimales', () => {
-      expect(calcularMontoRDNeto(1000.50, 50.25)).toBeCloseTo(1050.75, 2)
+    it("debe calcular correctamente con decimales", () => {
+      expect(calcularMontoRDNeto(1000.5, 50.25)).toBeCloseTo(1050.75, 2)
     })
   })
 
-  describe('calcularTotalInversion', () => {
-    it('debe sumar pagos y gastos correctamente', () => {
+  describe("calcularTotalInversion", () => {
+    it("debe sumar pagos y gastos correctamente", () => {
       expect(calcularTotalInversion(10000, 5000)).toBe(15000)
     })
 
-    it('debe manejar valores negativos convirtiéndolos a 0', () => {
+    it("debe manejar valores negativos convirtiéndolos a 0", () => {
       expect(calcularTotalInversion(-1000, 5000)).toBe(5000)
       expect(calcularTotalInversion(10000, -2000)).toBe(10000)
       expect(calcularTotalInversion(-1000, -2000)).toBe(0)
     })
 
-    it('debe manejar ceros', () => {
+    it("debe manejar ceros", () => {
       expect(calcularTotalInversion(0, 0)).toBe(0)
       expect(calcularTotalInversion(0, 5000)).toBe(5000)
       expect(calcularTotalInversion(10000, 0)).toBe(10000)
     })
   })
 
-  describe('calcularCostoUnitarioFinal', () => {
-    it('debe calcular costo unitario correctamente', () => {
+  describe("calcularCostoUnitarioFinal", () => {
+    it("debe calcular costo unitario correctamente", () => {
       expect(calcularCostoUnitarioFinal(10000, 100)).toBe(100)
     })
 
-    it('debe retornar 0 si cantidad es 0', () => {
+    it("debe retornar 0 si cantidad es 0", () => {
       expect(calcularCostoUnitarioFinal(10000, 0)).toBe(0)
     })
 
-    it('debe retornar 0 si cantidad es negativa', () => {
+    it("debe retornar 0 si cantidad es negativa", () => {
       expect(calcularCostoUnitarioFinal(10000, -5)).toBe(0)
     })
 
-    it('debe retornar 0 si inversión es negativa', () => {
+    it("debe retornar 0 si inversión es negativa", () => {
       expect(calcularCostoUnitarioFinal(-1000, 100)).toBe(0)
     })
 
-    it('debe manejar decimales con precisión', () => {
+    it("debe manejar decimales con precisión", () => {
       const resultado = calcularCostoUnitarioFinal(1000.33, 37)
       expect(resultado).toBeCloseTo(27.04, 2)
     })
   })
 
-  describe('calcularDiferenciaUnidades', () => {
-    it('debe calcular diferencia correctamente', () => {
+  describe("calcularDiferenciaUnidades", () => {
+    it("debe calcular diferencia correctamente", () => {
       expect(calcularDiferenciaUnidades(100, 80)).toBe(20)
     })
 
-    it('debe retornar negativo si se recibió más de lo ordenado', () => {
+    it("debe retornar negativo si se recibió más de lo ordenado", () => {
       expect(calcularDiferenciaUnidades(100, 120)).toBe(-20)
     })
 
-    it('debe retornar 0 si son iguales', () => {
+    it("debe retornar 0 si son iguales", () => {
       expect(calcularDiferenciaUnidades(100, 100)).toBe(0)
     })
   })
 
-  describe('calcularPorcentajeRecepcion', () => {
-    it('debe calcular 100% si se recibió todo', () => {
+  describe("calcularPorcentajeRecepcion", () => {
+    it("debe calcular 100% si se recibió todo", () => {
       expect(calcularPorcentajeRecepcion(100, 100)).toBe(100)
     })
 
-    it('debe calcular 50% si se recibió la mitad', () => {
+    it("debe calcular 50% si se recibió la mitad", () => {
       expect(calcularPorcentajeRecepcion(50, 100)).toBe(50)
     })
 
-    it('debe retornar 0 si cantidad ordenada es 0', () => {
+    it("debe retornar 0 si cantidad ordenada es 0", () => {
       expect(calcularPorcentajeRecepcion(50, 0)).toBe(0)
     })
 
-    it('debe retornar 0 si cantidad recibida es negativa', () => {
+    it("debe retornar 0 si cantidad recibida es negativa", () => {
       expect(calcularPorcentajeRecepcion(-10, 100)).toBe(0)
     })
 
-    it('debe manejar decimales redondeados', () => {
+    it("debe manejar decimales redondeados", () => {
       expect(calcularPorcentajeRecepcion(33, 100)).toBe(33)
       expect(calcularPorcentajeRecepcion(33.33, 100)).toBe(33.33)
     })
   })
 
-  describe('calcularCostoTotalRecepcion', () => {
-    it('debe multiplicar cantidad por costo unitario', () => {
+  describe("calcularCostoTotalRecepcion", () => {
+    it("debe multiplicar cantidad por costo unitario", () => {
       expect(calcularCostoTotalRecepcion(10, 100)).toBe(1000)
     })
 
-    it('debe retornar 0 si cantidad es negativa', () => {
+    it("debe retornar 0 si cantidad es negativa", () => {
       expect(calcularCostoTotalRecepcion(-10, 100)).toBe(0)
     })
 
-    it('debe retornar 0 si costo es negativo', () => {
+    it("debe retornar 0 si costo es negativo", () => {
       expect(calcularCostoTotalRecepcion(10, -100)).toBe(0)
     })
 
-    it('debe manejar decimales correctamente', () => {
+    it("debe manejar decimales correctamente", () => {
       expect(calcularCostoTotalRecepcion(25, 43.75)).toBeCloseTo(1093.75, 2)
     })
   })
 
-  describe('calcularCostoFOBUnitario', () => {
-    it('debe calcular costo FOB unitario correctamente', () => {
+  describe("calcularCostoFOBUnitario", () => {
+    it("debe calcular costo FOB unitario correctamente", () => {
       expect(calcularCostoFOBUnitario(1000, 100)).toBe(10)
     })
 
-    it('debe retornar 0 si cantidad es 0', () => {
+    it("debe retornar 0 si cantidad es 0", () => {
       expect(calcularCostoFOBUnitario(1000, 0)).toBe(0)
     })
 
-    it('debe retornar 0 si cantidad es negativa', () => {
+    it("debe retornar 0 si cantidad es negativa", () => {
       expect(calcularCostoFOBUnitario(1000, -10)).toBe(0)
     })
 
-    it('debe retornar 0 si total es negativo', () => {
+    it("debe retornar 0 si total es negativo", () => {
       expect(calcularCostoFOBUnitario(-1000, 100)).toBe(0)
     })
 
-    it('debe manejar Prisma.Decimal', () => {
+    it("debe manejar Prisma.Decimal", () => {
       const decimal = new Prisma.Decimal(2500)
       expect(calcularCostoFOBUnitario(decimal, 50)).toBe(50)
     })
   })
 
-  describe('calcularOC - Función Integradora', () => {
-    it('debe calcular correctamente todos los valores de una OC', () => {
+  describe("calcularOC - Función Integradora", () => {
+    it("debe calcular correctamente todos los valores de una OC", () => {
       const resultado = calcularOC({
         costoFOBTotalUSD: 1000,
         cantidadOrdenada: 100,
@@ -192,14 +192,8 @@ describe('Cálculos Financieros', () => {
           { montoRDNeto: new Prisma.Decimal(60000) },
           { montoRDNeto: new Prisma.Decimal(5000) },
         ],
-        gastos: [
-          { montoRD: new Prisma.Decimal(2000) },
-          { montoRD: new Prisma.Decimal(3000) },
-        ],
-        inventario: [
-          { cantidadRecibida: 50 },
-          { cantidadRecibida: 30 },
-        ],
+        gastos: [{ montoRD: new Prisma.Decimal(2000) }, { montoRD: new Prisma.Decimal(3000) }],
+        inventario: [{ cantidadRecibida: 50 }, { cantidadRecibida: 30 }],
       })
 
       expect(resultado.totalPagosRD).toBe(65000)
@@ -212,7 +206,7 @@ describe('Cálculos Financieros', () => {
       expect(resultado.porcentajeRecepcion).toBe(80) // 80/100
     })
 
-    it('debe manejar OC sin recepciones', () => {
+    it("debe manejar OC sin recepciones", () => {
       const resultado = calcularOC({
         costoFOBTotalUSD: 1000,
         cantidadOrdenada: 100,
@@ -226,7 +220,7 @@ describe('Cálculos Financieros', () => {
       expect(resultado.porcentajeRecepcion).toBe(0)
     })
 
-    it('debe manejar pagos con montoRDNeto null', () => {
+    it("debe manejar pagos con montoRDNeto null", () => {
       const resultado = calcularOC({
         costoFOBTotalUSD: 1000,
         cantidadOrdenada: 100,
@@ -242,18 +236,18 @@ describe('Cálculos Financieros', () => {
     })
   })
 
-  describe('calcularTasaCambioPromedio', () => {
-    it('debe calcular tasa promedio ponderada correctamente', () => {
+  describe("calcularTasaCambioPromedio", () => {
+    it("debe calcular tasa promedio ponderada correctamente", () => {
       const pagos = [
         {
           montoOriginal: new Prisma.Decimal(500),
-          moneda: 'USD',
+          moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(30000),
         },
         {
           montoOriginal: new Prisma.Decimal(500),
-          moneda: 'USD',
+          moneda: "USD",
           tasaCambio: new Prisma.Decimal(58),
           montoRDNeto: new Prisma.Decimal(29000),
         },
@@ -263,17 +257,17 @@ describe('Cálculos Financieros', () => {
       expect(resultado).toBe(59) // (60 + 58) / 2
     })
 
-    it('debe ignorar pagos en RD$', () => {
+    it("debe ignorar pagos en RD$", () => {
       const pagos = [
         {
           montoOriginal: new Prisma.Decimal(1000),
-          moneda: 'RD$',
+          moneda: "RD$",
           tasaCambio: new Prisma.Decimal(1),
           montoRDNeto: new Prisma.Decimal(1000),
         },
         {
           montoOriginal: new Prisma.Decimal(100),
-          moneda: 'USD',
+          moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(6000),
         },
@@ -283,15 +277,15 @@ describe('Cálculos Financieros', () => {
       expect(resultado).toBe(60) // Solo cuenta el USD
     })
 
-    it('debe retornar 0 si no hay pagos', () => {
+    it("debe retornar 0 si no hay pagos", () => {
       expect(calcularTasaCambioPromedio([])).toBe(0)
     })
 
-    it('debe retornar 0 si no hay pagos con tasa válida', () => {
+    it("debe retornar 0 si no hay pagos con tasa válida", () => {
       const pagos = [
         {
           montoOriginal: new Prisma.Decimal(1000),
-          moneda: 'RD$',
+          moneda: "RD$",
           tasaCambio: new Prisma.Decimal(1),
           montoRDNeto: new Prisma.Decimal(1000),
         },
@@ -301,13 +295,13 @@ describe('Cálculos Financieros', () => {
     })
   })
 
-  describe('distribuirGastosLogisticos', () => {
-    it('debe distribuir gastos proporcionalmente según costo FOB', () => {
+  describe("distribuirGastosLogisticos", () => {
+    it("debe distribuir gastos proporcionalmente según costo FOB", () => {
       const items = [
         {
-          id: '1',
-          sku: 'SKU-001',
-          nombre: 'Producto A',
+          id: "1",
+          sku: "SKU-001",
+          nombre: "Producto A",
           cantidadTotal: 50,
           precioUnitarioUSD: new Prisma.Decimal(10),
           subtotalUSD: new Prisma.Decimal(500),
@@ -317,9 +311,9 @@ describe('Cálculos Financieros', () => {
           tallaDistribucion: null,
         },
         {
-          id: '2',
-          sku: 'SKU-002',
-          nombre: 'Producto B',
+          id: "2",
+          sku: "SKU-002",
+          nombre: "Producto B",
           cantidadTotal: 50,
           precioUnitarioUSD: new Prisma.Decimal(10),
           subtotalUSD: new Prisma.Decimal(500),
@@ -335,7 +329,7 @@ describe('Cálculos Financieros', () => {
       const pagosChina = [
         {
           montoOriginal: new Prisma.Decimal(1000),
-          moneda: 'USD',
+          moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(60000),
         },
@@ -364,12 +358,12 @@ describe('Cálculos Financieros', () => {
       expect(resultado[1].costoUnitarioRD).toBe(610)
     })
 
-    it('debe retornar array vacío si totalFOBUSD es 0', () => {
+    it("debe retornar array vacío si totalFOBUSD es 0", () => {
       const items = [
         {
-          id: '1',
-          sku: 'SKU-001',
-          nombre: 'Producto A',
+          id: "1",
+          sku: "SKU-001",
+          nombre: "Producto A",
           cantidadTotal: 50,
           precioUnitarioUSD: new Prisma.Decimal(0),
           subtotalUSD: new Prisma.Decimal(0),
@@ -384,19 +378,19 @@ describe('Cálculos Financieros', () => {
       expect(resultado).toEqual([])
     })
 
-    it('debe retornar array vacío si items está vacío', () => {
+    it("debe retornar array vacío si items está vacío", () => {
       const resultado = distribuirGastosLogisticos([], [], [])
       expect(resultado).toEqual([])
     })
   })
 
-  describe('calcularResumenFinanciero', () => {
-    it('debe calcular resumen financiero completo correctamente', () => {
+  describe("calcularResumenFinanciero", () => {
+    it("debe calcular resumen financiero completo correctamente", () => {
       const items = [
         {
-          id: '1',
-          sku: 'SKU-001',
-          nombre: 'Producto A',
+          id: "1",
+          sku: "SKU-001",
+          nombre: "Producto A",
           cantidadTotal: 50,
           precioUnitarioUSD: new Prisma.Decimal(10),
           subtotalUSD: new Prisma.Decimal(500),
@@ -406,9 +400,9 @@ describe('Cálculos Financieros', () => {
           tallaDistribucion: null,
         },
         {
-          id: '2',
-          sku: 'SKU-002',
-          nombre: 'Producto B',
+          id: "2",
+          sku: "SKU-002",
+          nombre: "Producto B",
           cantidadTotal: 50,
           precioUnitarioUSD: new Prisma.Decimal(10),
           subtotalUSD: new Prisma.Decimal(500),
@@ -422,7 +416,7 @@ describe('Cálculos Financieros', () => {
       const pagosChina = [
         {
           montoOriginal: new Prisma.Decimal(1000),
-          moneda: 'USD',
+          moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(60000),
         },
@@ -441,7 +435,7 @@ describe('Cálculos Financieros', () => {
       expect(resumen.costoUnitarioPromedioRD).toBe(650) // 65000 / 100
     })
 
-    it('debe manejar división por cero en costo unitario promedio', () => {
+    it("debe manejar división por cero en costo unitario promedio", () => {
       const resumen = calcularResumenFinanciero([], [], [])
 
       expect(resumen.totalUnidades).toBe(0)

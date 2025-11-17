@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -198,7 +198,7 @@ export default function ConfiguracionPage() {
 
           <TabsContent value="configuracion" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {configuraciones.map((config) => (
+              {configuraciones.map(config => (
                 <Card key={config.categoria}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -223,7 +223,7 @@ export default function ConfiguracionPage() {
                           No hay items configurados
                         </div>
                       ) : (
-                        config.items.map((item) => (
+                        config.items.map(item => (
                           <div
                             key={item.id}
                             className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -257,10 +257,12 @@ export default function ConfiguracionPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-start">
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-green-900">✓ Configuración Dinámica Activa</h3>
+                  <h3 className="text-sm font-medium text-green-900">
+                    ✓ Configuración Dinámica Activa
+                  </h3>
                   <p className="text-xs text-green-700 mt-1">
-                    Ahora puedes gestionar las configuraciones directamente desde esta interfaz.
-                    Los cambios se aplicarán inmediatamente en todos los formularios del sistema.
+                    Ahora puedes gestionar las configuraciones directamente desde esta interfaz. Los
+                    cambios se aplicarán inmediatamente en todos los formularios del sistema.
                   </p>
                 </div>
               </div>
@@ -277,11 +279,11 @@ export default function ConfiguracionPage() {
                 setProveedorToEdit(null)
                 setProveedorFormOpen(true)
               }}
-              onEdit={(proveedor) => {
+              onEdit={proveedor => {
                 setProveedorToEdit(proveedor)
                 setProveedorFormOpen(true)
               }}
-              onDelete={(proveedor) => {
+              onDelete={proveedor => {
                 setProveedorToDelete(proveedor)
               }}
             />
@@ -302,7 +304,7 @@ export default function ConfiguracionPage() {
 
       <ConfirmDialog
         open={!!configToDelete}
-        onOpenChange={(open) => !open && setConfigToDelete(null)}
+        onOpenChange={open => !open && setConfigToDelete(null)}
         onConfirm={handleDelete}
         title="Eliminar Configuración"
         description={`¿Estás seguro de eliminar "${configToDelete?.valor}"? Esta acción no se puede deshacer.`}
@@ -314,7 +316,7 @@ export default function ConfiguracionPage() {
 
       <ProveedorForm
         open={proveedorFormOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setProveedorFormOpen(open)
           if (!open) setProveedorToEdit(null)
         }}
@@ -326,7 +328,7 @@ export default function ConfiguracionPage() {
 
       <ConfirmDialog
         open={!!proveedorToDelete}
-        onOpenChange={(open) => !open && setProveedorToDelete(null)}
+        onOpenChange={open => !open && setProveedorToDelete(null)}
         onConfirm={handleDeleteProveedor}
         title="Eliminar Proveedor"
         description={`¿Estás seguro de eliminar "${proveedorToDelete?.nombre}"? El proveedor será marcado como inactivo.`}

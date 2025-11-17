@@ -5,39 +5,39 @@ import { prisma } from "@/lib/prisma"
 
 // Rate limiting simple en memoria (Problema #10)
 // Para producción, considerar usar Redis o similar
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
 
 function checkRateLimit(email: string): boolean {
-  const now = Date.now();
-  const attempt = loginAttempts.get(email);
+  const now = Date.now()
+  const attempt = loginAttempts.get(email)
 
   // Limpiar intentos expirados
   if (attempt && now > attempt.resetAt) {
-    loginAttempts.delete(email);
-    return true;
+    loginAttempts.delete(email)
+    return true
   }
 
   // Si no hay intentos previos o están expirados, permitir
   if (!attempt) {
-    loginAttempts.set(email, { count: 1, resetAt: now + 15 * 60 * 1000 }); // 15 minutos
-    return true;
+    loginAttempts.set(email, { count: 1, resetAt: now + 15 * 60 * 1000 }) // 15 minutos
+    return true
   }
 
   // Incrementar contador
-  attempt.count++;
+  attempt.count++
 
   // Máximo 5 intentos en 15 minutos
   if (attempt.count > 5) {
-    const minutesLeft = Math.ceil((attempt.resetAt - now) / 60000);
-    console.warn(`⚠️ Rate limit exceeded for ${email}. Try again in ${minutesLeft} minutes.`);
-    return false;
+    const minutesLeft = Math.ceil((attempt.resetAt - now) / 60000)
+    console.warn(`⚠️ Rate limit exceeded for ${email}. Try again in ${minutesLeft} minutes.`)
+    return false
   }
 
-  return true;
+  return true
 }
 
 function resetRateLimit(email: string): void {
-  loginAttempts.delete(email);
+  loginAttempts.delete(email)
 }
 
 const authOptions: NextAuthOptions = {
@@ -46,7 +46,7 @@ const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" }
+        password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -59,7 +59,7 @@ const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
         })
 
         // SEGURIDAD: Usar mensaje genérico para evitar enumeración de usuarios
@@ -67,22 +67,19 @@ const authOptions: NextAuthOptions = {
           throw new Error("Credenciales incorrectas")
         }
 
-        const passwordMatch = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+        const passwordMatch = await bcrypt.compare(credentials.password, user.password)
 
         if (!passwordMatch) {
           throw new Error("Credenciales incorrectas")
         }
 
         // Login exitoso: resetear contador de intentos
-        resetRateLimit(credentials.email);
+        resetRateLimit(credentials.email)
 
         // Actualizar último login
         await prisma.user.update({
           where: { id: user.id },
-          data: { lastLogin: new Date() }
+          data: { lastLogin: new Date() },
         })
 
         return {
@@ -91,8 +88,8 @@ const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
         }
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -106,7 +103,7 @@ const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
       }
       return session
-    }
+    },
   },
   pages: {
     signIn: "/login",
@@ -117,7 +114,7 @@ const authOptions: NextAuthOptions = {
   },
   // SEGURIDAD: NEXTAUTH_SECRET debe estar configurado en producción
   // La variable de entorno debe pasarse durante el build
-  secret: process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production',
+  secret: process.env.NEXTAUTH_SECRET || "dev-secret-change-in-production",
 }
 
 const handler = NextAuth(authOptions)

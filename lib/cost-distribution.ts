@@ -13,9 +13,9 @@ export interface ProductDistributionData {
 
 export interface DistributionResult {
   productId: string
-  porcentaje: number          // Percentage of total cost this product bears (0-1)
-  costoDistribuido: number    // Amount of cost distributed to this product
-  costoUnitario: number       // Cost per unit
+  porcentaje: number // Percentage of total cost this product bears (0-1)
+  costoDistribuido: number // Amount of cost distributed to this product
+  costoUnitario: number // Cost per unit
 }
 
 /**
@@ -39,7 +39,7 @@ export function distributeByWeight(
   }
 
   // Distribute cost proportionally by weight
-  return products.map((product) => {
+  return products.map(product => {
     const pesoTotal = (product.pesoUnitarioKg || 0) * product.cantidad
     const porcentaje = pesoTotal / totalWeight
     const costoDistribuido = totalCost * porcentaje
@@ -75,7 +75,7 @@ export function distributeByVolume(
   }
 
   // Distribute cost proportionally by volume
-  return products.map((product) => {
+  return products.map(product => {
     const volumenTotal = (product.volumenUnitarioCBM || 0) * product.cantidad
     const porcentaje = volumenTotal / totalVolume
     const costoDistribuido = totalCost * porcentaje
@@ -112,7 +112,7 @@ export function distributeByFOBValue(
   }
 
   // Distribute cost proportionally by FOB value
-  return products.map((product) => {
+  return products.map(product => {
     const fobTotal = product.precioUnitarioUSD * product.cantidad * exchangeRate
     const porcentaje = fobTotal / totalFOBValue
     const costoDistribuido = totalCost * porcentaje
@@ -141,7 +141,7 @@ export function distributeByUnit(
 
   // If no units, return empty distribution
   if (totalUnits === 0) {
-    return products.map((product) => ({
+    return products.map(product => ({
       productId: product.id,
       porcentaje: 0,
       costoDistribuido: 0,
@@ -153,7 +153,7 @@ export function distributeByUnit(
   const costoUnitario = totalCost / totalUnits
 
   // Distribute cost equally per unit
-  return products.map((product) => {
+  return products.map(product => {
     const costoDistribuido = costoUnitario * product.cantidad
     const porcentaje = product.cantidad / totalUnits
 
@@ -194,11 +194,7 @@ export function distributeCost(
  * Calculate CBM (Cubic Meters) from dimensions
  * Formula: (length × width × height) / 1,000,000 (if in cm)
  */
-export function calculateCBM(
-  lengthCM: number,
-  widthCM: number,
-  heightCM: number
-): number {
+export function calculateCBM(lengthCM: number, widthCM: number, heightCM: number): number {
   return (lengthCM * widthCM * heightCM) / 1_000_000
 }
 

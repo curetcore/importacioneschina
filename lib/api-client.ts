@@ -9,7 +9,7 @@ export class ApiError extends Error {
     public details?: any
   ) {
     super(message)
-    this.name = 'ApiError'
+    this.name = "ApiError"
   }
 }
 
@@ -20,10 +20,7 @@ export interface FetchOptions extends RequestInit {
 /**
  * Realiza una petición fetch con timeout y manejo de errores mejorado
  */
-export async function fetchWithTimeout(
-  url: string,
-  options: FetchOptions = {}
-): Promise<Response> {
+export async function fetchWithTimeout(url: string, options: FetchOptions = {}): Promise<Response> {
   const { timeout = 30000, ...fetchOptions } = options
 
   const controller = new AbortController()
@@ -40,12 +37,12 @@ export async function fetchWithTimeout(
   } catch (error: any) {
     clearTimeout(timeoutId)
 
-    if (error.name === 'AbortError') {
-      throw new ApiError('La solicitud ha excedido el tiempo de espera', 408)
+    if (error.name === "AbortError") {
+      throw new ApiError("La solicitud ha excedido el tiempo de espera", 408)
     }
 
     if (error instanceof TypeError) {
-      throw new ApiError('Error de red. Por favor verifica tu conexión.', 0)
+      throw new ApiError("Error de red. Por favor verifica tu conexión.", 0)
     }
 
     throw error
@@ -55,13 +52,10 @@ export async function fetchWithTimeout(
 /**
  * Realiza una petición GET con manejo de errores
  */
-export async function apiGet<T = any>(
-  url: string,
-  options: FetchOptions = {}
-): Promise<T> {
+export async function apiGet<T = any>(url: string, options: FetchOptions = {}): Promise<T> {
   const response = await fetchWithTimeout(url, {
     ...options,
-    method: 'GET',
+    method: "GET",
   })
 
   if (!response.ok) {
@@ -86,9 +80,9 @@ export async function apiPost<T = any>(
 ): Promise<T> {
   const response = await fetchWithTimeout(url, {
     ...options,
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     body: JSON.stringify(data),
@@ -116,9 +110,9 @@ export async function apiPut<T = any>(
 ): Promise<T> {
   const response = await fetchWithTimeout(url, {
     ...options,
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     },
     body: JSON.stringify(data),
@@ -139,13 +133,10 @@ export async function apiPut<T = any>(
 /**
  * Realiza una petición DELETE con manejo de errores
  */
-export async function apiDelete<T = any>(
-  url: string,
-  options: FetchOptions = {}
-): Promise<T> {
+export async function apiDelete<T = any>(url: string, options: FetchOptions = {}): Promise<T> {
   const response = await fetchWithTimeout(url, {
     ...options,
-    method: 'DELETE',
+    method: "DELETE",
   })
 
   if (!response.ok) {
@@ -166,16 +157,16 @@ export async function apiDelete<T = any>(
 export function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 0) {
-      return 'Error de red. Por favor verifica tu conexión a internet.'
+      return "Error de red. Por favor verifica tu conexión a internet."
     }
     if (error.status === 408) {
-      return 'La solicitud ha tardado demasiado. Por favor intenta de nuevo.'
+      return "La solicitud ha tardado demasiado. Por favor intenta de nuevo."
     }
     if (error.status === 404) {
-      return 'El recurso solicitado no fue encontrado.'
+      return "El recurso solicitado no fue encontrado."
     }
     if (error.status === 500) {
-      return 'Error en el servidor. Por favor intenta de nuevo más tarde.'
+      return "Error en el servidor. Por favor intenta de nuevo más tarde."
     }
     return error.message
   }
@@ -184,21 +175,21 @@ export function getErrorMessage(error: unknown): string {
     return error.message
   }
 
-  return 'Ha ocurrido un error inesperado. Por favor intenta de nuevo.'
+  return "Ha ocurrido un error inesperado. Por favor intenta de nuevo."
 }
 
 /**
  * Extrae detalles técnicos completos del error para debugging en desarrollo
  */
 export function getErrorDetails(error: unknown): string | undefined {
-  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'development') {
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "development") {
     return undefined
   }
 
   const details: Record<string, any> = {}
 
   if (error instanceof ApiError) {
-    details.type = 'ApiError'
+    details.type = "ApiError"
     details.message = error.message
     details.status = error.status
     details.details = error.details
@@ -208,7 +199,7 @@ export function getErrorDetails(error: unknown): string | undefined {
     details.message = error.message
     details.stack = error.stack
   } else {
-    details.type = 'Unknown'
+    details.type = "Unknown"
     details.raw = error
   }
 

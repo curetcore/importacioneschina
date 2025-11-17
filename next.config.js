@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Output standalone para Docker
-  output: 'standalone',
+  output: "standalone",
 
   experimental: {
     serverActions: {
-      bodySizeLimit: '2mb',
+      bodySizeLimit: "2mb",
     },
   },
 
@@ -16,7 +16,7 @@ const nextConfig = {
   // Configuración de imágenes
   images: {
     domains: [],
-    formats: ['image/avif', 'image/webp'],
+    formats: ["image/avif", "image/webp"],
   },
 }
 

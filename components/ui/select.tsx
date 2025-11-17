@@ -9,7 +9,8 @@ export interface SelectOption {
   label: string
 }
 
-export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+export interface SelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   options: SelectOption[]
   placeholder?: string
   onChange?: (value: string) => void
@@ -59,13 +60,13 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           value={selectedValue}
-          onChange={(e) => handleSelect(e.target.value)}
+          onChange={e => handleSelect(e.target.value)}
           className="sr-only"
           disabled={disabled}
           {...props}
         >
           <option value="">{placeholder || "Seleccionar..."}</option>
-          {options.map((option) => (
+          {options.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -86,16 +87,15 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
         >
-          <span className={cn(
-            "truncate",
-            !selectedValue && "text-gray-400"
-          )}>
-            {selectedOption ? selectedOption.label : (placeholder || "Seleccionar...")}
+          <span className={cn("truncate", !selectedValue && "text-gray-400")}>
+            {selectedOption ? selectedOption.label : placeholder || "Seleccionar..."}
           </span>
-          <ChevronDown className={cn(
-            "h-4 w-4 text-gray-500 transition-transform",
-            isOpen && "transform rotate-180"
-          )} />
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-gray-500 transition-transform",
+              isOpen && "transform rotate-180"
+            )}
+          />
         </button>
 
         {/* Dropdown */}
@@ -103,11 +103,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           <div className="absolute z-50 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
             <div className="max-h-60 overflow-auto p-1">
               {options.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-gray-400">
-                  No hay opciones disponibles
-                </div>
+                <div className="px-3 py-2 text-sm text-gray-400">No hay opciones disponibles</div>
               ) : (
-                options.map((option) => (
+                options.map(option => (
                   <button
                     key={option.value}
                     type="button"
@@ -119,9 +117,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                     )}
                   >
                     <span className="flex-1 text-left">{option.label}</span>
-                    {selectedValue === option.value && (
-                      <Check className="h-4 w-4 text-gray-900" />
-                    )}
+                    {selectedValue === option.value && <Check className="h-4 w-4 text-gray-900" />}
                   </button>
                 ))
               )}
@@ -130,9 +126,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         )}
 
         {/* Error message */}
-        {error && (
-          <p className="mt-1 text-xs text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       </div>
     )
   }

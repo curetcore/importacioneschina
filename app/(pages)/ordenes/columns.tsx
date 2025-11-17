@@ -48,36 +48,28 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     accessorKey: "oc",
     header: "OC",
     cell: ({ row }) => (
-      <div className="font-medium text-gray-900 whitespace-nowrap">
-        {row.original.oc}
-      </div>
+      <div className="font-medium text-gray-900 whitespace-nowrap">{row.original.oc}</div>
     ),
   },
   {
     accessorKey: "proveedor",
     header: "Proveedor",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap">
-        {row.original.proveedor}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap">{row.original.proveedor}</div>
     ),
   },
   {
     accessorKey: "fechaOC",
     header: "Fecha",
     cell: ({ row }) => (
-      <div className="text-gray-500 whitespace-nowrap">
-        {formatDate(row.original.fechaOC)}
-      </div>
+      <div className="text-gray-500 whitespace-nowrap">{formatDate(row.original.fechaOC)}</div>
     ),
   },
   {
     accessorKey: "categoriaPrincipal",
     header: "Categoría",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap">
-        {row.original.categoriaPrincipal}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap">{row.original.categoriaPrincipal}</div>
     ),
   },
   {
@@ -85,21 +77,15 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     header: "Productos",
     cell: ({ row }) => {
       const numProductos = row.original.items?.length || 0
-      return (
-        <div className="text-right text-gray-900 whitespace-nowrap">
-          {numProductos}
-        </div>
-      )
+      return <div className="text-right text-gray-900 whitespace-nowrap">{numProductos}</div>
     },
   },
   {
     accessorKey: "unidades",
     header: "Unidades",
     cell: ({ row }) => {
-      const totalUnidades = row.original.items?.reduce(
-        (sum, item) => sum + item.cantidadTotal,
-        0
-      ) || 0
+      const totalUnidades =
+        row.original.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0
       return (
         <div className="text-right text-gray-900 whitespace-nowrap">
           {totalUnidades.toLocaleString()}
@@ -111,10 +97,7 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     accessorKey: "costoFOB",
     header: "Costo FOB",
     cell: ({ row }) => {
-      const totalFOB = row.original.items?.reduce(
-        (sum, item) => sum + item.subtotalUSD,
-        0
-      ) || 0
+      const totalFOB = row.original.items?.reduce((sum, item) => sum + item.subtotalUSD, 0) || 0
       return (
         <div className="text-right font-medium text-gray-900 whitespace-nowrap">
           {formatCurrency(totalFOB, "USD")}
@@ -140,7 +123,7 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onView(row.original)
           }}
@@ -150,7 +133,7 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onEdit(row.original)
           }}
@@ -160,7 +143,7 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onDelete(row.original)
           }}

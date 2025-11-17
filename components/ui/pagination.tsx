@@ -8,7 +8,12 @@ interface PaginationProps {
   className?: string
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange, className = "" }: PaginationProps) {
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = "",
+}: PaginationProps) {
   if (totalPages <= 1) return null
 
   const pages: (number | string)[] = []
@@ -35,7 +40,9 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
   }
 
   return (
-    <div className={`flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 ${className}`}>
+    <div
+      className={`flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 ${className}`}
+    >
       <div className="flex flex-1 justify-between sm:hidden">
         <Button
           variant="outline"
@@ -62,7 +69,10 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
           </p>
         </div>
         <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <Button
               variant="outline"
               onClick={() => onPageChange(currentPage - 1)}
@@ -73,7 +83,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
 
-            {pages.map((page, idx) => (
+            {pages.map((page, idx) =>
               page === "..." ? (
                 <span
                   key={`ellipsis-${idx}`}
@@ -95,7 +105,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
                   {page}
                 </Button>
               )
-            ))}
+            )}
 
             <Button
               variant="outline"

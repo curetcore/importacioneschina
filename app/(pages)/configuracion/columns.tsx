@@ -22,27 +22,21 @@ export const getConfiguracionColumns = (actions: ColumnActions): ColumnDef<Confi
     accessorKey: "categoria",
     header: "Categoría",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap capitalize">
-        {row.original.categoria}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap capitalize">{row.original.categoria}</div>
     ),
   },
   {
     accessorKey: "valor",
     header: "Valor",
     cell: ({ row }) => (
-      <div className="font-medium text-gray-900 whitespace-nowrap">
-        {row.original.valor}
-      </div>
+      <div className="font-medium text-gray-900 whitespace-nowrap">{row.original.valor}</div>
     ),
   },
   {
     accessorKey: "orden",
     header: "Orden",
     cell: ({ row }) => (
-      <div className="text-center text-gray-700 whitespace-nowrap">
-        {row.original.orden}
-      </div>
+      <div className="text-center text-gray-700 whitespace-nowrap">{row.original.orden}</div>
     ),
   },
   {
@@ -72,7 +66,7 @@ export const getConfiguracionColumns = (actions: ColumnActions): ColumnDef<Confi
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onEdit(row.original)
           }}
@@ -82,7 +76,7 @@ export const getConfiguracionColumns = (actions: ColumnActions): ColumnDef<Confi
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onDelete(row.original)
           }}

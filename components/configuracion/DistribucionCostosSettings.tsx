@@ -102,7 +102,7 @@ export function DistribucionCostosSettings() {
 
   // Create a map for quick lookup
   const configMap = new Map<string, DistribConfig>()
-  configs?.forEach((config) => configMap.set(config.tipoCosto, config))
+  configs?.forEach(config => configMap.set(config.tipoCosto, config))
 
   return (
     <div className="space-y-6">
@@ -117,20 +117,20 @@ export function DistribucionCostosSettings() {
         <CardContent>
           <div className="space-y-2 text-sm text-blue-900">
             <p>
-              <strong>Por Peso:</strong> Los costos se distribuyen proporcionalmente al peso de cada producto.
-              Ideal para fletes que cobran por kilogramo.
+              <strong>Por Peso:</strong> Los costos se distribuyen proporcionalmente al peso de cada
+              producto. Ideal para fletes que cobran por kilogramo.
             </p>
             <p>
-              <strong>Por Volumen:</strong> Los costos se distribuyen proporcionalmente al volumen (CBM) de cada producto.
-              Ideal para fletes que cobran por metro cúbico.
+              <strong>Por Volumen:</strong> Los costos se distribuyen proporcionalmente al volumen
+              (CBM) de cada producto. Ideal para fletes que cobran por metro cúbico.
             </p>
             <p>
-              <strong>Por Valor FOB:</strong> Los costos se distribuyen proporcionalmente al valor del producto.
-              Ideal para aduanas, seguros, y comisiones.
+              <strong>Por Valor FOB:</strong> Los costos se distribuyen proporcionalmente al valor
+              del producto. Ideal para aduanas, seguros, y comisiones.
             </p>
             <p>
-              <strong>Por Unidades:</strong> Los costos se distribuyen igualmente entre todas las unidades.
-              Se usa como respaldo cuando no hay datos de peso/volumen.
+              <strong>Por Unidades:</strong> Los costos se distribuyen igualmente entre todas las
+              unidades. Se usa como respaldo cuando no hay datos de peso/volumen.
             </p>
           </div>
         </CardContent>
@@ -161,16 +161,15 @@ export function DistribucionCostosSettings() {
                     <Select
                       options={distributionMethodOptions}
                       value={currentMethod}
-                      onChange={(value) => handleMethodChange(tipoCosto, value)}
+                      onChange={value => handleMethodChange(tipoCosto, value)}
                       disabled={updating === tipoCosto}
                     />
                   </div>
 
                   {/* Visual indicator */}
                   <div className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-600">
-                    <strong>Método actual:</strong> {
-                      distributionMethodOptions.find(opt => opt.value === currentMethod)?.label
-                    }
+                    <strong>Método actual:</strong>{" "}
+                    {distributionMethodOptions.find(opt => opt.value === currentMethod)?.label}
                   </div>
                 </div>
               </CardContent>

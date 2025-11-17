@@ -5,12 +5,14 @@
 Cuando hagas **push a tu rama** y Easypanel haga el deploy, esto pasará automáticamente:
 
 ### 1️⃣ Build (`npm run build`)
+
 ```bash
 prisma generate    # Genera el cliente de Prisma
 next build        # Construye la app Next.js
 ```
 
 ### 2️⃣ Start (`npm start`) - Ejecuta automáticamente al arrancar el contenedor
+
 ```bash
 prisma migrate deploy          # Aplica las migraciones (crea la tabla configuracion)
 tsx prisma/seed-config.ts     # Carga los 39 valores iniciales (solo si tabla vacía)
@@ -39,6 +41,7 @@ next start                     # Inicia el servidor Next.js
 ## 🔒 **Protección contra duplicados:**
 
 El script `seed-config.ts` está diseñado para ser **idempotente**:
+
 - Si la tabla `configuracion` está vacía → Carga los 39 valores
 - Si ya tiene datos → No hace nada (evita duplicados)
 
@@ -70,6 +73,7 @@ Cuando hagas el próximo deploy, verás en los logs algo así:
 ## 🔧 **Si necesitas ejecutar manualmente:**
 
 Desde la terminal de Easypanel:
+
 ```bash
 npm run setup:config
 ```

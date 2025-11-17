@@ -3,16 +3,19 @@
 ## Paso 1: Configurar Base de Datos
 
 ### Opción A: Crear archivo .env (Recomendado)
+
 ```bash
 cp .env.example .env
 ```
 
 Luego edita `.env` y ajusta la conexión según tu configuración:
+
 ```env
 DATABASE_URL="postgresql://usuario:password@localhost:5432/curet-importaciones"
 ```
 
 ### Opción B: Si usas Docker
+
 ```bash
 docker-compose up -d
 ```
@@ -32,11 +35,13 @@ npm run setup:config
 ```
 
 O también puedes usar:
+
 ```bash
 npx tsx prisma/seed-config.ts
 ```
 
 Esto cargará 39 valores predeterminados:
+
 - ✓ 5 Categorías
 - ✓ 6 Tipos de Pago
 - ✓ 5 Métodos de Pago
@@ -60,16 +65,20 @@ Ahora puedes agregar, editar o eliminar configuraciones directamente desde la in
 ## 🆘 Solución de Problemas
 
 ### Error: "DATABASE_URL not found"
+
 → Crea el archivo `.env` copiando `.env.example`
 
 ### Error: "Can't reach database server"
+
 → Verifica que PostgreSQL esté corriendo
 → Si usas Docker: `docker-compose up -d`
 
 ### Error: "tsx not found"
+
 → Instala tsx: `npm install -D tsx`
 
 ### Error en migraciones
+
 → Resetea la base de datos: `npx prisma migrate reset`
 → Luego vuelve a ejecutar: `npx prisma migrate dev`
 

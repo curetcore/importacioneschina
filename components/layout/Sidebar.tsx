@@ -10,7 +10,7 @@ import {
   FileText,
   Inbox,
   Calculator,
-  Settings
+  Settings,
 } from "lucide-react"
 
 const menuItems = [
@@ -30,7 +30,7 @@ export default function Sidebar() {
     <aside className="w-60 bg-white border-r border-gray-200 min-h-screen">
       <div className="pt-4">
         <nav className="space-y-1 px-3">
-          {menuItems.map((item) => {
+          {menuItems.map(item => {
             const isActive = pathname === item.href
             const Icon = item.icon
             return (
@@ -44,9 +44,7 @@ export default function Sidebar() {
                     : "text-gray-700 hover:bg-gray-50"
                 )}
               >
-                <Icon size={18} className={cn(
-                  isActive ? "text-gray-900" : "text-gray-500"
-                )} />
+                <Icon size={18} className={cn(isActive ? "text-gray-900" : "text-gray-500")} />
                 <span>{item.label}</span>
               </Link>
             )

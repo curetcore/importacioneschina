@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -13,16 +13,36 @@ import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 
 // Lazy load heavy form component
-const InventarioRecibidoForm = dynamicImport(() => import("@/components/forms/InventarioRecibidoForm").then(mod => ({ default: mod.InventarioRecibidoForm })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
-})
+const InventarioRecibidoForm = dynamicImport(
+  () =>
+    import("@/components/forms/InventarioRecibidoForm").then(mod => ({
+      default: mod.InventarioRecibidoForm,
+    })),
+  {
+    loading: () => (
+      <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+    ),
+  }
+)
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DataTable } from "@/components/ui/data-table"
 import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
-import { Plus, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
+import {
+  Plus,
+  PackageCheck,
+  Inbox,
+  Package,
+  DollarSign,
+  Warehouse,
+  Download,
+  Search,
+  Settings2,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -104,15 +124,21 @@ export default function InventarioRecibidoPage() {
   const prepareExportData = () => {
     return inventarios.map((inventario: InventarioRecibido) => ({
       "ID Recepción": inventario.idRecepcion,
-      "OC": inventario.ocChina.oc,
-      "Proveedor": inventario.ocChina.proveedor,
+      OC: inventario.ocChina.oc,
+      Proveedor: inventario.ocChina.proveedor,
       "Fecha Llegada": new Date(inventario.fechaLlegada).toLocaleDateString(),
-      "Bodega": inventario.bodegaInicial,
+      Bodega: inventario.bodegaInicial,
       "Cantidad Recibida": inventario.cantidadRecibida,
-      "SKU": inventario.item?.sku || "",
-      "Producto": inventario.item?.nombre || "",
-      "Costo Unitario RD$": inventario.costoUnitarioFinalRD !== null ? parseFloat(inventario.costoUnitarioFinalRD.toString()) : 0,
-      "Costo Total RD$": inventario.costoTotalRecepcionRD !== null ? parseFloat(inventario.costoTotalRecepcionRD.toString()) : 0,
+      SKU: inventario.item?.sku || "",
+      Producto: inventario.item?.nombre || "",
+      "Costo Unitario RD$":
+        inventario.costoUnitarioFinalRD !== null
+          ? parseFloat(inventario.costoUnitarioFinalRD.toString())
+          : 0,
+      "Costo Total RD$":
+        inventario.costoTotalRecepcionRD !== null
+          ? parseFloat(inventario.costoTotalRecepcionRD.toString())
+          : 0,
     }))
   }
 
@@ -146,7 +172,11 @@ export default function InventarioRecibidoPage() {
     }
 
     const dataToExport = prepareExportData()
-    exportToPDF(dataToExport, "inventario_recibido", "Inventario Recibido - Sistema de Importaciones")
+    exportToPDF(
+      dataToExport,
+      "inventario_recibido",
+      "Inventario Recibido - Sistema de Importaciones"
+    )
     addToast({
       type: "success",
       title: "Exportación exitosa",
@@ -169,13 +199,14 @@ export default function InventarioRecibidoPage() {
     if (!searchQuery.trim()) return inventarios
 
     const query = searchQuery.toLowerCase()
-    return inventarios.filter((inv: InventarioRecibido) =>
-      inv.idRecepcion.toLowerCase().includes(query) ||
-      inv.ocChina.oc.toLowerCase().includes(query) ||
-      inv.ocChina.proveedor.toLowerCase().includes(query) ||
-      inv.bodegaInicial.toLowerCase().includes(query) ||
-      (inv.item?.sku && inv.item.sku.toLowerCase().includes(query)) ||
-      (inv.item?.nombre && inv.item.nombre.toLowerCase().includes(query))
+    return inventarios.filter(
+      (inv: InventarioRecibido) =>
+        inv.idRecepcion.toLowerCase().includes(query) ||
+        inv.ocChina.oc.toLowerCase().includes(query) ||
+        inv.ocChina.proveedor.toLowerCase().includes(query) ||
+        inv.bodegaInicial.toLowerCase().includes(query) ||
+        (inv.item?.sku && inv.item.sku.toLowerCase().includes(query)) ||
+        (inv.item?.nombre && inv.item.nombre.toLowerCase().includes(query))
     )
   }, [inventarios, searchQuery])
 
@@ -183,23 +214,37 @@ export default function InventarioRecibidoPage() {
   const stats = useMemo(() => {
     const totalRecepciones = inventarios.length
 
-    const totalUnidades = inventarios.reduce((sum: number, inv: InventarioRecibido) => sum + inv.cantidadRecibida, 0)
+    const totalUnidades = inventarios.reduce(
+      (sum: number, inv: InventarioRecibido) => sum + inv.cantidadRecibida,
+      0
+    )
 
     const totalCostoRD = inventarios.reduce((sum: number, inv: InventarioRecibido) => {
       return sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString())
     }, 0)
 
     // Calcular bodega con más recepciones
-    const bodegaCounts = inventarios.reduce((acc: Record<string, number>, inv: InventarioRecibido) => {
-      acc[inv.bodegaInicial] = (acc[inv.bodegaInicial] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const bodegaCounts = inventarios.reduce(
+      (acc: Record<string, number>, inv: InventarioRecibido) => {
+        acc[inv.bodegaInicial] = (acc[inv.bodegaInicial] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
-    const bodegaMasUsada = (Object.entries(bodegaCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
+    const bodegaMasUsada = (Object.entries(bodegaCounts) as [string, number][]).sort(
+      (a, b) => b[1] - a[1]
+    )[0]
     const bodegaMasUsadaNombre = bodegaMasUsada?.[0] || "N/A"
     const bodegaMasUsadaCantidad = bodegaMasUsada?.[1] || 0
 
-    return { totalRecepciones, totalUnidades, totalCostoRD, bodegaMasUsadaNombre, bodegaMasUsadaCantidad }
+    return {
+      totalRecepciones,
+      totalUnidades,
+      totalCostoRD,
+      bodegaMasUsadaNombre,
+      bodegaMasUsadaCantidad,
+    }
   }, [inventarios])
 
   if (isLoading) {
@@ -226,7 +271,7 @@ export default function InventarioRecibidoPage() {
             icon={<Package className="w-4 h-4" />}
             label="Total Unidades"
             value={stats.totalUnidades.toLocaleString()}
-            subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? 'es' : ''}`}
+            subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? "es" : ""}`}
           />
 
           <StatCard
@@ -248,7 +293,8 @@ export default function InventarioRecibidoPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Inbox size={18} />
-              Inventario ({filteredInventarios.length}{searchQuery ? ` de ${inventarios.length}` : ''})
+              Inventario ({filteredInventarios.length}
+              {searchQuery ? ` de ${inventarios.length}` : ""})
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -256,7 +302,7 @@ export default function InventarioRecibidoPage() {
                 <Input
                   placeholder="Buscar ID, OC, SKU, producto..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 w-64 text-xs"
                 />
               </div>
@@ -269,16 +315,18 @@ export default function InventarioRecibidoPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   {columns
-                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
-                    .map((column) => {
+                    .filter(
+                      column => "accessorKey" in column && typeof column.accessorKey === "string"
+                    )
+                    .map(column => {
                       const id = (column as any).accessorKey as string
                       return (
                         <DropdownMenuCheckboxItem
                           key={id}
                           className="capitalize"
                           checked={columnVisibility[id] !== false}
-                          onCheckedChange={(value) =>
-                            setColumnVisibility((prev) => ({
+                          onCheckedChange={value =>
+                            setColumnVisibility(prev => ({
                               ...prev,
                               [id]: value,
                             }))
@@ -326,7 +374,9 @@ export default function InventarioRecibidoPage() {
             {inventarios.length === 0 ? (
               <div className="text-center py-12">
                 <PackageCheck size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay recepciones registradas</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No hay recepciones registradas
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   Comienza registrando tu primera recepción de mercancía
                 </p>
@@ -338,7 +388,9 @@ export default function InventarioRecibidoPage() {
             ) : filteredInventarios.length === 0 ? (
               <div className="text-center py-12">
                 <Search size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No se encontraron resultados
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   No hay recepciones que coincidan con "{searchQuery}"
                 </p>
@@ -371,7 +423,7 @@ export default function InventarioRecibidoPage() {
 
         <ConfirmDialog
           open={!!inventarioToDelete}
-          onOpenChange={(open) => !open && setInventarioToDelete(null)}
+          onOpenChange={open => !open && setInventarioToDelete(null)}
           onConfirm={handleDelete}
           title="Eliminar Recepción"
           description={`¿Estás seguro de eliminar la recepción ${inventarioToDelete?.idRecepcion}? Esta acción no se puede deshacer.`}

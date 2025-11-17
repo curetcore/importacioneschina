@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
@@ -96,7 +103,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
   // Cálculos automáticos
   const montoRD = (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
-  const montoRDNeto = montoRD + (comisionBancoRDValue ?? 0)  // FIX: SUMA la comisión (costo total real)
+  const montoRDNeto = montoRD + (comisionBancoRDValue ?? 0) // FIX: SUMA la comisión (costo total real)
 
   // Cargar OCs disponibles y configuraciones
   useEffect(() => {
@@ -104,8 +111,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       // Cargar OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
-        .then((res) => res.json())
-        .then((result) => {
+        .then(res => res.json())
+        .then(result => {
           if (result.success) {
             const options = result.data.map((oc: any) => ({
               value: oc.id,
@@ -125,16 +132,20 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       ])
         .then(([tiposPagoRes, metodosPagoRes]) => {
           if (tiposPagoRes.success) {
-            setTiposPagoOptions(tiposPagoRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setTiposPagoOptions(
+              tiposPagoRes.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           if (metodosPagoRes.success) {
-            setMetodosPagoOptions(metodosPagoRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setMetodosPagoOptions(
+              metodosPagoRes.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           setLoadingConfig(false)
         })
@@ -277,13 +288,11 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
               <Select
                 options={ocsOptions}
                 value={ocIdValue || ""}
-                onChange={(value) => setValue("ocId", value)}
+                onChange={value => setValue("ocId", value)}
                 placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
                 disabled={isSubmitting || loadingOcs}
               />
-              {errors.ocId && (
-                <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>
-              )}
+              {errors.ocId && <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>}
             </div>
 
             {/* Fecha Pago */}
@@ -294,7 +303,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
               <DatePicker
                 id="fechaPago"
                 value={fechaPagoValue}
-                onChange={(date) => setValue("fechaPago", date as any)}
+                onChange={date => setValue("fechaPago", date as any)}
                 disabled={isSubmitting}
               />
               {errors.fechaPago && (
@@ -311,7 +320,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 <Select
                   options={tiposPagoOptions}
                   value={tipoPagoValue || ""}
-                  onChange={(value) => setValue("tipoPago", value)}
+                  onChange={value => setValue("tipoPago", value)}
                   placeholder={loadingConfig ? "Cargando tipos..." : "Selecciona tipo"}
                   disabled={isSubmitting || loadingConfig}
                 />
@@ -322,13 +331,16 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
               {/* Método de Pago */}
               <div>
-                <label htmlFor="metodoPago" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="metodoPago"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Método de Pago <span className="text-red-500">*</span>
                 </label>
                 <Select
                   options={metodosPagoOptions}
                   value={metodoPagoValue || ""}
-                  onChange={(value) => setValue("metodoPago", value)}
+                  onChange={value => setValue("metodoPago", value)}
                   placeholder={loadingConfig ? "Cargando métodos..." : "Selecciona método"}
                   disabled={isSubmitting || loadingConfig}
                 />
@@ -347,7 +359,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 <Select
                   options={monedasOptions}
                   value={monedaValue || ""}
-                  onChange={(value) => setValue("moneda", value as "USD" | "CNY" | "RD$")}
+                  onChange={value => setValue("moneda", value as "USD" | "CNY" | "RD$")}
                   placeholder="Selecciona moneda"
                   disabled={isSubmitting}
                 />
@@ -358,7 +370,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
               {/* Monto Original */}
               <div>
-                <label htmlFor="montoOriginal" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="montoOriginal"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Monto Original <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -379,7 +394,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
             <div className="grid grid-cols-2 gap-4">
               {/* Tasa de Cambio */}
               <div>
-                <label htmlFor="tasaCambio" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="tasaCambio"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Tasa de Cambio <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -398,7 +416,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
               {/* Comisión Banco RD */}
               <div>
-                <label htmlFor="comisionBancoRD" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="comisionBancoRD"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Comisión Banco (RD$)
                 </label>
                 <Input
@@ -425,10 +446,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                     Monto en RD$
                   </label>
                   <div className="text-lg font-semibold text-gray-900">
-                    RD$ {montoRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD${" "}
+                    {montoRD.toLocaleString("es-DO", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {montoOriginalValue?.toLocaleString() || '0'} × {tasaCambioValue || '1'}
+                    {montoOriginalValue?.toLocaleString() || "0"} × {tasaCambioValue || "1"}
                   </p>
                 </div>
                 <div>
@@ -436,11 +461,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                     Costo Total (RD$)
                   </label>
                   <div className="text-lg font-semibold text-green-700">
-                    RD$ {montoRDNeto.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    RD${" "}
+                    {montoRDNeto.toLocaleString("es-DO", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Monto RD$ + Comisión
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Monto RD$ + Comisión</p>
                 </div>
               </div>
             </div>
@@ -460,12 +487,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -474,8 +496,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
+              ) : isEditMode ? (
+                "Actualizar Pago"
               ) : (
-                isEditMode ? "Actualizar Pago" : "Crear Pago"
+                "Crear Pago"
               )}
             </Button>
           </DialogFooter>

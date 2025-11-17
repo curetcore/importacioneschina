@@ -3,7 +3,14 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
@@ -41,7 +48,7 @@ export function ConfiguracionForm({
   onOpenChange,
   onSuccess,
   configToEdit,
-  categoria
+  categoria,
 }: ConfiguracionFormProps) {
   const { addToast } = useToast()
   const isEditMode = !!configToEdit
@@ -88,7 +95,9 @@ export function ConfiguracionForm({
         : await apiPost("/api/configuracion", data, { timeout: 15000 })
 
       if (!result.success) {
-        throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la configuración`)
+        throw new Error(
+          result.error || `Error al ${isEditMode ? "actualizar" : "crear"} la configuración`
+        )
       }
 
       addToast({
@@ -132,7 +141,7 @@ export function ConfiguracionForm({
               <Select
                 options={categoriaOptions}
                 value={categoriaValue}
-                onChange={(value) => setValue("categoria", value)}
+                onChange={value => setValue("categoria", value)}
                 placeholder="Selecciona una categoría"
                 disabled={isSubmitting || isEditMode || !!categoria}
               />
@@ -151,9 +160,7 @@ export function ConfiguracionForm({
                 placeholder="Ej: Zapatos"
                 disabled={isSubmitting}
               />
-              {errors.valor && (
-                <p className="text-xs text-red-600 mt-1">{errors.valor.message}</p>
-              )}
+              {errors.valor && <p className="text-xs text-red-600 mt-1">{errors.valor.message}</p>}
             </div>
 
             <div>
@@ -169,20 +176,15 @@ export function ConfiguracionForm({
                 placeholder="0"
                 disabled={isSubmitting}
               />
-              {errors.orden && (
-                <p className="text-xs text-red-600 mt-1">{errors.orden.message}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">Define el orden en que aparecerá en las listas</p>
+              {errors.orden && <p className="text-xs text-red-600 mt-1">{errors.orden.message}</p>}
+              <p className="text-xs text-gray-500 mt-1">
+                Define el orden en que aparecerá en las listas
+              </p>
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -191,8 +193,10 @@ export function ConfiguracionForm({
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
+              ) : isEditMode ? (
+                "Actualizar"
               ) : (
-                isEditMode ? "Actualizar" : "Crear"
+                "Crear"
               )}
             </Button>
           </DialogFooter>

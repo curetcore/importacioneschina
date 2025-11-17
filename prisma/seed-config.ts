@@ -3,9 +3,9 @@
  * Ejecutar con: npx tsx prisma/seed-config.ts
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 const configuraciones = [
   // Categorías
@@ -52,22 +52,22 @@ const configuraciones = [
   { categoria: "tiposGasto", valor: "Almacenaje", orden: 6 },
   { categoria: "tiposGasto", valor: "Transporte local", orden: 7 },
   { categoria: "tiposGasto", valor: "Otros", orden: 8 },
-];
+]
 
 async function main() {
-  console.log("🌱 Iniciando migración de configuraciones...");
+  console.log("🌱 Iniciando migración de configuraciones...")
 
   // Verificar si ya existen configuraciones
-  const count = await prisma.configuracion.count();
+  const count = await prisma.configuracion.count()
 
   if (count > 0) {
-    console.log(`✓ Ya existen ${count} configuraciones en la base de datos.`);
-    console.log("  Saltando migración para evitar duplicados.");
-    return;
+    console.log(`✓ Ya existen ${count} configuraciones en la base de datos.`)
+    console.log("  Saltando migración para evitar duplicados.")
+    return
   }
 
-  let created = 0;
-  let skipped = 0;
+  let created = 0
+  let skipped = 0
 
   for (const config of configuraciones) {
     try {
@@ -78,31 +78,31 @@ async function main() {
           orden: config.orden,
           activo: true,
         },
-      });
-      created++;
-      console.log(`✓ Creado: ${config.categoria} - ${config.valor}`);
+      })
+      created++
+      console.log(`✓ Creado: ${config.categoria} - ${config.valor}`)
     } catch (error: any) {
       // Si ya existe (unique constraint), skip
       if (error.code === "P2002") {
-        skipped++;
-        console.log(`⊘ Ya existe: ${config.categoria} - ${config.valor}`);
+        skipped++
+        console.log(`⊘ Ya existe: ${config.categoria} - ${config.valor}`)
       } else {
-        console.error(`✗ Error creando ${config.categoria} - ${config.valor}:`, error.message);
+        console.error(`✗ Error creando ${config.categoria} - ${config.valor}:`, error.message)
       }
     }
   }
 
-  console.log("\n✨ Migración completada!");
-  console.log(`   Creadas: ${created}`);
-  console.log(`   Omitidas (ya existían): ${skipped}`);
-  console.log(`   Total en BD: ${await prisma.configuracion.count()}`);
+  console.log("\n✨ Migración completada!")
+  console.log(`   Creadas: ${created}`)
+  console.log(`   Omitidas (ya existían): ${skipped}`)
+  console.log(`   Total en BD: ${await prisma.configuracion.count()}`)
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Error durante la migración:", e);
-    process.exit(1);
+  .catch(e => {
+    console.error("❌ Error durante la migración:", e)
+    process.exit(1)
   })
   .finally(async () => {
-    await prisma.$disconnect();
-  });
+    await prisma.$disconnect()
+  })

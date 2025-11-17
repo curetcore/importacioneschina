@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   // Actualizar
   const updated = await prisma.oCChina.update({
     where: { id },
-    data: body
+    data: body,
   })
 
   // Auditar cambios (solo si hubo cambios reales)
@@ -221,12 +221,14 @@ const ip = getClientIP(request)
 ## 🚀 Aplicación a Endpoints
 
 ### Prioridad Alta (aplicar primero):
+
 - [x] POST/PUT/DELETE `/api/oc-china` (ejemplo implementado)
 - [ ] POST/PUT/DELETE `/api/pagos-china`
 - [ ] POST/PUT/DELETE `/api/gastos-logisticos`
 - [ ] POST/PUT/DELETE `/api/inventario-recibido`
 
 ### Prioridad Media:
+
 - [ ] Proveedores
 - [ ] Configuración
 

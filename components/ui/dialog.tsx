@@ -59,9 +59,7 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
         onClick={() => onOpenChange(false)}
       />
       {/* Content */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        {children}
-      </div>
+      <div className="fixed inset-0 flex items-center justify-center p-4">{children}</div>
     </div>
   )
 }
@@ -75,7 +73,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         "border border-gray-200",
         className
       )}
-      onClick={(e) => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
       {...props}
     >
       {children}
@@ -101,10 +99,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        "flex items-center justify-end gap-3 p-6 border-t border-gray-100",
-        className
-      )}
+      className={cn("flex items-center justify-end gap-3 p-6 border-t border-gray-100", className)}
       {...props}
     >
       {children}
@@ -115,11 +110,7 @@ DialogFooter.displayName = "DialogFooter"
 
 const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
   ({ className, children, ...props }, ref) => (
-    <h2
-      ref={ref}
-      className={cn("text-lg font-semibold text-gray-900", className)}
-      {...props}
-    >
+    <h2 ref={ref} className={cn("text-lg font-semibold text-gray-900", className)} {...props}>
       {children}
     </h2>
   )
@@ -128,11 +119,7 @@ DialogTitle.displayName = "DialogTitle"
 
 const DialogDescription = React.forwardRef<HTMLParagraphElement, DialogDescriptionProps>(
   ({ className, children, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn("text-sm text-gray-500", className)}
-      {...props}
-    >
+    <p ref={ref} className={cn("text-sm text-gray-500", className)} {...props}>
       {children}
     </p>
   )

@@ -1,6 +1,7 @@
 # 📚 Guía de Configuración del Sistema
 
 ## Tabla de Contenidos
+
 1. [Acceso a Configuración](#acceso-a-configuración)
 2. [Gestión de Proveedores](#gestión-de-proveedores)
 3. [Otras Configuraciones](#otras-configuraciones)
@@ -12,6 +13,7 @@
 ## 🚀 Acceso a Configuración
 
 ### Desde el menú principal:
+
 1. Inicia sesión con tus credenciales
 2. En el menú lateral, haz clic en **"Configuración"**
 3. Verás 6 categorías de configuración:
@@ -23,6 +25,7 @@
    - **Tipos de Gasto** (9 por defecto)
 
 ### URL Directa:
+
 ```
 https://importacion.curetcore.com/configuracion
 ```
@@ -34,6 +37,7 @@ https://importacion.curetcore.com/configuracion
 ### Ver Proveedores Actuales
 
 En la tarjeta "Proveedores" verás la lista actual:
+
 - ✅ Nike China
 - ✅ Adidas Factory
 - ✅ Puma Manufacturing
@@ -41,6 +45,7 @@ En la tarjeta "Proveedores" verás la lista actual:
 - ✅ Shenzhen Leather Co.
 
 Cada proveedor muestra:
+
 - **Nombre del proveedor**
 - **Botón Editar** (icono lápiz)
 - **Botón Eliminar** (icono basura)
@@ -50,20 +55,24 @@ Cada proveedor muestra:
 ### ➕ Agregar Nuevo Proveedor
 
 #### Paso 1: Abrir el formulario
+
 1. En la tarjeta "Proveedores", haz clic en el botón **"+ Agregar"**
 2. Se abrirá un diálogo modal
 
 #### Paso 2: Llenar el formulario
+
 - **Categoría**: `Proveedores` (ya seleccionado automáticamente)
 - **Valor**: Nombre del proveedor (ej: "Alibaba China")
 - **Orden**: Número para ordenar en listas (ej: 6)
 
 #### Paso 3: Guardar
+
 1. Haz clic en **"Crear"**
 2. Verás un mensaje de éxito: ✅ "Configuración creada - Alibaba China creado exitosamente"
 3. El nuevo proveedor aparecerá inmediatamente en la lista
 
 #### Validaciones:
+
 - ❌ **No se puede crear un proveedor con nombre duplicado**
   - Error: "Ya existe una configuración con ese valor en esta categoría"
 - ❌ **El nombre no puede estar vacío**
@@ -74,20 +83,24 @@ Cada proveedor muestra:
 ### ✏️ Editar Proveedor Existente
 
 #### Paso 1: Seleccionar proveedor
+
 1. En la lista de proveedores, haz clic en el icono de **lápiz** (editar)
 2. Se abrirá el diálogo con los datos actuales
 
 #### Paso 2: Modificar datos
+
 - **Categoría**: No se puede cambiar (es fija como "Proveedores")
 - **Valor**: Cambia el nombre (ej: "Nike China Factory")
 - **Orden**: Cambia el orden si deseas (ej: 1)
 
 #### Paso 3: Guardar cambios
+
 1. Haz clic en **"Actualizar"**
 2. Verás un mensaje: ✅ "Configuración actualizada - Nike China Factory actualizado exitosamente"
 3. El cambio se refleja inmediatamente en la lista
 
 #### Validaciones:
+
 - ❌ **No se puede cambiar a un nombre que ya existe**
 - ❌ **El nombre no puede quedar vacío**
 
@@ -96,10 +109,12 @@ Cada proveedor muestra:
 ### 🗑️ Eliminar Proveedor
 
 #### Paso 1: Intentar eliminar
+
 1. Haz clic en el icono de **basura** (eliminar)
 2. Se abrirá un diálogo de confirmación
 
 #### Paso 2: Confirmación
+
 - **Título**: "Eliminar Configuración"
 - **Mensaje**: "¿Estás seguro de eliminar 'Nike China'? Esta acción no se puede deshacer."
 - **Opciones**:
@@ -109,11 +124,13 @@ Cada proveedor muestra:
 #### Paso 3: Validación del sistema
 
 **✅ Si el proveedor NO está en uso:**
+
 - Se elimina exitosamente (soft delete - se marca como `activo: false`)
 - Mensaje: ✅ "Configuración eliminada - Nike China eliminado exitosamente"
 - Desaparece de la lista inmediatamente
 
 **❌ Si el proveedor ESTÁ en uso:**
+
 - El sistema **NO permite** la eliminación
 - Mensaje de error detallado:
   ```
@@ -130,6 +147,7 @@ Cada proveedor muestra:
 ### Categorías Principales
 
 Gestiona las categorías de productos:
+
 - **Ejemplos por defecto**: Zapatos, Carteras, Cinturones, Accesorios, Ropa
 - **Usado en**: Órdenes de Compra (campo `categoriaPrincipal`)
 - **Agregar**: Haz clic en "+ Agregar" en la tarjeta "Categorías Principales"
@@ -138,6 +156,7 @@ Gestiona las categorías de productos:
 ### Tipos de Pago
 
 Gestiona los tipos de pago disponibles:
+
 - **Ejemplos por defecto**: Anticipo, Pago final, Pago parcial, Pago completo
 - **Usado en**: Pagos a China (campo `tipoPago`)
 - **Protección**: No se puede eliminar si hay pagos usando ese tipo
@@ -145,6 +164,7 @@ Gestiona los tipos de pago disponibles:
 ### Métodos de Pago
 
 Gestiona los métodos de pago disponibles:
+
 - **Ejemplos por defecto**: Transferencia bancaria, Tarjeta de crédito, Efectivo, Cheque, PayPal, Alipay
 - **Usado en**:
   - Pagos a China (campo `metodoPago`)
@@ -154,6 +174,7 @@ Gestiona los métodos de pago disponibles:
 ### Bodegas
 
 Gestiona las bodegas/almacenes disponibles:
+
 - **Ejemplos por defecto**: Bóveda, Piantini, Villa Mella, Oficina Central, Almacén Norte
 - **Usado en**: Inventario Recibido (campo `bodegaInicial`)
 - **Protección**: No se puede eliminar si hay inventario en esa bodega
@@ -161,6 +182,7 @@ Gestiona las bodegas/almacenes disponibles:
 ### Tipos de Gasto
 
 Gestiona los tipos de gastos logísticos:
+
 - **Ejemplos por defecto**: Flete internacional, Seguro de carga, Aduana/DGA, Impuestos, Broker aduanal, Almacenaje, Transporte local, Inspección, Otros gastos
 - **Usado en**: Gastos Logísticos (campo `tipoGasto`)
 - **Protección**: No se puede eliminar si hay gastos usando ese tipo
@@ -174,6 +196,7 @@ Gestiona los tipos de gastos logísticos:
 **Regla**: No pueden existir dos configuraciones con el mismo valor en la misma categoría
 
 **Ejemplos**:
+
 ```
 ❌ INCORRECTO:
 Categoría: proveedores
@@ -188,10 +211,12 @@ Valor: Adidas China  <-- Nuevo y único
 ### 2. Validación de Campos Requeridos
 
 **Campos obligatorios**:
+
 - ✅ **Categoría**: Debe seleccionarse una
 - ✅ **Valor**: No puede estar vacío
 
 **Campos opcionales**:
+
 - 📝 **Orden**: Si no se especifica, usa 0
 
 ### 3. Validación de Uso
@@ -200,16 +225,17 @@ Valor: Adidas China  <-- Nuevo y único
 
 **Verificación por categoría**:
 
-| Categoría | Se verifica en | Campo |
-|-----------|---------------|-------|
-| proveedores | OC China | `proveedor` |
-| categorias | OC China | `categoriaPrincipal` |
-| tiposPago | Pagos China | `tipoPago` |
-| metodosPago | Pagos China, Gastos Logísticos | `metodoPago` |
-| bodegas | Inventario Recibido | `bodegaInicial` |
-| tiposGasto | Gastos Logísticos | `tipoGasto` |
+| Categoría   | Se verifica en                 | Campo                |
+| ----------- | ------------------------------ | -------------------- |
+| proveedores | OC China                       | `proveedor`          |
+| categorias  | OC China                       | `categoriaPrincipal` |
+| tiposPago   | Pagos China                    | `tipoPago`           |
+| metodosPago | Pagos China, Gastos Logísticos | `metodoPago`         |
+| bodegas     | Inventario Recibido            | `bodegaInicial`      |
+| tiposGasto  | Gastos Logísticos              | `tipoGasto`          |
 
 **Ejemplo de error**:
+
 ```
 ❌ No se puede eliminar "Transferencia bancaria" porque está en uso en:
 - 15 pagos
@@ -234,6 +260,7 @@ Valor: Adidas China  <-- Nuevo y único
 **Situación**: Vas a importar de un nuevo proveedor "Alibaba Shoes Factory"
 
 **Pasos**:
+
 1. Ve a Configuración
 2. En "Proveedores", haz clic en "+ Agregar"
 3. Completa:
@@ -247,6 +274,7 @@ Valor: Adidas China  <-- Nuevo y único
 **Situación**: "Nike China" debería llamarse "Nike China Manufacturing"
 
 **Pasos**:
+
 1. Ve a Configuración
 2. En "Proveedores", busca "Nike China"
 3. Haz clic en el icono de lápiz (editar)
@@ -260,6 +288,7 @@ Valor: Adidas China  <-- Nuevo y único
 **Situación**: Quieres que "Shenzhen Leather Co." aparezca primero en las listas
 
 **Pasos**:
+
 1. Ve a Configuración
 2. Edita "Shenzhen Leather Co."
 3. Cambia Orden a: `0` (o número menor que los demás)
@@ -271,6 +300,7 @@ Valor: Adidas China  <-- Nuevo y único
 **Situación**: Ya no trabajas con "Puma Manufacturing" pero tienes 3 órdenes históricas
 
 **Pasos**:
+
 1. Ve a Configuración
 2. Intenta eliminar "Puma Manufacturing"
 3. ❌ Sistema muestra error:
@@ -280,6 +310,7 @@ Valor: Adidas China  <-- Nuevo y único
    ```
 
 **Opciones**:
+
 - **Opción A (Recomendada)**: Déjalo en la configuración para preservar historial
 - **Opción B**: Cambia el proveedor en las 3 órdenes primero, luego elimina
 - **Opción C**: Edita el nombre a "OBSOLETO - Puma Manufacturing" para marcarlo visualmente
@@ -289,6 +320,7 @@ Valor: Adidas China  <-- Nuevo y único
 **Situación**: Abriste un nuevo almacén en "Santiago"
 
 **Pasos**:
+
 1. Ve a Configuración
 2. En "Bodegas", haz clic en "+ Agregar"
 3. Completa:
@@ -304,29 +336,35 @@ Valor: Adidas China  <-- Nuevo y único
 **Importante**: Todos los cambios en configuración se reflejan **inmediatamente** en:
 
 ### Formularios que usan Proveedores:
+
 - ✅ Crear Nueva Orden de Compra
 - ✅ Editar Orden de Compra existente
 - ✅ Filtros en lista de órdenes
 
 ### Formularios que usan Categorías:
+
 - ✅ Crear Nueva Orden de Compra
 - ✅ Editar Orden de Compra existente
 
 ### Formularios que usan Tipos/Métodos de Pago:
+
 - ✅ Registrar Nuevo Pago
 - ✅ Editar Pago existente
 - ✅ Registrar Nuevo Gasto Logístico
 - ✅ Editar Gasto Logístico existente
 
 ### Formularios que usan Bodegas:
+
 - ✅ Recibir Inventario
 - ✅ Editar Recepción de Inventario
 
 ### Formularios que usan Tipos de Gasto:
+
 - ✅ Registrar Nuevo Gasto Logístico
 - ✅ Editar Gasto Logístico existente
 
 **No es necesario**:
+
 - ❌ Recargar la página
 - ❌ Cerrar sesión y volver a entrar
 - ❌ Reiniciar el navegador
@@ -336,6 +374,7 @@ Valor: Adidas China  <-- Nuevo y único
 ## 🎯 Mejores Prácticas
 
 ### ✅ DO (Hacer):
+
 1. **Usa nombres descriptivos y claros**
    - ✅ "Nike China - Fabrica Guangzhou"
    - ❌ "Proveedor 1"
@@ -353,6 +392,7 @@ Valor: Adidas China  <-- Nuevo y único
    - ❌ "Transferencia", "TARJETA", "efectivo"
 
 ### ❌ DON'T (No hacer):
+
 1. **No uses caracteres especiales innecesarios**
    - ❌ "Nike@China#Factory!!"
    - ✅ "Nike China Factory"

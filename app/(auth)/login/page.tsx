@@ -59,15 +59,13 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   className="pl-10"
                   placeholder="correo@ejemplo.com"
                   required
@@ -77,15 +75,13 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contraseña
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   className="pl-10"
                   placeholder="••••••••"
                   required
@@ -94,19 +90,13 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              Sistema de gestión de importaciones
-            </p>
+            <p className="text-xs text-gray-500">Sistema de gestión de importaciones</p>
           </div>
         </div>
       </div>

@@ -15,18 +15,7 @@ export interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
-  (
-    {
-      className,
-      icon,
-      label,
-      value,
-      subtitle,
-      loading = false,
-      ...props
-    },
-    ref
-  ) => {
+  ({ className, icon, label, value, subtitle, loading = false, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -39,9 +28,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         {/* Header: Label + Icon */}
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-          {icon && (
-            <div className="text-gray-400 w-4 h-4">{icon}</div>
-          )}
+          {icon && <div className="text-gray-400 w-4 h-4">{icon}</div>}
         </div>
 
         {/* Value */}
@@ -52,9 +39,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
         )}
 
         {/* Optional Subtitle */}
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
       </div>
     )
   }

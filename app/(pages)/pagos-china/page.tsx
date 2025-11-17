@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -19,13 +19,35 @@ import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 
 // Lazy load heavy components
-const PagosChinaForm = dynamicImport(() => import("@/components/forms/PagosChinaForm").then(mod => ({ default: mod.PagosChinaForm })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
-})
-const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
-})
-import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
+const PagosChinaForm = dynamicImport(
+  () => import("@/components/forms/PagosChinaForm").then(mod => ({ default: mod.PagosChinaForm })),
+  {
+    loading: () => (
+      <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+    ),
+  }
+)
+const AddAttachmentsDialog = dynamicImport(
+  () =>
+    import("@/components/ui/add-attachments-dialog").then(mod => ({
+      default: mod.AddAttachmentsDialog,
+    })),
+  {
+    loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>,
+  }
+)
+import {
+  Plus,
+  DollarSign,
+  Banknote,
+  Coins,
+  TrendingUp,
+  Download,
+  Search,
+  Settings2,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -114,12 +136,12 @@ export default function PagosChinaPage() {
   const prepareExportData = () => {
     return pagos.map((pago: Pago) => ({
       "ID Pago": pago.idPago,
-      "OC": pago.ocChina.oc,
-      "Proveedor": pago.ocChina.proveedor,
-      "Fecha": new Date(pago.fechaPago).toLocaleDateString(),
-      "Tipo": pago.tipoPago,
-      "Método": pago.metodoPago,
-      "Moneda": pago.moneda,
+      OC: pago.ocChina.oc,
+      Proveedor: pago.ocChina.proveedor,
+      Fecha: new Date(pago.fechaPago).toLocaleDateString(),
+      Tipo: pago.tipoPago,
+      Método: pago.metodoPago,
+      Moneda: pago.moneda,
       "Monto Original": parseFloat(pago.montoOriginal.toString()),
       "Tasa Cambio": parseFloat(pago.tasaCambio.toString()),
       "Comisión Banco (RD$)": parseFloat(pago.comisionBancoRD.toString()),
@@ -184,18 +206,22 @@ export default function PagosChinaPage() {
     if (!searchQuery.trim()) return pagos
 
     const query = searchQuery.toLowerCase()
-    return pagos.filter((pago: Pago) =>
-      pago.idPago.toLowerCase().includes(query) ||
-      pago.ocChina.oc.toLowerCase().includes(query) ||
-      pago.ocChina.proveedor.toLowerCase().includes(query) ||
-      pago.tipoPago.toLowerCase().includes(query) ||
-      pago.metodoPago.toLowerCase().includes(query)
+    return pagos.filter(
+      (pago: Pago) =>
+        pago.idPago.toLowerCase().includes(query) ||
+        pago.ocChina.oc.toLowerCase().includes(query) ||
+        pago.ocChina.proveedor.toLowerCase().includes(query) ||
+        pago.tipoPago.toLowerCase().includes(query) ||
+        pago.metodoPago.toLowerCase().includes(query)
     )
   }, [pagos, searchQuery])
 
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
-    const totalRD = pagos.reduce((sum: number, pago: Pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
+    const totalRD = pagos.reduce(
+      (sum: number, pago: Pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"),
+      0
+    )
 
     const totalUSD = pagos
       .filter((p: Pago) => p.moneda === "USD")
@@ -208,9 +234,12 @@ export default function PagosChinaPage() {
     // Calcular tasa promedio ponderada (weighted average)
     const pagosConMoneda = pagos.filter((p: Pago) => p.moneda === "USD" || p.moneda === "CNY")
     const totalWeighted = pagosConMoneda.reduce((sum: number, p: Pago) => {
-      return sum + (parseFloat(p.montoOriginal.toString()) * parseFloat(p.tasaCambio.toString()))
+      return sum + parseFloat(p.montoOriginal.toString()) * parseFloat(p.tasaCambio.toString())
     }, 0)
-    const totalAmount = pagosConMoneda.reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
+    const totalAmount = pagosConMoneda.reduce(
+      (sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()),
+      0
+    )
     const tasaPromedio = totalAmount > 0 ? totalWeighted / totalAmount : 0
 
     return { totalRD, totalUSD, totalCNY, tasaPromedio }
@@ -233,7 +262,7 @@ export default function PagosChinaPage() {
             icon={<DollarSign className="w-4 h-4" />}
             label="Total Pagado RD$"
             value={formatCurrency(stats.totalRD)}
-            subtitle={`En ${pagos.length} pago${pagos.length !== 1 ? 's' : ''}`}
+            subtitle={`En ${pagos.length} pago${pagos.length !== 1 ? "s" : ""}`}
           />
 
           <StatCard
@@ -262,7 +291,8 @@ export default function PagosChinaPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <DollarSign size={18} />
-              Pagos ({filteredPagos.length}{searchQuery ? ` de ${pagos.length}` : ''})
+              Pagos ({filteredPagos.length}
+              {searchQuery ? ` de ${pagos.length}` : ""})
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -270,7 +300,7 @@ export default function PagosChinaPage() {
                 <Input
                   placeholder="Buscar ID, OC, proveedor..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 w-64 text-xs"
                 />
               </div>
@@ -283,16 +313,18 @@ export default function PagosChinaPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   {columns
-                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
-                    .map((column) => {
+                    .filter(
+                      column => "accessorKey" in column && typeof column.accessorKey === "string"
+                    )
+                    .map(column => {
                       const id = (column as any).accessorKey as string
                       return (
                         <DropdownMenuCheckboxItem
                           key={id}
                           className="capitalize"
                           checked={columnVisibility[id] !== false}
-                          onCheckedChange={(value) =>
-                            setColumnVisibility((prev) => ({
+                          onCheckedChange={value =>
+                            setColumnVisibility(prev => ({
                               ...prev,
                               [id]: value,
                             }))
@@ -352,7 +384,9 @@ export default function PagosChinaPage() {
             ) : filteredPagos.length === 0 ? (
               <div className="text-center py-12">
                 <Search size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No se encontraron resultados
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   No hay pagos que coincidan con "{searchQuery}"
                 </p>
@@ -385,7 +419,7 @@ export default function PagosChinaPage() {
 
         <ConfirmDialog
           open={!!pagoToDelete}
-          onOpenChange={(open) => !open && setPagoToDelete(null)}
+          onOpenChange={open => !open && setPagoToDelete(null)}
           onConfirm={handleDelete}
           title="Eliminar Pago"
           description={`¿Estás seguro de eliminar el pago ${pagoToDelete?.idPago}? Esta acción no se puede deshacer.`}

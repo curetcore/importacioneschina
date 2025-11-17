@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
@@ -14,16 +14,32 @@ import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 
 // Lazy load heavy form component
-const OCChinaForm = dynamicImport(() => import("@/components/forms/OCChinaForm").then(mod => ({ default: mod.OCChinaForm })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
-})
+const OCChinaForm = dynamicImport(
+  () => import("@/components/forms/OCChinaForm").then(mod => ({ default: mod.OCChinaForm })),
+  {
+    loading: () => (
+      <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+    ),
+  }
+)
 import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 import { DataTable } from "@/components/ui/data-table"
 import { getOrdenesColumns, OCChina } from "./columns"
-import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
+import {
+  Plus,
+  ClipboardList,
+  Package,
+  DollarSign,
+  AlertCircle,
+  Download,
+  Search,
+  Settings2,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -119,13 +135,18 @@ export default function OrdenesPage() {
 
   const prepareExportData = () => {
     return ocs.map((oc: OCChina) => ({
-      "OC": oc.oc,
-      "Proveedor": oc.proveedor,
-      "Fecha": new Date(oc.fechaOC).toLocaleDateString(),
-      "Categoría": oc.categoriaPrincipal,
-      "Productos": oc.items?.length || 0,
-      "Unidades": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0,
-      "Costo FOB (USD)": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
+      OC: oc.oc,
+      Proveedor: oc.proveedor,
+      Fecha: new Date(oc.fechaOC).toLocaleDateString(),
+      Categoría: oc.categoriaPrincipal,
+      Productos: oc.items?.length || 0,
+      Unidades:
+        oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0,
+      "Costo FOB (USD)":
+        oc.items?.reduce(
+          (sum: number, item: OCChinaItem) => sum + parseFloat(item.subtotalUSD.toString()),
+          0
+        ) || 0,
     }))
   }
 
@@ -176,11 +197,19 @@ export default function OrdenesPage() {
     const totalItems = ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.length || 0), 0)
 
     const totalUnidades = ocs.reduce((sum: number, oc: OCChina) => {
-      return sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + item.cantidadTotal, 0) || 0)
+      return (
+        sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + item.cantidadTotal, 0) || 0)
+      )
     }, 0)
 
     const totalFOB = ocs.reduce((sum: number, oc: OCChina) => {
-      return sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0)
+      return (
+        sum +
+        (oc.items?.reduce(
+          (s: number, item: OCChinaItem) => s + parseFloat(item.subtotalUSD.toString()),
+          0
+        ) || 0)
+      )
     }, 0)
 
     const pendientes = ocs.filter((oc: OCChina) => !oc._count || oc._count.items === 0).length
@@ -203,10 +232,11 @@ export default function OrdenesPage() {
     if (!searchQuery.trim()) return ocs
 
     const query = searchQuery.toLowerCase()
-    return ocs.filter((oc: OCChina) =>
-      oc.oc.toLowerCase().includes(query) ||
-      oc.proveedor.toLowerCase().includes(query) ||
-      oc.categoriaPrincipal.toLowerCase().includes(query)
+    return ocs.filter(
+      (oc: OCChina) =>
+        oc.oc.toLowerCase().includes(query) ||
+        oc.proveedor.toLowerCase().includes(query) ||
+        oc.categoriaPrincipal.toLowerCase().includes(query)
     )
   }, [ocs, searchQuery])
 
@@ -256,7 +286,8 @@ export default function OrdenesPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <ClipboardList size={18} />
-              Órdenes ({filteredOcs.length}{searchQuery ? ` de ${ocs.length}` : ''})
+              Órdenes ({filteredOcs.length}
+              {searchQuery ? ` de ${ocs.length}` : ""})
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -264,7 +295,7 @@ export default function OrdenesPage() {
                 <Input
                   placeholder="Buscar OC, proveedor..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 w-64 text-xs"
                 />
               </div>
@@ -277,16 +308,18 @@ export default function OrdenesPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   {columns
-                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
-                    .map((column) => {
+                    .filter(
+                      column => "accessorKey" in column && typeof column.accessorKey === "string"
+                    )
+                    .map(column => {
                       const id = (column as any).accessorKey as string
                       return (
                         <DropdownMenuCheckboxItem
                           key={id}
                           className="capitalize"
                           checked={columnVisibility[id] !== false}
-                          onCheckedChange={(value) =>
-                            setColumnVisibility((prev) => ({
+                          onCheckedChange={value =>
+                            setColumnVisibility(prev => ({
                               ...prev,
                               [id]: value,
                             }))
@@ -334,7 +367,9 @@ export default function OrdenesPage() {
             {ocs.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardList size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes registradas</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No hay órdenes registradas
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   Comienza creando tu primera orden de compra
                 </p>
@@ -346,7 +381,9 @@ export default function OrdenesPage() {
             ) : filteredOcs.length === 0 ? (
               <div className="text-center py-12">
                 <Search size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No se encontraron resultados
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   No hay órdenes que coincidan con "{searchQuery}"
                 </p>
@@ -372,7 +409,7 @@ export default function OrdenesPage() {
       {formOpen && (
         <OCChinaForm
           open={formOpen}
-          onOpenChange={(open) => {
+          onOpenChange={open => {
             setFormOpen(open)
             if (!open) setOcToEdit(null)
           }}
@@ -385,7 +422,7 @@ export default function OrdenesPage() {
       {ocToDelete && (
         <CascadeDeleteDialog
           open={!!ocToDelete}
-          onOpenChange={(open) => {
+          onOpenChange={open => {
             if (!open) setOcToDelete(null)
           }}
           onConfirm={handleDelete}

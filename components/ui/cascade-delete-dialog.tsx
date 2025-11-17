@@ -91,9 +91,7 @@ export function CascadeDeleteDialog({
                 <AlertCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Eliminar OC {ocNumber}
-                </h2>
+                <h2 className="text-lg font-semibold text-gray-900">Eliminar OC {ocNumber}</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Esta acción eliminará la OC y TODOS sus datos relacionados
                 </p>
@@ -121,20 +119,27 @@ export function CascadeDeleteDialog({
               {/* Summary */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-gray-900 mb-2">
-                  Se eliminarán un total de <span className="text-red-600 font-bold">{totalRecords}</span> registros:
+                  Se eliminarán un total de{" "}
+                  <span className="text-red-600 font-bold">{totalRecords}</span> registros:
                 </p>
                 <ul className="space-y-1 text-sm text-gray-700">
                   <li>• {preview.counts.items} productos</li>
                   {preview.counts.pagos > 0 && <li>• {preview.counts.pagos} pagos</li>}
-                  {preview.counts.gastos > 0 && <li>• {preview.counts.gastos} gastos logísticos</li>}
-                  {preview.counts.inventario > 0 && <li>• {preview.counts.inventario} recepciones de inventario</li>}
+                  {preview.counts.gastos > 0 && (
+                    <li>• {preview.counts.gastos} gastos logísticos</li>
+                  )}
+                  {preview.counts.inventario > 0 && (
+                    <li>• {preview.counts.inventario} recepciones de inventario</li>
+                  )}
                 </ul>
               </div>
 
               {/* Details */}
               {preview.hasRelatedData && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-900">Detalles de lo que se eliminará:</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Detalles de lo que se eliminará:
+                  </h3>
 
                   {/* Pagos */}
                   {preview.details.pagos.length > 0 && (
@@ -143,10 +148,12 @@ export function CascadeDeleteDialog({
                         Pagos ({preview.details.pagos.length})
                       </h4>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {preview.details.pagos.map((pago) => (
+                        {preview.details.pagos.map(pago => (
                           <div key={pago.id} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">{pago.id}</span>
-                            <span className="font-medium text-gray-900">{formatCurrency(pago.monto)}</span>
+                            <span className="font-medium text-gray-900">
+                              {formatCurrency(pago.monto)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -160,10 +167,12 @@ export function CascadeDeleteDialog({
                         Gastos Logísticos ({preview.details.gastos.length})
                       </h4>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {preview.details.gastos.map((gasto) => (
+                        {preview.details.gastos.map(gasto => (
                           <div key={gasto.id} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">{gasto.id}</span>
-                            <span className="font-medium text-gray-900">{formatCurrency(gasto.monto)}</span>
+                            <span className="font-medium text-gray-900">
+                              {formatCurrency(gasto.monto)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -177,10 +186,12 @@ export function CascadeDeleteDialog({
                         Recepciones de Inventario ({preview.details.inventario.length})
                       </h4>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {preview.details.inventario.map((inv) => (
+                        {preview.details.inventario.map(inv => (
                           <div key={inv.id} className="flex items-center justify-between text-sm">
                             <span className="text-gray-700">{inv.id}</span>
-                            <span className="font-medium text-gray-900">{inv.cantidad} unidades</span>
+                            <span className="font-medium text-gray-900">
+                              {inv.cantidad} unidades
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -193,7 +204,8 @@ export function CascadeDeleteDialog({
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-red-900 mb-2">⚠️ Advertencia:</p>
                 <p className="text-sm text-red-800">
-                  Esta acción es IRREVERSIBLE. Todos los datos listados arriba serán eliminados permanentemente de la base de datos.
+                  Esta acción es IRREVERSIBLE. Todos los datos listados arriba serán eliminados
+                  permanentemente de la base de datos.
                 </p>
               </div>
 
@@ -203,12 +215,14 @@ export function CascadeDeleteDialog({
                   <input
                     type="checkbox"
                     checked={understood}
-                    onChange={(e) => setUnderstood(e.target.checked)}
+                    onChange={e => setUnderstood(e.target.checked)}
                     className="mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                     disabled={loading}
                   />
                   <span className="text-sm text-gray-700">
-                    Entiendo que esta acción eliminará permanentemente la OC <strong>{ocNumber}</strong> y todos sus {totalRecords} registros relacionados, y que no se puede deshacer.
+                    Entiendo que esta acción eliminará permanentemente la OC{" "}
+                    <strong>{ocNumber}</strong> y todos sus {totalRecords} registros relacionados, y
+                    que no se puede deshacer.
                   </span>
                 </label>
 
@@ -216,12 +230,13 @@ export function CascadeDeleteDialog({
                 {understood && (
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Para confirmar, escribe <span className="font-mono font-bold text-red-600">ELIMINAR</span>:
+                      Para confirmar, escribe{" "}
+                      <span className="font-mono font-bold text-red-600">ELIMINAR</span>:
                     </label>
                     <input
                       type="text"
                       value={confirmText}
-                      onChange={(e) => setConfirmText(e.target.value)}
+                      onChange={e => setConfirmText(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 font-mono"
                       placeholder="ELIMINAR"
                       disabled={loading}

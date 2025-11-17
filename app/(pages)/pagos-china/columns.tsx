@@ -45,9 +45,7 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
     accessorKey: "idPago",
     header: "ID Pago",
     cell: ({ row }) => (
-      <div className="font-medium text-gray-900 whitespace-nowrap">
-        {row.original.idPago}
-      </div>
+      <div className="font-medium text-gray-900 whitespace-nowrap">{row.original.idPago}</div>
     ),
   },
   {
@@ -64,27 +62,21 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
     accessorKey: "fechaPago",
     header: "Fecha",
     cell: ({ row }) => (
-      <div className="text-gray-500 whitespace-nowrap">
-        {formatDate(row.original.fechaPago)}
-      </div>
+      <div className="text-gray-500 whitespace-nowrap">{formatDate(row.original.fechaPago)}</div>
     ),
   },
   {
     accessorKey: "tipoPago",
     header: "Tipo",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap">
-        {row.original.tipoPago}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap">{row.original.tipoPago}</div>
     ),
   },
   {
     accessorKey: "metodoPago",
     header: "Método",
     cell: ({ row }) => (
-      <div className="text-gray-700 whitespace-nowrap">
-        {row.original.metodoPago}
-      </div>
+      <div className="text-gray-700 whitespace-nowrap">{row.original.metodoPago}</div>
     ),
   },
   {
@@ -143,7 +135,7 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
           <Button
             variant="ghost"
             className="h-8 px-2 text-gray-400"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               actions.onAddAttachments(row.original)
             }}
@@ -163,7 +155,7 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onEdit(row.original)
           }}
@@ -173,7 +165,7 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onDelete(row.original)
           }}

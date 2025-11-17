@@ -41,11 +41,7 @@ export class ApiError extends Error {
   public readonly statusCode: number
   public readonly details?: any
 
-  constructor(
-    code: ErrorCode,
-    message: string,
-    details?: any
-  ) {
+  constructor(code: ErrorCode, message: string, details?: any) {
     super(message)
     this.name = "ApiError"
     this.code = code
@@ -84,11 +80,9 @@ export const Errors = {
   badRequest: (message: string, details?: any) =>
     new ApiError(ErrorCode.BAD_REQUEST, message, details),
 
-  unauthorized: (message = "No autorizado") =>
-    new ApiError(ErrorCode.UNAUTHORIZED, message),
+  unauthorized: (message = "No autorizado") => new ApiError(ErrorCode.UNAUTHORIZED, message),
 
-  forbidden: (message = "Acceso denegado") =>
-    new ApiError(ErrorCode.FORBIDDEN, message),
+  forbidden: (message = "Acceso denegado") => new ApiError(ErrorCode.FORBIDDEN, message),
 
   notFound: (resource: string, id?: string) =>
     new ApiError(
@@ -99,8 +93,7 @@ export const Errors = {
   validation: (message: string, details?: any) =>
     new ApiError(ErrorCode.VALIDATION_ERROR, message, details),
 
-  conflict: (message: string, details?: any) =>
-    new ApiError(ErrorCode.CONFLICT, message, details),
+  conflict: (message: string, details?: any) => new ApiError(ErrorCode.CONFLICT, message, details),
 
   internal: (message = "Error interno del servidor") =>
     new ApiError(ErrorCode.INTERNAL_ERROR, message),
@@ -127,10 +120,10 @@ export function handleApiError(error: unknown): NextResponse {
     // P2002: Unique constraint violation
     if (prismaError.code === "P2002") {
       const field = prismaError.meta?.target?.[0] || "campo"
-      return Errors.conflict(
-        `Ya existe un registro con ese ${field}`,
-        { field, code: prismaError.code }
-      ).toResponse()
+      return Errors.conflict(`Ya existe un registro con ese ${field}`, {
+        field,
+        code: prismaError.code,
+      }).toResponse()
     }
 
     // P2025: Record not found
@@ -140,10 +133,9 @@ export function handleApiError(error: unknown): NextResponse {
 
     // P2003: Foreign key constraint
     if (prismaError.code === "P2003") {
-      return Errors.badRequest(
-        "No se puede eliminar: existen registros relacionados",
-        { code: prismaError.code }
-      ).toResponse()
+      return Errors.badRequest("No se puede eliminar: existen registros relacionados", {
+        code: prismaError.code,
+      }).toResponse()
     }
 
     // Otros errores de Prisma
@@ -157,9 +149,7 @@ export function handleApiError(error: unknown): NextResponse {
   if (error instanceof Error) {
     console.error("[Unexpected Error]", error.message, error.stack)
     return Errors.internal(
-      process.env.NODE_ENV === "development"
-        ? error.message
-        : "Error interno del servidor"
+      process.env.NODE_ENV === "development" ? error.message : "Error interno del servidor"
     ).toResponse()
   }
 
@@ -177,9 +167,7 @@ export function handleApiError(error: unknown): NextResponse {
  *   return NextResponse.json({ success: true, data })
  * })
  */
-export function withErrorHandler<T extends any[]>(
-  handler: (...args: T) => Promise<NextResponse>
-) {
+export function withErrorHandler<T extends any[]>(handler: (...args: T) => Promise<NextResponse>) {
   return async (...args: T): Promise<NextResponse> => {
     try {
       return await handler(...args)

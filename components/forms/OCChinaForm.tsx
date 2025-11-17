@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
@@ -13,7 +20,15 @@ import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
 import { ocChinaSchema, type OCChinaInput } from "@/lib/validations"
-import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus, Calculator } from "lucide-react"
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  PackagePlus,
+  Calculator,
+} from "lucide-react"
 import { CBMCalculator } from "@/components/ui/cbm-calculator"
 
 interface FileAttachment {
@@ -107,16 +122,20 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       ])
         .then(([proveedoresRes, categoriasRes]) => {
           if (proveedoresRes.success) {
-            setProveedorOptions(proveedoresRes.data.map((item: any) => ({
-              value: item.nombre,
-              label: item.nombre
-            })))
+            setProveedorOptions(
+              proveedoresRes.data.map((item: any) => ({
+                value: item.nombre,
+                label: item.nombre,
+              }))
+            )
           }
           if (categoriasRes.success) {
-            setCategoriaOptions(categoriasRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setCategoriaOptions(
+              categoriasRes.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           setLoadingConfig(false)
         })
@@ -193,7 +212,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
   const handleCBMCalculate = (cbm: number) => {
     if (cbmCalcItemIndex !== null) {
-      updateItem(cbmCalcItemIndex, 'volumenUnitarioCBM', cbm)
+      updateItem(cbmCalcItemIndex, "volumenUnitarioCBM", cbm)
     }
   }
 
@@ -212,7 +231,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       const parts = text.split(/[\/,]/).map(p => p.trim())
       const result: Record<string, number> = {}
       for (const part of parts) {
-        const [talla, cantidad] = part.split(':').map(s => s.trim())
+        const [talla, cantidad] = part.split(":").map(s => s.trim())
         if (talla && cantidad) {
           result[talla] = parseInt(cantidad) || 0
         }
@@ -243,7 +262,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         if (!item.sku || !item.nombre || !item.cantidadTotal || !item.precioUnitarioUSD) {
-          throw new Error(`El producto #${i + 1} tiene campos incompletos (SKU, nombre, cantidad o precio)`)
+          throw new Error(
+            `El producto #${i + 1} tiene campos incompletos (SKU, nombre, cantidad o precio)`
+          )
         }
       }
 
@@ -299,7 +320,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogClose onClose={handleCancel} />
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -315,11 +338,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Código OC
                     </label>
-                    <Input
-                      {...register("oc")}
-                      disabled={true}
-                      className="bg-gray-100"
-                    />
+                    <Input {...register("oc")} disabled={true} className="bg-gray-100" />
                   </div>
                 )}
 
@@ -331,8 +350,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   <Select
                     options={proveedorOptions}
                     value={proveedorValue || ""}
-                    onChange={(value) => setValue("proveedor", value)}
-                    placeholder={loadingConfig ? "Cargando proveedores..." : "Selecciona un proveedor"}
+                    onChange={value => setValue("proveedor", value)}
+                    placeholder={
+                      loadingConfig ? "Cargando proveedores..." : "Selecciona un proveedor"
+                    }
                     disabled={isSubmitting || loadingConfig}
                   />
                   {errors.proveedor && (
@@ -347,7 +368,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   </label>
                   <DatePicker
                     value={fechaOCValue}
-                    onChange={(date) => setValue("fechaOC", date as any)}
+                    onChange={date => setValue("fechaOC", date as any)}
                     disabled={isSubmitting}
                   />
                   {errors.fechaOC && (
@@ -363,8 +384,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   <Select
                     options={categoriaOptions}
                     value={categoriaPrincipalValue || ""}
-                    onChange={(value) => setValue("categoriaPrincipal", value)}
-                    placeholder={loadingConfig ? "Cargando categorías..." : "Selecciona una categoría"}
+                    onChange={value => setValue("categoriaPrincipal", value)}
+                    placeholder={
+                      loadingConfig ? "Cargando categorías..." : "Selecciona una categoría"
+                    }
                     disabled={isSubmitting || loadingConfig}
                   />
                   {errors.categoriaPrincipal && (
@@ -430,12 +453,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               )}
                             </button>
                             <span className="font-medium">
-                              Producto #{index + 1}: {item.sku || "(Sin SKU)"} - {item.nombre || "(Sin nombre)"}
+                              Producto #{index + 1}: {item.sku || "(Sin SKU)"} -{" "}
+                              {item.nombre || "(Sin nombre)"}
                             </span>
                           </div>
                           {!expandedItems.has(index) && (
                             <div className="ml-7 text-sm text-gray-500">
-                              {item.cantidadTotal} unidades × ${item.precioUnitarioUSD.toFixed(2)} = ${(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)}
+                              {item.cantidadTotal} unidades × ${item.precioUnitarioUSD.toFixed(2)} =
+                              ${(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)}
                             </div>
                           )}
                         </div>
@@ -461,7 +486,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               </label>
                               <Input
                                 value={item.sku}
-                                onChange={(e) => updateItem(index, 'sku', e.target.value)}
+                                onChange={e => updateItem(index, "sku", e.target.value)}
                                 placeholder="Ej: 6018"
                                 disabled={isSubmitting}
                               />
@@ -474,7 +499,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               </label>
                               <Input
                                 value={item.nombre}
-                                onChange={(e) => updateItem(index, 'nombre', e.target.value)}
+                                onChange={e => updateItem(index, "nombre", e.target.value)}
                                 placeholder="Ej: men leather shoes"
                                 disabled={isSubmitting}
                               />
@@ -487,7 +512,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               </label>
                               <Input
                                 value={item.material || ""}
-                                onChange={(e) => updateItem(index, 'material', e.target.value)}
+                                onChange={e => updateItem(index, "material", e.target.value)}
                                 placeholder="Ej: COW LEATHER + EVA SOLE"
                                 disabled={isSubmitting}
                               />
@@ -500,7 +525,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               </label>
                               <Input
                                 value={item.color || ""}
-                                onChange={(e) => updateItem(index, 'color', e.target.value)}
+                                onChange={e => updateItem(index, "color", e.target.value)}
                                 placeholder="Ej: brown leather + brown lace"
                                 disabled={isSubmitting}
                               />
@@ -515,7 +540,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 type="number"
                                 min="1"
                                 value={item.cantidadTotal || ""}
-                                onChange={(e) => updateItem(index, 'cantidadTotal', parseInt(e.target.value) || 0)}
+                                onChange={e =>
+                                  updateItem(index, "cantidadTotal", parseInt(e.target.value) || 0)
+                                }
                                 placeholder="Ej: 90"
                                 disabled={isSubmitting}
                               />
@@ -531,7 +558,13 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 min="0.01"
                                 step="0.01"
                                 value={item.precioUnitarioUSD || ""}
-                                onChange={(e) => updateItem(index, 'precioUnitarioUSD', parseFloat(e.target.value) || 0)}
+                                onChange={e =>
+                                  updateItem(
+                                    index,
+                                    "precioUnitarioUSD",
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
                                 placeholder="Ej: 25.50"
                                 disabled={isSubmitting}
                               />
@@ -548,11 +581,19 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 min="0.001"
                                 step="0.001"
                                 value={item.pesoUnitarioKg || ""}
-                                onChange={(e) => updateItem(index, 'pesoUnitarioKg', e.target.value ? parseFloat(e.target.value) : null)}
+                                onChange={e =>
+                                  updateItem(
+                                    index,
+                                    "pesoUnitarioKg",
+                                    e.target.value ? parseFloat(e.target.value) : null
+                                  )
+                                }
                                 placeholder="Ej: 0.850"
                                 disabled={isSubmitting}
                               />
-                              <p className="text-xs text-gray-500 mt-0.5">Para distribución de gastos de flete</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Para distribución de gastos de flete
+                              </p>
                             </div>
 
                             {/* Volumen Unitario */}
@@ -567,7 +608,13 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                   min="0.000001"
                                   step="0.000001"
                                   value={item.volumenUnitarioCBM || ""}
-                                  onChange={(e) => updateItem(index, 'volumenUnitarioCBM', e.target.value ? parseFloat(e.target.value) : null)}
+                                  onChange={e =>
+                                    updateItem(
+                                      index,
+                                      "volumenUnitarioCBM",
+                                      e.target.value ? parseFloat(e.target.value) : null
+                                    )
+                                  }
                                   placeholder="Ej: 0.012"
                                   disabled={isSubmitting}
                                   className="flex-1"
@@ -583,7 +630,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                   <Calculator className="w-4 h-4" />
                                 </Button>
                               </div>
-                              <p className="text-xs text-gray-500 mt-0.5">Metro cúbico (L×W×H÷1,000,000)</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Metro cúbico (L×W×H÷1,000,000)
+                              </p>
                             </div>
                           </div>
 
@@ -594,7 +643,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                             </label>
                             <Textarea
                               value={item.especificaciones || ""}
-                              onChange={(e) => updateItem(index, 'especificaciones', e.target.value)}
+                              onChange={e => updateItem(index, "especificaciones", e.target.value)}
                               placeholder="Notas adicionales sobre el producto..."
                               rows={2}
                               disabled={isSubmitting}
@@ -607,8 +656,16 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               Distribución de Tallas (opcional)
                             </label>
                             <Input
-                              value={item.tallaDistribucion ? JSON.stringify(item.tallaDistribucion) : ""}
-                              onChange={(e) => updateItem(index, 'tallaDistribucion', parseTallaDistribucion(e.target.value))}
+                              value={
+                                item.tallaDistribucion ? JSON.stringify(item.tallaDistribucion) : ""
+                              }
+                              onChange={e =>
+                                updateItem(
+                                  index,
+                                  "tallaDistribucion",
+                                  parseTallaDistribucion(e.target.value)
+                                )
+                              }
                               placeholder='Ej: {"38": 10, "39": 20, "40": 20} o 38:10 / 39:20 / 40:20'
                               disabled={isSubmitting}
                             />
@@ -619,7 +676,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
                           {/* Subtotal calculado */}
                           <div className="bg-blue-50 p-2 rounded text-sm">
-                            <strong>Subtotal:</strong> ${(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)} USD
+                            <strong>Subtotal:</strong> $
+                            {(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)} USD
                           </div>
                         </div>
                       )}
@@ -634,7 +692,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="grid grid-cols-2 gap-4 text-lg font-semibold">
                   <div>
-                    Total Unidades: <span className="text-blue-600">{totalUnidades.toLocaleString()}</span>
+                    Total Unidades:{" "}
+                    <span className="text-blue-600">{totalUnidades.toLocaleString()}</span>
                   </div>
                   <div>
                     Total FOB: <span className="text-blue-600">${totalUSD.toFixed(2)} USD</span>
@@ -656,12 +715,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -670,8 +724,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
+              ) : isEditMode ? (
+                "Actualizar Orden"
               ) : (
-                isEditMode ? "Actualizar Orden" : "Crear Orden"
+                "Crear Orden"
               )}
             </Button>
           </DialogFooter>

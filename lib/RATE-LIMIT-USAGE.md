@@ -11,7 +11,7 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 export async function POST(request: NextRequest) {
   // Aplicar rate limit para uploads (3 req/min)
   const rateLimitError = await withRateLimit(request, RateLimits.upload)
-  if (rateLimitError) return rateLimitError  // 429 Too Many Requests
+  if (rateLimitError) return rateLimitError // 429 Too Many Requests
 
   // Continuar con lógica normal
   const data = await request.json()
@@ -31,15 +31,15 @@ export async function POST(request: NextRequest) {
 
   const result = await rateLimit({
     identifier: clientIp,
-    limit: 10,        // 10 requests
-    windowSeconds: 60 // en 60 segundos
+    limit: 10, // 10 requests
+    windowSeconds: 60, // en 60 segundos
   })
 
   if (!result.success) {
     return NextResponse.json(
       {
         error: `Demasiadas peticiones. Intenta en ${result.retryAfter}s`,
-        retryAfter: result.retryAfter
+        retryAfter: result.retryAfter,
       },
       {
         status: 429,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
           "X-RateLimit-Limit": result.limit.toString(),
           "X-RateLimit-Remaining": result.remaining.toString(),
           "Retry-After": result.retryAfter!.toString(),
-        }
+        },
       }
     )
   }
@@ -61,12 +61,14 @@ export async function POST(request: NextRequest) {
 ## 🎯 Presets Disponibles
 
 ### 1. `RateLimits.upload` - Uploads de archivos
+
 ```typescript
 // 3 requests cada 60 segundos
 const result = await withRateLimit(request, RateLimits.upload)
 ```
 
 **Usar en:**
+
 - `/api/upload`
 - `/api/*/attachments`
 - Cualquier endpoint de subida de archivos
@@ -74,12 +76,14 @@ const result = await withRateLimit(request, RateLimits.upload)
 ---
 
 ### 2. `RateLimits.mutation` - Operaciones de escritura
+
 ```typescript
 // 20 requests cada 10 segundos
 const result = await withRateLimit(request, RateLimits.mutation)
 ```
 
 **Usar en:**
+
 - POST `/api/oc-china`
 - PUT `/api/oc-china/[id]`
 - DELETE `/api/oc-china/[id]`
@@ -88,12 +92,14 @@ const result = await withRateLimit(request, RateLimits.mutation)
 ---
 
 ### 3. `RateLimits.query` - Operaciones de lectura
+
 ```typescript
 // 60 requests cada 60 segundos
 const result = await withRateLimit(request, RateLimits.query)
 ```
 
 **Usar en:**
+
 - GET `/api/oc-china`
 - GET `/api/pagos-china`
 - Cualquier GET endpoint
@@ -101,12 +107,14 @@ const result = await withRateLimit(request, RateLimits.query)
 ---
 
 ### 4. `RateLimits.auth` - Autenticación
+
 ```typescript
 // 5 requests cada 15 minutos
 const result = await withRateLimit(request, RateLimits.auth)
 ```
 
 **Usar en:**
+
 - POST `/api/auth/login`
 - POST `/api/auth/register`
 - POST `/api/auth/forgot-password`
@@ -136,13 +144,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      url: fileUrl
+      url: fileUrl,
     })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: "Error al subir archivo" },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: "Error al subir archivo" }, { status: 500 })
   }
 }
 ```
@@ -152,6 +157,7 @@ export async function POST(request: NextRequest) {
 ## 📊 Respuesta 429 (Too Many Requests)
 
 ### Headers incluidos automáticamente:
+
 ```
 HTTP/1.1 429 Too Many Requests
 X-RateLimit-Limit: 3
@@ -162,6 +168,7 @@ Content-Type: application/json
 ```
 
 ### Body de respuesta:
+
 ```json
 {
   "success": false,
@@ -213,6 +220,7 @@ export const rateLimiter = {
 ## 📝 TODO: Endpoints a Proteger
 
 ### Alta Prioridad (crítico):
+
 - [x] ~~`/api/upload` - Ya tiene rate limit básico~~
 - [x] POST `/api/oc-china` - Mutations ✅ (2025-01-17)
 - [x] POST `/api/pagos-china` - Mutations ✅ (2025-01-17)
@@ -220,6 +228,7 @@ export const rateLimiter = {
 - [x] POST `/api/inventario-recibido` - Mutations ✅ (2025-01-17)
 
 ### Media Prioridad:
+
 - [ ] DELETE `/api/oc-china/[id]`
 - [ ] DELETE `/api/pagos-china/[id]`
 - [x] GET `/api/oc-china` - Queries ✅ (2025-01-17)
@@ -228,6 +237,7 @@ export const rateLimiter = {
 - [x] GET `/api/inventario-recibido` - Queries ✅ (2025-01-17)
 
 ### Baja Prioridad:
+
 - [ ] Todos los demás GET endpoints
 
 **Esfuerzo estimado:** ~20-30 min para proteger endpoints críticos
@@ -237,6 +247,7 @@ export const rateLimiter = {
 ## ⚠️ Limitaciones Actuales
 
 **Implementación en memoria:**
+
 - ✅ Funciona bien para desarrollo
 - ✅ Funciona bien para low-medium traffic (<1000 req/min)
 - ❌ Se resetea al reiniciar servidor
@@ -244,6 +255,7 @@ export const rateLimiter = {
 
 **Solución para producción:**
 Migrar a Redis (@upstash/ratelimit) cuando:
+
 - Tráfico > 1000 req/min
 - Deploy con múltiples instancias
 - Necesitas persistencia de rate limits

@@ -17,15 +17,7 @@ const colsClasses = {
 const StatsGrid = React.forwardRef<HTMLDivElement, StatsGridProps>(
   ({ className, cols = 4, children, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={cn(
-          "grid gap-4",
-          colsClasses[cols],
-          className
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn("grid gap-4", colsClasses[cols], className)} {...props}>
         {children}
       </div>
     )

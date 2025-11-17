@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
@@ -42,7 +49,12 @@ interface GastosLogisticosFormProps {
   gastoToEdit?: GastoLogistico | null
 }
 
-export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdit }: GastosLogisticosFormProps) {
+export function GastosLogisticosForm({
+  open,
+  onOpenChange,
+  onSuccess,
+  gastoToEdit,
+}: GastosLogisticosFormProps) {
   const { addToast } = useToast()
   const isEditMode = !!gastoToEdit
 
@@ -87,10 +99,12 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       // Load OCs
       setLoadingOcs(true)
       fetch("/api/oc-china")
-        .then((res) => res.json())
-        .then((result) => {
+        .then(res => res.json())
+        .then(result => {
           if (result.success) {
-            setOcsOptions(result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` })))
+            setOcsOptions(
+              result.data.map((oc: any) => ({ value: oc.id, label: `${oc.oc} - ${oc.proveedor}` }))
+            )
           }
           setLoadingOcs(false)
         })
@@ -104,16 +118,20 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       ])
         .then(([tiposGastoRes, metodosPagoRes]) => {
           if (tiposGastoRes.success) {
-            setTiposGastoOptions(tiposGastoRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setTiposGastoOptions(
+              tiposGastoRes.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           if (metodosPagoRes.success) {
-            setMetodosPagoOptions(metodosPagoRes.data.map((item: any) => ({
-              value: item.valor,
-              label: item.valor
-            })))
+            setMetodosPagoOptions(
+              metodosPagoRes.data.map((item: any) => ({
+                value: item.valor,
+                label: item.valor,
+              }))
+            )
           }
           setLoadingConfig(false)
         })
@@ -184,7 +202,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       addToast({
         type: "error",
         title: "Error",
-        description: error.message || "Error al procesar el gasto"
+        description: error.message || "Error al procesar el gasto",
       })
     }
   }
@@ -200,7 +218,9 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
       <DialogContent className="max-w-2xl">
         <DialogClose onClose={handleCancel} />
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Editar Gasto Logístico" : "Nuevo Gasto Logístico"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Editar Gasto Logístico" : "Nuevo Gasto Logístico"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -227,24 +247,25 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
               <Select
                 options={ocsOptions}
                 value={ocIdValue}
-                onChange={(value) => setValue("ocId", value)}
+                onChange={value => setValue("ocId", value)}
                 placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
                 disabled={isSubmitting || loadingOcs}
               />
-              {errors.ocId && (
-                <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>
-              )}
+              {errors.ocId && <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="fechaGasto" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="fechaGasto"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Fecha de Gasto <span className="text-red-500">*</span>
                 </label>
                 <DatePicker
                   id="fechaGasto"
                   value={fechaGastoValue}
-                  onChange={(date) => setValue("fechaGasto", date as any)}
+                  onChange={date => setValue("fechaGasto", date as any)}
                   disabled={isSubmitting}
                 />
                 {errors.fechaGasto && (
@@ -259,7 +280,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                 <Select
                   options={tiposGastoOptions}
                   value={tipoGastoValue}
-                  onChange={(value) => setValue("tipoGasto", value)}
+                  onChange={value => setValue("tipoGasto", value)}
                   placeholder={loadingConfig ? "Cargando tipos..." : "Selecciona tipo"}
                   disabled={isSubmitting || loadingConfig}
                 />
@@ -271,7 +292,10 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="proveedorServicio" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="proveedorServicio"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Proveedor de Servicio
                 </label>
                 <Input
@@ -286,13 +310,16 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
               </div>
 
               <div>
-                <label htmlFor="metodoPago" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="metodoPago"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Método de Pago <span className="text-red-500">*</span>
                 </label>
                 <Select
                   options={metodosPagoOptions}
                   value={metodoPagoValue}
-                  onChange={(value) => setValue("metodoPago", value)}
+                  onChange={value => setValue("metodoPago", value)}
                   placeholder={loadingConfig ? "Cargando métodos..." : "Selecciona método"}
                   disabled={isSubmitting || loadingConfig}
                 />
@@ -331,9 +358,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                 rows={3}
                 disabled={isSubmitting}
               />
-              {errors.notas && (
-                <p className="text-xs text-red-600 mt-1">{errors.notas.message}</p>
-              )}
+              {errors.notas && <p className="text-xs text-red-600 mt-1">{errors.notas.message}</p>}
             </div>
 
             {/* Attachments */}
@@ -360,8 +385,10 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
                 </>
+              ) : isEditMode ? (
+                "Actualizar Gasto"
               ) : (
-                isEditMode ? "Actualizar Gasto" : "Crear Gasto"
+                "Crear Gasto"
               )}
             </Button>
           </DialogFooter>

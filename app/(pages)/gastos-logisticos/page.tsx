@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useState, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -19,13 +19,38 @@ import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 
 // Lazy load heavy components
-const GastosLogisticosForm = dynamicImport(() => import("@/components/forms/GastosLogisticosForm").then(mod => ({ default: mod.GastosLogisticosForm })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
-})
-const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
-  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
-})
-import { Plus, Truck, DollarSign, TrendingUp, Package, Download, FileText, Search, Settings2, FileSpreadsheet } from "lucide-react"
+const GastosLogisticosForm = dynamicImport(
+  () =>
+    import("@/components/forms/GastosLogisticosForm").then(mod => ({
+      default: mod.GastosLogisticosForm,
+    })),
+  {
+    loading: () => (
+      <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+    ),
+  }
+)
+const AddAttachmentsDialog = dynamicImport(
+  () =>
+    import("@/components/ui/add-attachments-dialog").then(mod => ({
+      default: mod.AddAttachmentsDialog,
+    })),
+  {
+    loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>,
+  }
+)
+import {
+  Plus,
+  Truck,
+  DollarSign,
+  TrendingUp,
+  Package,
+  Download,
+  FileText,
+  Search,
+  Settings2,
+  FileSpreadsheet,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -43,7 +68,8 @@ export default function GastosLogisticosPage() {
   const [gastoToDelete, setGastoToDelete] = useState<GastoLogistico | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
-  const [selectedGastoForAttachments, setSelectedGastoForAttachments] = useState<GastoLogistico | null>(null)
+  const [selectedGastoForAttachments, setSelectedGastoForAttachments] =
+    useState<GastoLogistico | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
@@ -114,9 +140,9 @@ export default function GastosLogisticosPage() {
   const prepareExportData = () => {
     return gastos.map((gasto: GastoLogistico) => ({
       "ID Gasto": gasto.idGasto,
-      "OC": gasto.ocChina.oc,
-      "Proveedor": gasto.ocChina.proveedor,
-      "Fecha": new Date(gasto.fechaGasto).toLocaleDateString(),
+      OC: gasto.ocChina.oc,
+      Proveedor: gasto.ocChina.proveedor,
+      Fecha: new Date(gasto.fechaGasto).toLocaleDateString(),
       "Tipo de Gasto": gasto.tipoGasto,
       "Proveedor Servicio": gasto.proveedorServicio || "",
       "Monto RD$": parseFloat(gasto.montoRD.toString()),
@@ -177,12 +203,13 @@ export default function GastosLogisticosPage() {
     if (!searchQuery.trim()) return gastos
 
     const query = searchQuery.toLowerCase()
-    return gastos.filter((gasto: GastoLogistico) =>
-      gasto.idGasto.toLowerCase().includes(query) ||
-      gasto.ocChina.oc.toLowerCase().includes(query) ||
-      gasto.ocChina.proveedor.toLowerCase().includes(query) ||
-      gasto.tipoGasto.toLowerCase().includes(query) ||
-      (gasto.proveedorServicio && gasto.proveedorServicio.toLowerCase().includes(query))
+    return gastos.filter(
+      (gasto: GastoLogistico) =>
+        gasto.idGasto.toLowerCase().includes(query) ||
+        gasto.ocChina.oc.toLowerCase().includes(query) ||
+        gasto.ocChina.proveedor.toLowerCase().includes(query) ||
+        gasto.tipoGasto.toLowerCase().includes(query) ||
+        (gasto.proveedorServicio && gasto.proveedorServicio.toLowerCase().includes(query))
     )
   }, [gastos, searchQuery])
 
@@ -190,17 +217,25 @@ export default function GastosLogisticosPage() {
   const stats = useMemo(() => {
     const totalGastos = gastos.length
 
-    const totalRD = gastos.reduce((sum: number, gasto: GastoLogistico) => sum + parseFloat(gasto.montoRD.toString()), 0)
+    const totalRD = gastos.reduce(
+      (sum: number, gasto: GastoLogistico) => sum + parseFloat(gasto.montoRD.toString()),
+      0
+    )
 
     const promedioGasto = totalGastos > 0 ? totalRD / totalGastos : 0
 
     // Calcular el tipo de gasto más frecuente
-    const tiposCounts = gastos.reduce((acc: Record<string, number>, gasto: GastoLogistico) => {
-      acc[gasto.tipoGasto] = (acc[gasto.tipoGasto] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const tiposCounts = gastos.reduce(
+      (acc: Record<string, number>, gasto: GastoLogistico) => {
+        acc[gasto.tipoGasto] = (acc[gasto.tipoGasto] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
-    const tipoMasComun = (Object.entries(tiposCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
+    const tipoMasComun = (Object.entries(tiposCounts) as [string, number][]).sort(
+      (a, b) => b[1] - a[1]
+    )[0]
     const tipoMasComunNombre = tipoMasComun?.[0] || "N/A"
     const tipoMasComunCantidad = tipoMasComun?.[1] || 0
 
@@ -253,7 +288,8 @@ export default function GastosLogisticosPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <FileText size={18} />
-              Gastos ({filteredGastos.length}{searchQuery ? ` de ${gastos.length}` : ''})
+              Gastos ({filteredGastos.length}
+              {searchQuery ? ` de ${gastos.length}` : ""})
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -261,7 +297,7 @@ export default function GastosLogisticosPage() {
                 <Input
                   placeholder="Buscar ID, OC, proveedor..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-8 h-8 w-64 text-xs"
                 />
               </div>
@@ -274,16 +310,18 @@ export default function GastosLogisticosPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   {columns
-                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
-                    .map((column) => {
+                    .filter(
+                      column => "accessorKey" in column && typeof column.accessorKey === "string"
+                    )
+                    .map(column => {
                       const id = (column as any).accessorKey as string
                       return (
                         <DropdownMenuCheckboxItem
                           key={id}
                           className="capitalize"
                           checked={columnVisibility[id] !== false}
-                          onCheckedChange={(value) =>
-                            setColumnVisibility((prev) => ({
+                          onCheckedChange={value =>
+                            setColumnVisibility(prev => ({
                               ...prev,
                               [id]: value,
                             }))
@@ -331,7 +369,9 @@ export default function GastosLogisticosPage() {
             {gastos.length === 0 ? (
               <div className="text-center py-12">
                 <Truck size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay gastos logísticos registrados</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No hay gastos logísticos registrados
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   Comienza registrando tu primer gasto logístico
                 </p>
@@ -343,7 +383,9 @@ export default function GastosLogisticosPage() {
             ) : filteredGastos.length === 0 ? (
               <div className="text-center py-12">
                 <Search size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No se encontraron resultados
+                </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   No hay gastos que coincidan con "{searchQuery}"
                 </p>
@@ -376,7 +418,7 @@ export default function GastosLogisticosPage() {
 
         <ConfirmDialog
           open={!!gastoToDelete}
-          onOpenChange={(open) => !open && setGastoToDelete(null)}
+          onOpenChange={open => !open && setGastoToDelete(null)}
           onConfirm={handleDelete}
           title="Eliminar Gasto"
           description={`¿Estás seguro de eliminar el gasto ${gastoToDelete?.idGasto}? Esta acción no se puede deshacer.`}

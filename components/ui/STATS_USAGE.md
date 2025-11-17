@@ -3,9 +3,11 @@
 ## Componentes Creados
 
 ### 1. StatCard
+
 Tarjeta de estadística reutilizable con iconos, valores y tendencias.
 
 ### 2. StatsGrid
+
 Grid responsivo para organizar múltiples StatCards.
 
 ---
@@ -21,26 +23,11 @@ import { DollarSign, Package, TrendingUp, Users } from "lucide-react"
 export default function ExamplePage() {
   return (
     <StatsGrid cols={4}>
-      <StatCard
-        icon={<Package />}
-        label="Total Órdenes"
-        value="45"
-        subtitle="Este mes"
-      />
+      <StatCard icon={<Package />} label="Total Órdenes" value="45" subtitle="Este mes" />
 
-      <StatCard
-        icon={<DollarSign />}
-        label="FOB Total"
-        value="$125,000"
-        subtitle="En 45 órdenes"
-      />
+      <StatCard icon={<DollarSign />} label="FOB Total" value="$125,000" subtitle="En 45 órdenes" />
 
-      <StatCard
-        icon={<Users />}
-        label="Proveedores"
-        value="12"
-        subtitle="Activos"
-      />
+      <StatCard icon={<Users />} label="Proveedores" value="12" subtitle="Activos" />
 
       <StatCard
         icon={<TrendingUp />}
@@ -60,44 +47,19 @@ export default function ExamplePage() {
 ```tsx
 <StatsGrid cols={4}>
   {/* Default - Gris */}
-  <StatCard
-    variant="default"
-    icon={<Package />}
-    label="Total Órdenes"
-    value="45"
-  />
+  <StatCard variant="default" icon={<Package />} label="Total Órdenes" value="45" />
 
   {/* Primary - Azul */}
-  <StatCard
-    variant="primary"
-    icon={<DollarSign />}
-    label="Total Pagado"
-    value="RD$ 2,500,000"
-  />
+  <StatCard variant="primary" icon={<DollarSign />} label="Total Pagado" value="RD$ 2,500,000" />
 
   {/* Success - Verde */}
-  <StatCard
-    variant="success"
-    icon={<CheckCircle />}
-    label="Completadas"
-    value="38"
-  />
+  <StatCard variant="success" icon={<CheckCircle />} label="Completadas" value="38" />
 
   {/* Warning - Amarillo */}
-  <StatCard
-    variant="warning"
-    icon={<Clock />}
-    label="Pendientes"
-    value="7"
-  />
+  <StatCard variant="warning" icon={<Clock />} label="Pendientes" value="7" />
 
   {/* Danger - Rojo */}
-  <StatCard
-    variant="danger"
-    icon={<AlertTriangle />}
-    label="Atrasadas"
-    value="2"
-  />
+  <StatCard variant="danger" icon={<AlertTriangle />} label="Atrasadas" value="2" />
 </StatsGrid>
 ```
 
@@ -124,12 +86,7 @@ export default function ExamplePage() {
   />
 
   {/* Sin tendencia */}
-  <StatCard
-    icon={<Users />}
-    label="Proveedores"
-    value="12"
-    subtitle="Activos"
-  />
+  <StatCard icon={<Users />} label="Proveedores" value="12" subtitle="Activos" />
 </StatsGrid>
 ```
 
@@ -224,21 +181,27 @@ export default function OrdenesPage() {
 ### Grid con Diferentes Columnas
 
 ```tsx
-{/* 2 columnas en desktop */}
-<StatsGrid cols={2}>
+{
+  /* 2 columnas en desktop */
+}
+;<StatsGrid cols={2}>
   <StatCard label="Stat 1" value="100" />
   <StatCard label="Stat 2" value="200" />
 </StatsGrid>
 
-{/* 3 columnas en desktop */}
-<StatsGrid cols={3}>
+{
+  /* 3 columnas en desktop */
+}
+;<StatsGrid cols={3}>
   <StatCard label="Stat 1" value="100" />
   <StatCard label="Stat 2" value="200" />
   <StatCard label="Stat 3" value="300" />
 </StatsGrid>
 
-{/* 4 columnas en desktop (default) */}
-<StatsGrid cols={4}>
+{
+  /* 4 columnas en desktop (default) */
+}
+;<StatsGrid cols={4}>
   <StatCard label="Stat 1" value="100" />
   <StatCard label="Stat 2" value="200" />
   <StatCard label="Stat 3" value="300" />
@@ -252,23 +215,23 @@ export default function OrdenesPage() {
 
 ### Breakpoints Automáticos
 
-| Columnas | Mobile | Tablet (md) | Desktop (lg) |
-|----------|--------|-------------|--------------|
-| `cols={2}` | 1 col | 2 cols | 2 cols |
-| `cols={3}` | 1 col | 2 cols | 3 cols |
-| `cols={4}` | 1 col | 2 cols | 4 cols |
+| Columnas   | Mobile | Tablet (md) | Desktop (lg) |
+| ---------- | ------ | ----------- | ------------ |
+| `cols={2}` | 1 col  | 2 cols      | 2 cols       |
+| `cols={3}` | 1 col  | 2 cols      | 3 cols       |
+| `cols={4}` | 1 col  | 2 cols      | 4 cols       |
 
 ---
 
 ## 🎨 Variantes de Color
 
-| Variant | Color | Uso Recomendado |
-|---------|-------|-----------------|
-| `default` | Gris | Estadísticas neutras |
-| `primary` | Azul | Métricas principales |
-| `success` | Verde | Valores positivos, completados |
-| `warning` | Amarillo | Pendientes, en proceso |
-| `danger` | Rojo | Alertas, errores, atrasadas |
+| Variant   | Color    | Uso Recomendado                |
+| --------- | -------- | ------------------------------ |
+| `default` | Gris     | Estadísticas neutras           |
+| `primary` | Azul     | Métricas principales           |
+| `success` | Verde    | Valores positivos, completados |
+| `warning` | Amarillo | Pendientes, en proceso         |
+| `danger`  | Rojo     | Alertas, errores, atrasadas    |
 
 ---
 
@@ -278,17 +241,18 @@ export default function OrdenesPage() {
 
 ```typescript
 interface StatCardProps {
-  icon?: React.ReactNode           // Icono (Lucide React)
-  label: string                    // Etiqueta/título
-  value: string | number           // Valor principal
-  subtitle?: string                // Subtítulo opcional
-  trend?: {                        // Tendencia opcional
-    value: number                  // % de cambio
-    isPositive: boolean            // ↑ verde o ↓ rojo
+  icon?: React.ReactNode // Icono (Lucide React)
+  label: string // Etiqueta/título
+  value: string | number // Valor principal
+  subtitle?: string // Subtítulo opcional
+  trend?: {
+    // Tendencia opcional
+    value: number // % de cambio
+    isPositive: boolean // ↑ verde o ↓ rojo
   }
-  loading?: boolean                // Estado de carga
+  loading?: boolean // Estado de carga
   variant?: "default" | "primary" | "success" | "warning" | "danger"
-  className?: string               // Clases adicionales
+  className?: string // Clases adicionales
 }
 ```
 
@@ -296,9 +260,9 @@ interface StatCardProps {
 
 ```typescript
 interface StatsGridProps {
-  cols?: 2 | 3 | 4                // Número de columnas
-  children: React.ReactNode       // StatCards
-  className?: string              // Clases adicionales
+  cols?: 2 | 3 | 4 // Número de columnas
+  children: React.ReactNode // StatCards
+  className?: string // Clases adicionales
 }
 ```
 
@@ -332,6 +296,7 @@ interface StatsGridProps {
 ## 🚀 Ejemplos Reales del Sistema
 
 ### Página OC China
+
 ```tsx
 <StatsGrid cols={4}>
   <StatCard icon={<ClipboardList />} label="Total OCs" value={totalOCs} />
@@ -342,6 +307,7 @@ interface StatsGridProps {
 ```
 
 ### Página Pagos
+
 ```tsx
 <StatsGrid cols={4}>
   <StatCard icon={<DollarSign />} label="Total Pagado" value={`RD$ ${total}M`} variant="primary" />

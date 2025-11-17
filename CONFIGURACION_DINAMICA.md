@@ -23,6 +23,7 @@ npx tsx prisma/seed-config.ts
 ```
 
 Esto creará todos los valores predeterminados:
+
 - ✓ 5 Categorías Principales
 - ✓ 6 Tipos de Pago
 - ✓ 5 Métodos de Pago
@@ -36,12 +37,14 @@ Accede a http://localhost:3000/configuracion y verás la nueva interfaz con capa
 ## ✨ Características
 
 ### En la Página de Configuración:
+
 - ➕ **Agregar** nuevos valores a cualquier categoría
 - ✏️ **Editar** valores existentes
 - 🗑️ **Eliminar** valores que ya no necesites
 - 🔢 **Ordenar** cambiando el número de orden
 
 ### Ventajas:
+
 - Los cambios se reflejan **inmediatamente** en todos los formularios
 - **Validación** automática (no permite duplicados)
 - **Soft delete** (los valores eliminados se marcan como inactivos)

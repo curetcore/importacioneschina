@@ -3,6 +3,7 @@
 ## ✅ Progreso Completado (33%)
 
 ### Componentes Base Creados
+
 - ✅ `components/ui/data-table.tsx` - Componente DataTable reutilizable con:
   - Sorting multi-columna
   - Búsqueda global
@@ -14,6 +15,7 @@
 - ✅ `components/ui/dropdown-menu.tsx` - Menu para column visibility
 
 ### Tablas Migradas (2/6)
+
 1. ✅ **Órdenes** (`/ordenes`) - **COMPLETADA**
    - Archivo: `app/(pages)/ordenes/page.tsx`
    - Columnas: `app/(pages)/ordenes/columns.tsx`
@@ -30,9 +32,11 @@
 ### Tablas por Migrar (4/6)
 
 #### 1. Pagos China (`/pagos-china`) - PRIORIDAD ALTA
+
 **Archivo:** `app/(pages)/pagos-china/page.tsx` (506 líneas)
 
 **Patrón a seguir** (igual que órdenes):
+
 ```typescript
 // 1. Importar DataTable y columnas
 import { DataTable } from "@/components/ui/data-table"
@@ -70,32 +74,39 @@ const columns = useMemo(
 ```
 
 **Consideraciones especiales:**
+
 - Mantener funcionalidad de adjuntos
 - Filtros por moneda (usar column filtering de React Table)
 - KPIs calculados desde datos filtrados
 
 #### 2. Gastos Logísticos (`/gastos-logisticos`)
+
 **Archivo:** `app/(pages)/gastos-logisticos/page.tsx`
 
 **Pasos:**
+
 1. Crear `app/(pages)/gastos-logisticos/columns.tsx`
 2. Definir columnas: ID, OC/Proveedor, Fecha, Tipo, Proveedor Servicio, Monto RD$, Adjuntos, Acciones
 3. Actualizar página siguiendo patrón de órdenes
 4. Mantener: KPIs en tiempo real, export con filtros
 
 #### 3. Inventario Recibido (`/inventario-recibido`)
+
 **Archivo:** `app/(pages)/inventario-recibido/page.tsx`
 
 **Pasos:**
+
 1. Crear `app/(pages)/inventario-recibido/columns.tsx`
 2. Definir columnas: ID Recepción, OC/Proveedor, Fecha, Bodega, Cantidad, SKU/Producto, Costos, Acciones
 3. Actualizar página siguiendo patrón
 4. Mantener: Filtros por bodega, KPIs de recepciones
 
 #### 4. Configuración (`/configuracion`)
+
 **Archivo:** `app/(pages)/configuracion/page.tsx`
 
 **Pasos:**
+
 1. Crear `app/(pages)/configuracion/columns.tsx`
 2. Definir columnas: Categoría, Clave, Valor, Descripción, Acciones
 3. Actualizar página (tabla más simple)
@@ -157,6 +168,7 @@ git push
 ## 📊 Métricas Esperadas
 
 Por cada tabla migrada esperamos:
+
 - **Reducción de código:** ~150-200 líneas
 - **Nuevas funcionalidades:** Sorting, column visibility, búsqueda mejorada
 - **Tiempo de desarrollo:** 15-20 min por tabla

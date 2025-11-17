@@ -30,10 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!module || !MODULE_FOLDERS[module]) {
-      return NextResponse.json(
-        { success: false, error: "Módulo no válido" },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: "Módulo no válido" }, { status: 400 })
     }
 
     // Validar tipo de archivo

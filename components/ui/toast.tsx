@@ -21,7 +21,7 @@ export interface Toast {
 export function useToast() {
   const addToast = (options: Omit<Toast, "id">) => {
     const { type, title, description, duration, details } = options
-    const isDev = process.env.NODE_ENV === 'development'
+    const isDev = process.env.NODE_ENV === "development"
 
     // Configurar iconos personalizados
     const icons = {
@@ -34,9 +34,8 @@ export function useToast() {
     const Icon = icons[type]
 
     // Mensaje completo con detalles técnicos en desarrollo
-    const fullDescription = isDev && details
-      ? `${description || ''}\n\nDetalles técnicos: ${details}`
-      : description
+    const fullDescription =
+      isDev && details ? `${description || ""}\n\nDetalles técnicos: ${details}` : description
 
     // Mapear tipos a funciones de Sonner
     const toastFunctions = {

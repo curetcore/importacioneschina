@@ -1,57 +1,57 @@
-import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { NextResponse } from "next/server"
+import { exec } from "child_process"
+import { promisify } from "util"
 
-const execAsync = promisify(exec);
+const execAsync = promisify(exec)
 
 // Endpoint para ejecutar setup inicial de la base de datos
 // Solo usar UNA VEZ despuÃÂ©s del primer deploy
 export async function GET() {
   try {
-    const logs: string[] = [];
+    const logs: string[] = []
 
     // 1. Generar cliente Prisma
-    logs.push("Ã°ÂÂÂ§ Generando cliente Prisma...");
+    logs.push("Ã°ÂÂÂ§ Generando cliente Prisma...")
     try {
-      const { stdout: generateOut } = await execAsync("npx prisma generate");
-      logs.push("Ã¢ÂÂ Cliente Prisma generado");
-      logs.push(generateOut);
+      const { stdout: generateOut } = await execAsync("npx prisma generate")
+      logs.push("Ã¢ÂÂ Cliente Prisma generado")
+      logs.push(generateOut)
     } catch (error) {
-      logs.push("Ã¢ÂÂ Error generando cliente Prisma");
-      logs.push(error instanceof Error ? error.message : String(error));
+      logs.push("Ã¢ÂÂ Error generando cliente Prisma")
+      logs.push(error instanceof Error ? error.message : String(error))
     }
 
     // 2. Crear tablas con db push
-    logs.push("\nÃ°ÂÂÂÃ¯Â¸Â  Creando tablas en la base de datos...");
+    logs.push("\nÃ°ÂÂÂÃ¯Â¸Â  Creando tablas en la base de datos...")
     try {
-      const { stdout: pushOut } = await execAsync("npx prisma db push --accept-data-loss");
-      logs.push("Ã¢ÂÂ Tablas creadas exitosamente");
-      logs.push(pushOut);
+      const { stdout: pushOut } = await execAsync("npx prisma db push --accept-data-loss")
+      logs.push("Ã¢ÂÂ Tablas creadas exitosamente")
+      logs.push(pushOut)
     } catch (error) {
-      logs.push("Ã¢ÂÂ Error creando tablas");
-      logs.push(error instanceof Error ? error.message : String(error));
-      throw error; // Si falla aquÃÂ­, no continuar
+      logs.push("Ã¢ÂÂ Error creando tablas")
+      logs.push(error instanceof Error ? error.message : String(error))
+      throw error // Si falla aquÃÂ­, no continuar
     }
 
     // 3. Ejecutar seed
-    logs.push("\nÃ°ÂÂÂ± Poblando base de datos con datos de prueba...");
+    logs.push("\nÃ°ÂÂÂ± Poblando base de datos con datos de prueba...")
     try {
-      const { stdout: seedOut } = await execAsync("npm run db:seed");
-      logs.push("Ã¢ÂÂ Datos de prueba insertados");
-      logs.push(seedOut);
+      const { stdout: seedOut } = await execAsync("npm run db:seed")
+      logs.push("Ã¢ÂÂ Datos de prueba insertados")
+      logs.push(seedOut)
     } catch (error) {
-      logs.push("Ã¢ÂÂ Error ejecutando seed");
-      logs.push(error instanceof Error ? error.message : String(error));
+      logs.push("Ã¢ÂÂ Error ejecutando seed")
+      logs.push(error instanceof Error ? error.message : String(error))
     }
 
-    logs.push("\nÃ°ÂÂÂ ÃÂ¡Setup completado exitosamente!");
-    logs.push("\nÃ°ÂÂÂ Datos creados:");
-    logs.push("   - 10 ÃÂrdenes de Compra");
-    logs.push("   - 20 Pagos");
-    logs.push("   - ~25 Gastos LogÃÂ­sticos");
-    logs.push("   - 10 Recepciones de Inventario");
-    logs.push("\nÃ¢ÂÂ Tu aplicaciÃÂ³n estÃÂ¡ lista para usar!");
-    logs.push("Ã°ÂÂÂ  Ve al Dashboard: /dashboard");
+    logs.push("\nÃ°ÂÂÂ ÃÂ¡Setup completado exitosamente!")
+    logs.push("\nÃ°ÂÂÂ Datos creados:")
+    logs.push("   - 10 ÃÂrdenes de Compra")
+    logs.push("   - 20 Pagos")
+    logs.push("   - ~25 Gastos LogÃÂ­sticos")
+    logs.push("   - 10 Recepciones de Inventario")
+    logs.push("\nÃ¢ÂÂ Tu aplicaciÃÂ³n estÃÂ¡ lista para usar!")
+    logs.push("Ã°ÂÂÂ  Ve al Dashboard: /dashboard")
 
     return NextResponse.json(
       {
@@ -60,9 +60,9 @@ export async function GET() {
         logs: logs.join("\n"),
       },
       { status: 200 }
-    );
+    )
   } catch (error) {
-    console.error("Error en setup:", error);
+    console.error("Error en setup:", error)
     return NextResponse.json(
       {
         success: false,
@@ -70,6 +70,6 @@ export async function GET() {
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
-    );
+    )
   }
 }

@@ -78,7 +78,7 @@ export function AddAttachmentsDialog({
         throw new Error(result.error || "Error al subir el archivo")
       }
 
-      setNewAttachments((prev) => [...prev, result.data])
+      setNewAttachments(prev => [...prev, result.data])
 
       addToast({
         type: "success",
@@ -103,7 +103,7 @@ export function AddAttachmentsDialog({
   }
 
   const removeNewFile = (attachment: FileAttachment) => {
-    setNewAttachments((prev) => prev.filter((a) => a.url !== attachment.url))
+    setNewAttachments(prev => prev.filter(a => a.url !== attachment.url))
   }
 
   const handleSave = async () => {
@@ -184,20 +184,13 @@ export function AddAttachmentsDialog({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Paperclip size={20} className="text-gray-500" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Agregar Adjuntos
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-900">Agregar Adjuntos</h2>
             </div>
-            <button
-              onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={handleCancel} className="text-gray-400 hover:text-gray-600">
               <X size={20} />
             </button>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            {recordName}
-          </p>
+          <p className="text-sm text-gray-500 mt-1">{recordName}</p>
         </div>
 
         {/* Content */}
@@ -219,9 +212,7 @@ export function AddAttachmentsDialog({
                       <div className="text-sm font-medium text-gray-700 truncate">
                         {attachment.nombre}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {formatFileSize(attachment.size)}
-                      </div>
+                      <div className="text-xs text-gray-500">{formatFileSize(attachment.size)}</div>
                     </div>
                     <a
                       href={attachment.url}
@@ -239,9 +230,7 @@ export function AddAttachmentsDialog({
 
           {/* Upload zone */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-gray-700">
-              Nuevos archivos
-            </h3>
+            <h3 className="text-sm font-medium text-gray-700">Nuevos archivos</h3>
 
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
               <input
@@ -270,16 +259,12 @@ export function AddAttachmentsDialog({
                     "Subiendo archivo..."
                   ) : (
                     <>
-                      <span className="font-medium text-blue-600">
-                        Haz clic para subir
-                      </span>{" "}
-                      o arrastra archivos aquí
+                      <span className="font-medium text-blue-600">Haz clic para subir</span> o
+                      arrastra archivos aquí
                     </>
                   )}
                 </div>
-                <div className="text-xs text-gray-500">
-                  JPG, PNG o PDF (máx. 10MB)
-                </div>
+                <div className="text-xs text-gray-500">JPG, PNG o PDF (máx. 10MB)</div>
               </label>
             </div>
 
@@ -319,11 +304,7 @@ export function AddAttachmentsDialog({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={saving}
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={saving}>
             Cancelar
           </Button>
           <Button

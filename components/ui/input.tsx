@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'error'> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "error"> {
   error?: string
 }
 
@@ -22,9 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
         />
-        {error && (
-          <p className="mt-1 text-xs text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       </div>
     )
   }

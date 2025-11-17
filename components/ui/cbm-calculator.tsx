@@ -1,7 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Calculator } from "lucide-react"
@@ -64,43 +70,37 @@ export function CBMCalculator({ open, onOpenChange, onCalculate }: CBMCalculator
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Largo (cm)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Largo (cm)</label>
               <Input
                 type="number"
                 min="0.1"
                 step="0.1"
                 value={length}
-                onChange={(e) => setLength(e.target.value)}
+                onChange={e => setLength(e.target.value)}
                 placeholder="30"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ancho (cm)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ancho (cm)</label>
               <Input
                 type="number"
                 min="0.1"
                 step="0.1"
                 value={width}
-                onChange={(e) => setWidth(e.target.value)}
+                onChange={e => setWidth(e.target.value)}
                 placeholder="20"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Alto (cm)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alto (cm)</label>
               <Input
                 type="number"
                 min="0.1"
                 step="0.1"
                 value={height}
-                onChange={(e) => setHeight(e.target.value)}
+                onChange={e => setHeight(e.target.value)}
                 placeholder="15"
               />
             </div>
@@ -120,18 +120,10 @@ export function CBMCalculator({ open, onOpenChange, onCalculate }: CBMCalculator
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button
-              type="button"
-              onClick={calculateCBM}
-              disabled={!length || !width || !height}
-            >
+            <Button type="button" onClick={calculateCBM} disabled={!length || !width || !height}>
               Usar este valor
             </Button>
           </div>

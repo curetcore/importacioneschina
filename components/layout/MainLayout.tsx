@@ -9,9 +9,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-8 min-w-0">
-          {children}
-        </main>
+        <main className="flex-1 p-8 min-w-0">{children}</main>
       </div>
     </div>
   )

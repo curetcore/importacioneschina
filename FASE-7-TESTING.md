@@ -10,11 +10,11 @@
 
 ### Test Suites Implementados
 
-| Módulo | Tests | Coverage | Estado |
-|--------|-------|----------|--------|
-| **calculations.ts** | 47 tests | 98.29% | ✅ Completo |
-| **validations.ts** | 32 tests | 72.41% | ✅ Completo |
-| **Total** | **79 tests** | **~85% crítico** | ✅ Pasando |
+| Módulo              | Tests        | Coverage         | Estado      |
+| ------------------- | ------------ | ---------------- | ----------- |
+| **calculations.ts** | 47 tests     | 98.29%           | ✅ Completo |
+| **validations.ts**  | 32 tests     | 72.41%           | ✅ Completo |
+| **Total**           | **79 tests** | **~85% crítico** | ✅ Pasando  |
 
 ---
 
@@ -25,26 +25,31 @@
 **47 tests cubriendo:**
 
 #### Funciones de Conversión:
+
 - ✅ `calcularMontoRD` - Conversión de monedas (USD, CNY, RD$)
 - ✅ `calcularMontoRDNeto` - Cálculo con comisiones bancarias
 - ✅ `calcularTotalInversion` - Suma de pagos y gastos
 
 #### Cálculos de Costos:
+
 - ✅ `calcularCostoUnitarioFinal` - División con validación
 - ✅ `calcularCostoFOBUnitario` - Costo FOB por unidad
 - ✅ `calcularCostoTotalRecepcion` - Multiplicación con decimales
 
 #### Cálculos de Inventario:
+
 - ✅ `calcularDiferenciaUnidades` - Ordenado vs Recibido
 - ✅ `calcularPorcentajeRecepcion` - Porcentaje de recepción
 
 #### Funciones Integradoras:
+
 - ✅ `calcularOC` - Cálculo completo de OC
 - ✅ `calcularTasaCambioPromedio` - Tasa ponderada
 - ✅ `distribuirGastosLogisticos` - Distribución proporcional
 - ✅ `calcularResumenFinanciero` - Resumen completo
 
 **Edge cases testeados:**
+
 - ✅ Valores negativos
 - ✅ División por cero
 - ✅ Tasa de cambio inválida
@@ -61,12 +66,14 @@
 **32 tests cubriendo:**
 
 #### OCChinaSchema (6 tests):
+
 - ✅ Validación de proveedor requerido
 - ✅ Validación de categoría requerida
 - ✅ Rechazo de fechas futuras
 - ✅ Campos opcionales (descripcionLote)
 
 #### PagosChinaSchema (13 tests):
+
 - ✅ Validación de monedas (USD, CNY, RD$)
 - ✅ Monto original positivo
 - ✅ Tasa de cambio positiva y mayor a 0
@@ -76,12 +83,14 @@
 - ✅ Tipos de pago y métodos requeridos
 
 #### GastosLogisticosSchema (5 tests):
+
 - ✅ Monto positivo en RD$
 - ✅ Tipo de gasto requerido
 - ✅ Proveedor servicio opcional
 - ✅ Rechazo de fechas futuras
 
 #### InventarioRecibidoSchema (8 tests):
+
 - ✅ Cantidad entera positiva
 - ✅ Bodega requerida
 - ✅ ItemId opcional
@@ -97,11 +106,13 @@
 ### Jest Setup
 
 **Archivos creados:**
+
 - `jest.config.js` - Configuración de Jest para Next.js
 - `jest.setup.js` - Setup global (mocks de Next.js Router y NextAuth)
 - `package.json` - Scripts de testing agregados
 
 **Scripts disponibles:**
+
 ```bash
 npm test                 # Ejecutar todos los tests
 npm run test:watch       # Watch mode
@@ -109,6 +120,7 @@ npm run test:coverage    # Con coverage report
 ```
 
 **Coverage thresholds configurados:**
+
 ```javascript
 coverageThreshold: {
   global: {
@@ -127,22 +139,13 @@ coverageThreshold: {
 ### Test de Cálculo Financiero Completo
 
 ```typescript
-it('debe calcular correctamente todos los valores de una OC', () => {
+it("debe calcular correctamente todos los valores de una OC", () => {
   const resultado = calcularOC({
     costoFOBTotalUSD: 1000,
     cantidadOrdenada: 100,
-    pagos: [
-      { montoRDNeto: new Prisma.Decimal(60000) },
-      { montoRDNeto: new Prisma.Decimal(5000) },
-    ],
-    gastos: [
-      { montoRD: new Prisma.Decimal(2000) },
-      { montoRD: new Prisma.Decimal(3000) },
-    ],
-    inventario: [
-      { cantidadRecibida: 50 },
-      { cantidadRecibida: 30 },
-    ],
+    pagos: [{ montoRDNeto: new Prisma.Decimal(60000) }, { montoRDNeto: new Prisma.Decimal(5000) }],
+    gastos: [{ montoRD: new Prisma.Decimal(2000) }, { montoRD: new Prisma.Decimal(3000) }],
+    inventario: [{ cantidadRecibida: 50 }, { cantidadRecibida: 30 }],
   })
 
   expect(resultado.totalPagosRD).toBe(65000)
@@ -159,13 +162,13 @@ it('debe calcular correctamente todos los valores de una OC', () => {
 ### Test de Validación con Edge Cases
 
 ```typescript
-it('debe rechazar tasa de cambio en cero', () => {
+it("debe rechazar tasa de cambio en cero", () => {
   const invalidData = {
-    ocId: 'oc-123',
-    fechaPago: new Date('2024-01-15'),
-    tipoPago: 'Anticipo',
-    metodoPago: 'Transferencia',
-    moneda: 'USD',
+    ocId: "oc-123",
+    fechaPago: new Date("2024-01-15"),
+    tipoPago: "Anticipo",
+    metodoPago: "Transferencia",
+    moneda: "USD",
     montoOriginal: 1000,
     tasaCambio: 0, // ❌ Inválido
   }
@@ -180,22 +183,26 @@ it('debe rechazar tasa de cambio en cero', () => {
 ## ✅ Beneficios Obtenidos
 
 ### 1. Prevención de Bugs Financieros 💰
+
 - Tests protegen contra errores de conversión de moneda
 - Validación de división por cero
 - Manejo correcto de comisiones bancarias
 - Precisión en decimales (evita errores de floating point)
 
 ### 2. Documentación Viva 📚
+
 - Los tests sirven como documentación del comportamiento esperado
 - Cualquier desarrollador puede entender la lógica de negocio leyendo los tests
 - Ejemplos de uso para cada función
 
 ### 3. Confianza para Refactorizar 🔄
+
 - Puedes cambiar implementación sin romper funcionalidad
 - Tests verifican que los cambios no introduzcan regresiones
 - Ejecución en ~1 segundo para feedback inmediato
 
 ### 4. Validación de Schemas Zod ✅
+
 - Tests aseguran que los formularios validan correctamente
 - Edge cases cubiertos (fechas futuras, valores negativos, etc.)
 - Protección contra datos inválidos en la base de datos
@@ -206,10 +213,10 @@ it('debe rechazar tasa de cambio en cero', () => {
 
 ### Módulos Críticos (Alta Prioridad)
 
-| Archivo | Statements | Branches | Functions | Lines |
-|---------|-----------|----------|-----------|-------|
-| `calculations.ts` | **98.29%** | 79.16% | **100%** | **100%** |
-| `validations.ts` | **72.41%** | **100%** | **100%** | **100%** |
+| Archivo           | Statements | Branches | Functions | Lines    |
+| ----------------- | ---------- | -------- | --------- | -------- |
+| `calculations.ts` | **98.29%** | 79.16%   | **100%**  | **100%** |
+| `validations.ts`  | **72.41%** | **100%** | **100%**  | **100%** |
 
 ### Coverage Global del Proyecto
 
@@ -228,18 +235,21 @@ lib/validations.ts      |   72.41 |      100 |     100 |     100 |
 ## 🎓 Lecciones Aprendidas
 
 ### 1. Testing de Cálculos Financieros
+
 - ✅ Siempre testear edge cases (0, negativos, null)
 - ✅ Usar `toBeCloseTo()` para decimales
 - ✅ Manejar Prisma.Decimal explícitamente
 - ✅ Validar división por cero
 
 ### 2. Testing de Schemas Zod
+
 - ✅ Testear valores default
 - ✅ Validar mensajes de error específicos
 - ✅ Cubrir todos los campos requeridos
 - ✅ Testear fechas futuras/pasadas
 
 ### 3. Jest Configuration
+
 - ✅ Mock Next.js router y NextAuth
 - ✅ Configurar module aliases (@/)
 - ✅ Setup global para evitar repetición
@@ -289,11 +299,13 @@ lib/validations.ts      |   72.41 |      100 |     100 |     100 |
 ## 🎯 ROI (Return on Investment)
 
 ### Inversión
+
 - ~4 horas de configuración e implementación
 - 79 tests creados
 - 2 archivos de configuración
 
 ### Retorno
+
 - **98%** coverage en cálculos financieros (crítico)
 - **72%** coverage en validaciones (crítico)
 - Prevención de bugs financieros = **ahorro de 8-16 horas** de debug

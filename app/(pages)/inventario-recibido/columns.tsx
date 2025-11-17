@@ -37,9 +37,7 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
     accessorKey: "idRecepcion",
     header: "ID Recepción",
     cell: ({ row }) => (
-      <div className="font-medium text-gray-900 whitespace-nowrap">
-        {row.original.idRecepcion}
-      </div>
+      <div className="font-medium text-gray-900 whitespace-nowrap">{row.original.idRecepcion}</div>
     ),
   },
   {
@@ -72,9 +70,7 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
     accessorKey: "fechaLlegada",
     header: "Fecha Llegada",
     cell: ({ row }) => (
-      <div className="text-gray-500 whitespace-nowrap">
-        {formatDate(row.original.fechaLlegada)}
-      </div>
+      <div className="text-gray-500 whitespace-nowrap">{formatDate(row.original.fechaLlegada)}</div>
     ),
   },
   {
@@ -102,7 +98,9 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
     header: "Costo Unit.",
     cell: ({ row }) => (
       <div className="text-right text-gray-700 whitespace-nowrap">
-        {row.original.costoUnitarioFinalRD ? formatCurrency(row.original.costoUnitarioFinalRD) : "-"}
+        {row.original.costoUnitarioFinalRD
+          ? formatCurrency(row.original.costoUnitarioFinalRD)
+          : "-"}
       </div>
     ),
   },
@@ -111,7 +109,9 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
     header: "Costo Total",
     cell: ({ row }) => (
       <div className="text-right font-medium text-gray-900 whitespace-nowrap">
-        {row.original.costoTotalRecepcionRD ? formatCurrency(row.original.costoTotalRecepcionRD) : "-"}
+        {row.original.costoTotalRecepcionRD
+          ? formatCurrency(row.original.costoTotalRecepcionRD)
+          : "-"}
       </div>
     ),
   },
@@ -123,7 +123,7 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onEdit(row.original)
           }}
@@ -133,7 +133,7 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
         <Button
           variant="ghost"
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             actions.onDelete(row.original)
           }}

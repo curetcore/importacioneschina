@@ -316,10 +316,7 @@ describe("Cost Distribution Functions", () => {
     it("should ensure total distribution equals input cost", () => {
       const result = distributeByUnit(products, totalCost)
 
-      const totalDistributed = result.reduce(
-        (sum, r) => sum + r.costoDistribuido,
-        0
-      )
+      const totalDistributed = result.reduce((sum, r) => sum + r.costoDistribuido, 0)
 
       expect(totalDistributed).toBeCloseTo(totalCost, 2)
     })

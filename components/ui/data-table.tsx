@@ -52,23 +52,29 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>({})
+  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>(
+    {}
+  )
   const [rowSelection, setRowSelection] = React.useState({})
 
   // Use controlled columnVisibility if provided, otherwise use internal state
-  const columnVisibility = controlledColumnVisibility !== undefined ? controlledColumnVisibility : internalColumnVisibility
+  const columnVisibility =
+    controlledColumnVisibility !== undefined ? controlledColumnVisibility : internalColumnVisibility
 
-  const handleColumnVisibilityChange = React.useCallback((updaterOrValue: any) => {
-    if (onColumnVisibilityChange) {
-      if (typeof updaterOrValue === 'function') {
-        onColumnVisibilityChange(updaterOrValue(columnVisibility))
+  const handleColumnVisibilityChange = React.useCallback(
+    (updaterOrValue: any) => {
+      if (onColumnVisibilityChange) {
+        if (typeof updaterOrValue === "function") {
+          onColumnVisibilityChange(updaterOrValue(columnVisibility))
+        } else {
+          onColumnVisibilityChange(updaterOrValue)
+        }
       } else {
-        onColumnVisibilityChange(updaterOrValue)
+        setInternalColumnVisibility(updaterOrValue)
       }
-    } else {
-      setInternalColumnVisibility(updaterOrValue)
-    }
-  }, [onColumnVisibilityChange, columnVisibility])
+    },
+    [onColumnVisibilityChange, columnVisibility]
+  )
 
   const table = useReactTable({
     data,
@@ -103,9 +109,7 @@ export function DataTable<TData, TValue>({
             <Input
               placeholder={searchPlaceholder}
               value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn(searchKey)?.setFilterValue(event.target.value)
-              }
+              onChange={event => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
               className="max-w-sm"
             />
           )}
@@ -121,14 +125,14 @@ export function DataTable<TData, TValue>({
               <DropdownMenuContent align="end" className="w-[200px]">
                 {table
                   .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
+                  .filter(column => column.getCanHide())
+                  .map(column => {
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
                         className="capitalize"
                         checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                        onCheckedChange={value => column.toggleVisibility(!!value)}
                       >
                         {column.id}
                       </DropdownMenuCheckboxItem>
@@ -145,9 +149,9 @@ export function DataTable<TData, TValue>({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
-              {table.getHeaderGroups().map((headerGroup) => (
+              {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+                  {headerGroup.headers.map(header => {
                     return (
                       <th
                         key={header.id}
@@ -162,10 +166,7 @@ export function DataTable<TData, TValue>({
                             }
                             onClick={header.column.getToggleSortingHandler()}
                           >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            {flexRender(header.column.columnDef.header, header.getContext())}
                             {header.column.getCanSort() && (
                               <span className="flex-shrink-0">
                                 {header.column.getIsSorted() === "asc" ? (
@@ -187,7 +188,7 @@ export function DataTable<TData, TValue>({
             </thead>
             <tbody>
               {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+                table.getRowModel().rows.map(row => (
                   <tr
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
@@ -196,22 +197,16 @@ export function DataTable<TData, TValue>({
                     }`}
                     onClick={() => onRowClick && onRowClick(row.original)}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map(cell => (
                       <td key={cell.id} className="py-3 px-4 text-sm text-gray-700">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="h-24 text-center text-sm text-gray-500"
-                  >
+                  <td colSpan={columns.length} className="h-24 text-center text-sm text-gray-500">
                     No se encontraron resultados.
                   </td>
                 </tr>
@@ -237,12 +232,12 @@ export function DataTable<TData, TValue>({
               <p className="text-sm font-medium text-gray-700">Filas por página</p>
               <select
                 value={table.getState().pagination.pageSize}
-                onChange={(e) => {
+                onChange={e => {
                   table.setPageSize(Number(e.target.value))
                 }}
                 className="h-8 w-[70px] rounded-md border border-gray-300 bg-white text-sm"
               >
-                {[10, 20, 30, 40, 50].map((pageSize) => (
+                {[10, 20, 30, 40, 50].map(pageSize => (
                   <option key={pageSize} value={pageSize}>
                     {pageSize}
                   </option>
@@ -250,8 +245,7 @@ export function DataTable<TData, TValue>({
               </select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium text-gray-700">
-              Página {table.getState().pagination.pageIndex + 1} de{" "}
-              {table.getPageCount()}
+              Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
             </div>
             <div className="flex items-center space-x-2">
               <Button

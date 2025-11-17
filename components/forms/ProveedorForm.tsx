@@ -39,7 +39,12 @@ interface ProveedorFormProps {
   proveedorToEdit?: Proveedor | null
 }
 
-export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }: ProveedorFormProps) {
+export function ProveedorForm({
+  open,
+  onOpenChange,
+  onSuccess,
+  proveedorToEdit,
+}: ProveedorFormProps) {
   const { addToast } = useToast()
 
   const {
@@ -128,9 +133,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
       // Remove codigo for new proveedores (auto-generated)
       const dataToSend = proveedorToEdit
         ? data
-        : Object.fromEntries(
-            Object.entries(data).filter(([key]) => key !== "codigo")
-          )
+        : Object.fromEntries(Object.entries(data).filter(([key]) => key !== "codigo"))
 
       const response = await fetch(url, {
         method,
@@ -166,21 +169,19 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {proveedorToEdit ? "Editar Proveedor" : "Nuevo Proveedor"}
-          </DialogTitle>
+          <DialogTitle>{proveedorToEdit ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 px-6 pb-6">
           {/* Información básica */}
           <div className="space-y-5">
-            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Básica</h3>
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+              Información Básica
+            </h3>
             <div className="grid grid-cols-2 gap-6">
               {proveedorToEdit && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Código
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Código</label>
                   <input
                     type="text"
                     disabled
@@ -190,9 +191,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </div>
               )}
               <div className={proveedorToEdit ? "" : "col-span-2"}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
                 <input
                   type="text"
                   {...register("nombre")}
@@ -209,7 +208,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
 
           {/* Información de contacto */}
           <div className="space-y-5">
-            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información de Contacto</h3>
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+              Información de Contacto
+            </h3>
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -223,9 +224,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
                   type="email"
                   {...register("email")}
@@ -237,9 +236,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Teléfono
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
                 <input
                   type="text"
                   {...register("telefono")}
@@ -248,9 +245,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  WhatsApp
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
                 <input
                   type="text"
                   {...register("whatsapp")}
@@ -259,9 +254,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  WeChat
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">WeChat</label>
                 <input
                   type="text"
                   {...register("wechat")}
@@ -270,9 +263,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sitio Web
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sitio Web</label>
                 <input
                   type="url"
                   {...register("sitioWeb")}
@@ -292,9 +283,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Ubicación</h3>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  País
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">País</label>
                 <input
                   type="text"
                   {...register("pais")}
@@ -303,9 +292,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ciudad
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
                 <input
                   type="text"
                   {...register("ciudad")}
@@ -314,9 +301,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dirección
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
                 <input
                   type="text"
                   {...register("direccion")}
@@ -329,7 +314,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
 
           {/* Información comercial */}
           <div className="space-y-5">
-            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Comercial</h3>
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+              Información Comercial
+            </h3>
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -135,11 +135,7 @@ export function DropdownMenuCheckboxItem({
   )
 }
 
-export function DropdownMenuItem({
-  onClick,
-  className = "",
-  children,
-}: DropdownMenuItemProps) {
+export function DropdownMenuItem({ onClick, className = "", children }: DropdownMenuItemProps) {
   const { setIsOpen } = React.useContext(DropdownMenuContext)
 
   const handleClick = () => {

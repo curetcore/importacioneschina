@@ -6,10 +6,7 @@ import { prisma } from "@/lib/prisma"
  * @param id - ID del registro a eliminar
  * @returns El registro actualizado con deletedAt
  */
-export async function softDelete(
-  model: keyof typeof prisma,
-  id: string
-): Promise<any> {
+export async function softDelete(model: keyof typeof prisma, id: string): Promise<any> {
   const prismaModel = prisma[model] as any
 
   if (!prismaModel || typeof prismaModel.update !== "function") {
@@ -30,10 +27,7 @@ export async function softDelete(
  * @param id - ID del registro a restaurar
  * @returns El registro actualizado con deletedAt = null
  */
-export async function restoreSoftDelete(
-  model: keyof typeof prisma,
-  id: string
-): Promise<any> {
+export async function restoreSoftDelete(model: keyof typeof prisma, id: string): Promise<any> {
   const prismaModel = prisma[model] as any
 
   if (!prismaModel || typeof prismaModel.update !== "function") {

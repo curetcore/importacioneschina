@@ -5,6 +5,7 @@
 ### Opción 1: Usar `handleApiError()` en try/catch
 
 **Antes:**
+
 ```typescript
 export async function GET(request: NextRequest) {
   try {
@@ -12,15 +13,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error("Error:", error)
-    return NextResponse.json(
-      { success: false, error: "Error al obtener datos" },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: "Error al obtener datos" }, { status: 500 })
   }
 }
 ```
 
 **Después:**
+
 ```typescript
 import { handleApiError } from "@/lib/api-error-handler"
 
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
     const data = await prisma.oCChina.findMany()
     return NextResponse.json({ success: true, data })
   } catch (error) {
-    return handleApiError(error)  // ← Manejo automático
+    return handleApiError(error) // ← Manejo automático
   }
 }
 ```
@@ -39,6 +38,7 @@ export async function GET(request: NextRequest) {
 ### Opción 2: Usar `withErrorHandler()` wrapper
 
 **Más limpio y DRY:**
+
 ```typescript
 import { withErrorHandler } from "@/lib/api-error-handler"
 
@@ -57,10 +57,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 ```typescript
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params
 
@@ -68,7 +65,7 @@ export async function DELETE(
     const existing = await prisma.oCChina.findUnique({ where: { id } })
 
     if (!existing) {
-      throw Errors.notFound("Orden de compra", id)  // ← Error personalizado
+      throw Errors.notFound("Orden de compra", id) // ← Error personalizado
     }
 
     // Verificar permisos
@@ -97,7 +94,7 @@ export async function DELETE(
 throw Errors.badRequest("Parámetros inválidos", { field: "ocId" })
 
 // 401 Unauthorized
-throw Errors.unauthorized()  // "No autorizado"
+throw Errors.unauthorized() // "No autorizado"
 
 // 403 Forbidden
 throw Errors.forbidden("No tienes acceso a este recurso")
@@ -127,6 +124,7 @@ throw Errors.database("Error al conectar con la BD")
 ## 📦 Respuestas JSON Automáticas
 
 ### En Producción:
+
 ```json
 {
   "success": false,
@@ -136,6 +134,7 @@ throw Errors.database("Error al conectar con la BD")
 ```
 
 ### En Desarrollo (incluye stack trace):
+
 ```json
 {
   "success": false,
@@ -150,6 +149,7 @@ throw Errors.database("Error al conectar con la BD")
 ## 🔄 Migración de Endpoints Existentes
 
 ### Patrón a buscar:
+
 ```typescript
 catch (error) {
   console.error("Error en ...", error);
@@ -161,6 +161,7 @@ catch (error) {
 ```
 
 ### Reemplazar por:
+
 ```typescript
 catch (error) {
   return handleApiError(error);

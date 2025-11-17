@@ -1,6 +1,7 @@
 # 📋 ANÁLISIS COMPLETO: Módulo "Registros"
 
 ## 🎯 Objetivo
+
 Crear un módulo "Registros" con 3 subsecciones para gestionar datos maestros del sistema de manera centralizada y profesional.
 
 ---
@@ -10,6 +11,7 @@ Crear un módulo "Registros" con 3 subsecciones para gestionar datos maestros de
 ### ✅ Lo que YA tenemos:
 
 #### 1. **Proveedores** (Implementación Simple)
+
 - **Ubicación actual**: Tabla `configuracion` con `categoria = 'proveedores'`
 - **Campos actuales**:
   - `id` (UUID)
@@ -30,6 +32,7 @@ Crear un módulo "Registros" con 3 subsecciones para gestionar datos maestros de
   - ❌ No se pueden ver métricas (cuántas órdenes, total pagado, etc.)
 
 #### 2. **Productos** (NO existe como entidad independiente)
+
 - **Ubicación actual**: Solo en `OCChinaItem` (productos dentro de órdenes)
 - **Campos actuales**:
   - `sku`
@@ -48,6 +51,7 @@ Crear un módulo "Registros" con 3 subsecciones para gestionar datos maestros de
   - ❌ No se puede reutilizar información de productos
 
 #### 3. **Métodos de Pago** (Implementación Simple)
+
 - **Ubicación actual**: Tabla `configuracion` con `categoria = 'metodosPago'`
 - **Campos actuales**: Solo `valor` = "Transferencia bancaria"
 - **Cómo se usa**:
@@ -84,6 +88,7 @@ Configuración
 ## 1️⃣ SUBSECCIÓN: PROVEEDORES
 
 ### 🎯 Objetivo
+
 Convertir "proveedor" de un simple texto a una **entidad completa con perfil CRM**.
 
 ### 📋 Nuevo Modelo de Datos
@@ -150,12 +155,14 @@ model Proveedor {
 | PROV-002 | Adidas Factory | China | Maria L. | +86 456... | 8 | $87,300 | 1 semana | 🟢 Activo | 👁️ ✏️ |
 
 **Filtros disponibles**:
+
 - Por país
 - Por tipo de proveedor
 - Por estado (activo/inactivo)
 - Buscar por nombre/código
 
 **Botones de acción**:
+
 - ➕ **Nuevo Proveedor**
 - 📊 **Exportar a Excel**
 
@@ -166,6 +173,7 @@ model Proveedor {
 **Secciones**:
 
 #### 📌 **Información General**
+
 ```
 Código: PROV-001
 Nombre: Nike China Factory
@@ -177,6 +185,7 @@ Estado: 🟢 Activo
 ```
 
 #### 👤 **Contacto**
+
 ```
 Contacto Principal: Juan Pérez
 Email: juan@nikechina.com
@@ -186,6 +195,7 @@ Dirección: Calle Principal 123, Guangzhou, China
 ```
 
 #### 💼 **Términos Comerciales**
+
 ```
 Días de crédito: 30 días
 Moneda preferida: USD
@@ -193,22 +203,25 @@ Método de pago principal: Transferencia bancaria
 ```
 
 #### 💳 **Métodos de Pago / Monederos** (Tabla)
-| Tipo | Banco/Cuenta | Número/Alias | Titular | Predeterminado |
-|------|--------------|--------------|---------|----------------|
-| Transferencia | Bank of China | 1234-5678-9012 | Nike Factory Ltd | ⭐ Sí |
-| Alipay | - | nikefactory@alipay.cn | - | No |
+
+| Tipo          | Banco/Cuenta  | Número/Alias          | Titular          | Predeterminado |
+| ------------- | ------------- | --------------------- | ---------------- | -------------- |
+| Transferencia | Bank of China | 1234-5678-9012        | Nike Factory Ltd | ⭐ Sí          |
+| Alipay        | -             | nikefactory@alipay.cn | -                | No             |
 
 **Botón**: ➕ Agregar Método de Pago
 
 #### 📦 **Catálogo de Productos** (Tabla)
-| SKU | Producto | Categoría | Precio Base USD | Stock | Última OC |
-|-----|----------|-----------|-----------------|-------|-----------|
-| ZAP-001 | Nike Air Max | Zapatos | $45.00 | - | OC-2025-003 |
-| ZAP-002 | Nike Revolution | Zapatos | $38.50 | - | OC-2025-001 |
+
+| SKU     | Producto        | Categoría | Precio Base USD | Stock | Última OC   |
+| ------- | --------------- | --------- | --------------- | ----- | ----------- |
+| ZAP-001 | Nike Air Max    | Zapatos   | $45.00          | -     | OC-2025-003 |
+| ZAP-002 | Nike Revolution | Zapatos   | $38.50          | -     | OC-2025-001 |
 
 **Botón**: ➕ Agregar Producto
 
 #### 📊 **Estadísticas**
+
 ```
 Total de Órdenes: 15
 Total Pagado (histórico): $125,450 USD
@@ -218,14 +231,16 @@ Promedio por orden: $8,363 USD
 ```
 
 #### 📋 **Órdenes de Compra** (Últimas 10)
-| OC | Fecha | Total USD | Pagado | Pendiente | Estado |
-|----|-------|-----------|--------|-----------|--------|
-| OC-2025-015 | 15/11/2025 | $8,500 | $8,500 | $0 | ✅ Completa |
-| OC-2025-012 | 10/11/2025 | $12,300 | $12,300 | $0 | ✅ Completa |
+
+| OC          | Fecha      | Total USD | Pagado  | Pendiente | Estado      |
+| ----------- | ---------- | --------- | ------- | --------- | ----------- |
+| OC-2025-015 | 15/11/2025 | $8,500    | $8,500  | $0        | ✅ Completa |
+| OC-2025-012 | 10/11/2025 | $12,300   | $12,300 | $0        | ✅ Completa |
 
 **Botón**: 📄 Ver todas las órdenes
 
 #### 📝 **Notas**
+
 ```
 [Editor de texto]
 Proveedor confiable. Entrega siempre a tiempo.
@@ -233,6 +248,7 @@ Contacto principal habla español.
 ```
 
 #### 📎 **Documentos**
+
 ```
 📄 Contrato_Nike_2025.pdf (1.2 MB) - Subido 01/01/2025
 📄 Certificado_Calidad.pdf (850 KB) - Subido 15/01/2025
@@ -245,6 +261,7 @@ Contacto principal habla español.
 ## 2️⃣ SUBSECCIÓN: PRODUCTOS
 
 ### 🎯 Objetivo
+
 Crear un **catálogo maestro de productos** que se pueda reutilizar en múltiples órdenes.
 
 ### 📋 Nuevo Modelo de Datos
@@ -313,12 +330,14 @@ model Producto {
 | 🖼️ | CAR-001 | Cartera Cuero | Carteras | Leather Co. | $28.50 | 8 | OC-2025-012 | 🟢 | 👁️ ✏️ |
 
 **Filtros**:
+
 - Por categoría
 - Por proveedor
 - Por estado
 - Buscar por SKU/nombre
 
 **Botones**:
+
 - ➕ **Nuevo Producto**
 - 📊 **Exportar Catálogo**
 
@@ -329,6 +348,7 @@ model Producto {
 **Secciones**:
 
 #### 📌 **Información General**
+
 ```
 SKU: ZAP-001
 Nombre: Nike Air Max 2025
@@ -338,6 +358,7 @@ Estado: 🟢 Activo
 ```
 
 #### 🏭 **Proveedor**
+
 ```
 Proveedor: Nike China Factory (PROV-001)
 Precio Base: $45.00 USD
@@ -345,6 +366,7 @@ Precio Base: $45.00 USD
 ```
 
 #### 📐 **Especificaciones**
+
 ```
 Material: Cuero sintético + EVA
 Color: Negro con detalles blancos
@@ -353,6 +375,7 @@ Peso aproximado: 350g
 ```
 
 #### 🖼️ **Imágenes**
+
 ```
 [Galería de imágenes]
 📷 Imagen principal
@@ -363,6 +386,7 @@ Peso aproximado: 350g
 **Botón**: ⬆️ Subir Imagen
 
 #### 📊 **Estadísticas de Uso**
+
 ```
 Veces ordenado: 12
 Cantidad total ordenada: 1,250 unidades
@@ -371,16 +395,18 @@ Precio promedio pagado: $44.85 USD
 ```
 
 #### 📋 **Historial de Órdenes**
-| OC | Fecha | Cantidad | Precio Unit. | Total | Proveedor |
-|----|-------|----------|--------------|-------|-----------|
-| OC-2025-015 | 15/11/2025 | 100 | $45.00 | $4,500 | Nike China |
-| OC-2025-012 | 10/11/2025 | 150 | $44.50 | $6,675 | Nike China |
+
+| OC          | Fecha      | Cantidad | Precio Unit. | Total  | Proveedor  |
+| ----------- | ---------- | -------- | ------------ | ------ | ---------- |
+| OC-2025-015 | 15/11/2025 | 100      | $45.00       | $4,500 | Nike China |
+| OC-2025-012 | 10/11/2025 | 150      | $44.50       | $6,675 | Nike China |
 
 ---
 
 ## 3️⃣ SUBSECCIÓN: MÉTODOS DE PAGO / MONEDEROS
 
 ### 🎯 Objetivo
+
 Gestionar **cuentas bancarias, tarjetas, y métodos de pago** con información completa.
 
 ### 📋 Nuevo Modelo de Datos
@@ -447,16 +473,18 @@ model MetodoPago {
 **Tabla con columnas**:
 | Código | Tipo | Nombre | Banco | Cuenta | Moneda | Proveedor | Saldo | Estado | Acciones |
 |--------|------|--------|-------|--------|--------|-----------|-------|--------|----------|
-| MP-001 | Transferencia | Cuenta BOC USD | Bank of China | ****3456 | USD | - | $5,000 | 🟢 | 👁️ ✏️ |
+| MP-001 | Transferencia | Cuenta BOC USD | Bank of China | \*\*\*\*3456 | USD | - | $5,000 | 🟢 | 👁️ ✏️ |
 | MP-002 | Alipay | Alipay Importaciones | - | nike@alipay | CNY | Nike China | - | 🟢 | 👁️ ✏️ |
 
 **Filtros**:
+
 - Por tipo
 - Por moneda
 - Por proveedor
 - Por estado
 
 **Botones**:
+
 - ➕ **Nuevo Método de Pago**
 
 ### 📄 Vista de Detalle
@@ -464,6 +492,7 @@ model MetodoPago {
 **URL**: `/registros/metodos-pago/[id]`
 
 **Información mostrada**:
+
 ```
 Código: MP-001
 Tipo: Transferencia Bancaria
@@ -495,6 +524,7 @@ Estadísticas:
 ### 🔗 Cambios Necesarios
 
 #### 1. **Modificar Modelo OCChina**
+
 ```typescript
 // ANTES
 model OCChina {
@@ -510,12 +540,14 @@ model OCChina {
 ```
 
 **Estrategia de migración**:
+
 - ✅ Mantener campo `proveedor` (String) para órdenes existentes
 - ✅ Agregar `proveedorId` (opcional) para nuevas órdenes
 - ✅ Las órdenes nuevas usarán `proveedorId`
 - ✅ Las órdenes viejas seguirán funcionando con `proveedor` (String)
 
 #### 2. **Modificar Formulario de Órdenes**
+
 ```typescript
 // ANTES: Dropdown con strings simples
 <Select
@@ -540,6 +572,7 @@ model OCChina {
 ```
 
 #### 3. **Modificar Tabla de Pagos/Gastos**
+
 ```typescript
 // ANTES
 model PagosChina {
@@ -559,6 +592,7 @@ model PagosChina {
 En el formulario de orden, al agregar productos:
 
 **Opción A: Crear producto nuevo** (como ahora)
+
 ```
 SKU: [____]
 Nombre: [____]
@@ -568,6 +602,7 @@ Precio: [____]
 ```
 
 **Opción B: Usar del catálogo** (NUEVO)
+
 ```
 [Buscar producto] → Autocomplete con productos existentes
 ↓
@@ -585,6 +620,7 @@ Cantidad: [____]
 ## 🛠️ TECNOLOGÍA A UTILIZAR
 
 ### Stack Actual del Proyecto:
+
 ```
 ✅ Next.js 14.2.33 (App Router)
 ✅ TypeScript 5.5
@@ -597,6 +633,7 @@ Cantidad: [____]
 ### Para el Módulo "Registros" usaremos:
 
 #### 1. **Base de Datos (Prisma + PostgreSQL)**
+
 ```prisma
 // Nuevas tablas:
 - proveedores
@@ -610,6 +647,7 @@ Cantidad: [____]
 ```
 
 #### 2. **Backend (Next.js API Routes)**
+
 ```
 app/api/
 ├── proveedores/
@@ -626,6 +664,7 @@ app/api/
 ```
 
 #### 3. **Frontend (React + TypeScript)**
+
 ```
 app/(pages)/registros/
 ├── page.tsx                    # Página principal con 3 cards
@@ -641,6 +680,7 @@ app/(pages)/registros/
 ```
 
 #### 4. **Componentes Nuevos**
+
 ```
 components/
 ├── forms/
@@ -656,6 +696,7 @@ components/
 ```
 
 #### 5. **Sin bibliotecas adicionales**
+
 - ❌ NO instalaremos TanStack Table (usaremos HTML table simple)
 - ❌ NO instalaremos React Hook Form (usaremos useState como ahora)
 - ❌ NO instalaremos Chart.js (stats con números simples)
@@ -667,29 +708,30 @@ components/
 
 ### Estimación de Trabajo:
 
-| Tarea | Complejidad | Tiempo Est. | Archivos |
-|-------|-------------|-------------|----------|
-| **Modelos Prisma** | Media | 30 min | 1 schema.prisma |
-| **Migración BD** | Baja | 10 min | 1 migration |
-| **APIs Proveedores** | Media | 1 hora | 3 archivos |
-| **APIs Productos** | Media | 1 hora | 3 archivos |
-| **APIs Métodos Pago** | Media | 1 hora | 3 archivos |
-| **Página Registros** | Baja | 20 min | 1 archivo |
-| **Lista Proveedores** | Media | 1.5 horas | 3 archivos |
-| **Detalle Proveedor** | Alta | 2 horas | 5 archivos |
-| **Lista Productos** | Media | 1 hora | 2 archivos |
-| **Detalle Producto** | Media | 1 hora | 3 archivos |
-| **Lista Métodos Pago** | Media | 1 hora | 2 archivos |
-| **Detalle Método Pago** | Media | 1 hora | 3 archivos |
-| **Modificar OCChinaForm** | Alta | 1 hora | 1 archivo |
-| **Testing + Ajustes** | - | 2 horas | - |
-| **TOTAL** | - | **~14 horas** | **~30 archivos** |
+| Tarea                     | Complejidad | Tiempo Est.   | Archivos         |
+| ------------------------- | ----------- | ------------- | ---------------- |
+| **Modelos Prisma**        | Media       | 30 min        | 1 schema.prisma  |
+| **Migración BD**          | Baja        | 10 min        | 1 migration      |
+| **APIs Proveedores**      | Media       | 1 hora        | 3 archivos       |
+| **APIs Productos**        | Media       | 1 hora        | 3 archivos       |
+| **APIs Métodos Pago**     | Media       | 1 hora        | 3 archivos       |
+| **Página Registros**      | Baja        | 20 min        | 1 archivo        |
+| **Lista Proveedores**     | Media       | 1.5 horas     | 3 archivos       |
+| **Detalle Proveedor**     | Alta        | 2 horas       | 5 archivos       |
+| **Lista Productos**       | Media       | 1 hora        | 2 archivos       |
+| **Detalle Producto**      | Media       | 1 hora        | 3 archivos       |
+| **Lista Métodos Pago**    | Media       | 1 hora        | 2 archivos       |
+| **Detalle Método Pago**   | Media       | 1 hora        | 3 archivos       |
+| **Modificar OCChinaForm** | Alta        | 1 hora        | 1 archivo        |
+| **Testing + Ajustes**     | -           | 2 horas       | -                |
+| **TOTAL**                 | -           | **~14 horas** | **~30 archivos** |
 
 ---
 
 ## ⚠️ CONSIDERACIONES Y RIESGOS
 
 ### ✅ Ventajas:
+
 1. **Catálogo centralizado** - No más duplicación de productos
 2. **Información completa** - Contactos, métodos de pago, etc.
 3. **Estadísticas útiles** - Ver qué proveedor/producto es más usado
@@ -698,6 +740,7 @@ components/
 6. **Mantenible** - Si cambia el precio base, se actualiza en un solo lugar
 
 ### ⚠️ Riesgos:
+
 1. **Compatibilidad hacia atrás**
    - **Problema**: Órdenes existentes usan `proveedor: String`
    - **Solución**: Mantener ambos campos, migrar gradualmente
@@ -717,16 +760,19 @@ components/
 ### 🔄 Estrategia de Migración:
 
 **Fase 1: Crear sin romper nada**
+
 - Crear nuevas tablas (`proveedores`, `productos`, `metodos_pago`)
 - Agregar campos opcionales (`proveedorId`, `metodoPagoId`)
 - Mantener campos actuales (`proveedor`, `metodoPago`)
 
 **Fase 2: Migrar datos existentes**
+
 - Script que lee `configuracion` donde `categoria = 'proveedores'`
 - Crea registros en tabla `proveedores`
 - Actualiza `OCChina` para vincular `proveedorId`
 
 **Fase 3: Deprecar lo viejo**
+
 - Una vez que todo funciona, marcar campos antiguos como deprecated
 - En el futuro, eliminar campos String simples
 
@@ -737,6 +783,7 @@ components/
 ### ¿Vale la pena implementarlo?
 
 **SÍ, si:**
+
 - ✅ Planeas seguir usando el sistema a largo plazo
 - ✅ Quieres tener estadísticas de proveedores/productos
 - ✅ Necesitas reutilizar productos en múltiples órdenes
@@ -744,6 +791,7 @@ components/
 - ✅ Te interesa tener un CRM básico de proveedores
 
 **NO, si:**
+
 - ❌ Solo necesitas lo básico (que ya funciona)
 - ❌ No tienes tiempo para ~14 horas de desarrollo
 - ❌ Los proveedores/productos cambian constantemente

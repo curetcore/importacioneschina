@@ -1,6 +1,6 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -89,8 +89,8 @@ export default function OCDetailPage() {
     if (params.id) {
       setLoading(true)
       fetch(`/api/oc-china/${params.id}`)
-        .then((res) => res.json())
-        .then((result) => {
+        .then(res => res.json())
+        .then(result => {
           if (result.success) {
             setOc(result.data)
           }
@@ -115,24 +115,18 @@ export default function OCDetailPage() {
   if (!oc) {
     return (
       <MainLayout>
-        <div className="text-center py-12 text-sm text-gray-500">No se encontró la orden de compra</div>
+        <div className="text-center py-12 text-sm text-gray-500">
+          No se encontró la orden de compra
+        </div>
       </MainLayout>
     )
   }
 
   // Calcular distribución de costos por producto
-  const itemsConCostos = distribuirGastosLogisticos(
-    oc.items,
-    oc.gastosLogisticos,
-    oc.pagosChina
-  )
+  const itemsConCostos = distribuirGastosLogisticos(oc.items, oc.gastosLogisticos, oc.pagosChina)
 
   // Calcular resumen financiero
-  const resumen = calcularResumenFinanciero(
-    oc.items,
-    oc.pagosChina,
-    oc.gastosLogisticos
-  )
+  const resumen = calcularResumenFinanciero(oc.items, oc.pagosChina, oc.gastosLogisticos)
 
   const cantidadOrdenada = resumen.totalUnidades
   const costoFOBTotalUSD = resumen.totalFOBUSD
@@ -146,11 +140,7 @@ export default function OCDetailPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/ordenes")}
-              className="mb-2 -ml-2"
-            >
+            <Button variant="ghost" onClick={() => router.push("/ordenes")} className="mb-2 -ml-2">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Órdenes
             </Button>
@@ -182,9 +172,7 @@ export default function OCDetailPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm font-medium text-gray-500">Productos</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {oc.items.length}
-              </div>
+              <div className="text-2xl font-semibold text-gray-900 mt-1">{oc.items.length}</div>
             </CardContent>
           </Card>
 
@@ -229,25 +217,49 @@ export default function OCDetailPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">SKU</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Producto</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cant.</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">FOB USD</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">% FOB</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">FOB RD$</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Gastos RD$</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Total RD$</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide bg-blue-50">Costo Unit.</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        SKU
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Producto
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Cant.
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        FOB USD
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        % FOB
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        FOB RD$
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Gastos RD$
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Total RD$
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide bg-blue-50">
+                        Costo Unit.
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {itemsConCostos.map((item) => (
-                      <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    {itemsConCostos.map(item => (
+                      <tr
+                        key={item.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
                         <td className="py-3 px-4 text-sm font-medium text-gray-900">{item.sku}</td>
                         <td className="py-3 px-4 text-sm text-gray-700">
                           <div className="font-medium">{item.nombre}</div>
                           {item.tallaDistribucion && (
-                            <div className="text-xs text-gray-500 mt-1" title={JSON.stringify(item.tallaDistribucion)}>
+                            <div
+                              className="text-xs text-gray-500 mt-1"
+                              title={JSON.stringify(item.tallaDistribucion)}
+                            >
                               {Object.keys(item.tallaDistribucion).length} tallas
                             </div>
                           )}
@@ -285,9 +297,7 @@ export default function OCDetailPage() {
                       <td className="py-3 px-4 text-right text-sm text-gray-900">
                         {formatCurrency(costoFOBTotalUSD, "USD")}
                       </td>
-                      <td className="py-3 px-4 text-right text-sm text-gray-600">
-                        100%
-                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-gray-600">100%</td>
                       <td className="py-3 px-4 text-right text-sm text-gray-900">
                         {formatCurrency(resumen.totalPagadoRD)}
                       </td>
@@ -320,14 +330,18 @@ export default function OCDetailPage() {
                 <div className="text-2xl font-semibold text-gray-900 mt-1">
                   {formatCurrency(totalPagado)}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">{oc.pagosChina.length} pagos realizados</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {oc.pagosChina.length} pagos realizados
+                </div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-500">Gastos Logísticos (RD$)</div>
                 <div className="text-2xl font-semibold text-gray-900 mt-1">
                   {formatCurrency(totalGastos)}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">{oc.gastosLogisticos.length} gastos registrados</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {oc.gastosLogisticos.length} gastos registrados
+                </div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-500">Costo Total (RD$)</div>
@@ -351,7 +365,9 @@ export default function OCDetailPage() {
                 <div className="text-2xl font-semibold text-gray-900 mt-1">
                   {totalRecibido.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">de {cantidadOrdenada.toLocaleString()} ordenados</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  de {cantidadOrdenada.toLocaleString()} ordenados
+                </div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-500">Progreso de Recepción</div>
@@ -391,24 +407,45 @@ export default function OCDetailPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Pago</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Método</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto Original</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$ (Neto)</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        ID Pago
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Fecha
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Tipo
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Método
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Monto Original
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Monto RD$ (Neto)
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {oc.pagosChina.map((pago) => (
-                      <tr key={pago.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{pago.idPago}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(pago.fechaPago)}</td>
+                    {oc.pagosChina.map(pago => (
+                      <tr
+                        key={pago.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                          {pago.idPago}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">
+                          {formatDate(pago.fechaPago)}
+                        </td>
                         <td className="py-3 px-4 text-sm text-gray-700">{pago.tipoPago}</td>
                         <td className="py-3 px-4 text-sm text-gray-700">{pago.metodoPago}</td>
                         <td className="py-3 px-4 text-right">
                           <div className="text-sm">
-                            <div className="font-medium text-gray-900">{pago.montoOriginal.toLocaleString()}</div>
+                            <div className="font-medium text-gray-900">
+                              {pago.montoOriginal.toLocaleString()}
+                            </div>
                             <div className="text-gray-500 text-xs">{pago.moneda}</div>
                           </div>
                         </td>
@@ -439,18 +476,35 @@ export default function OCDetailPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Gasto</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Proveedor</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Monto RD$</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        ID Gasto
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Fecha
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Tipo
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Proveedor
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Monto RD$
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {oc.gastosLogisticos.map((gasto) => (
-                      <tr key={gasto.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{gasto.idGasto}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(gasto.fechaGasto)}</td>
+                    {oc.gastosLogisticos.map(gasto => (
+                      <tr
+                        key={gasto.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                          {gasto.idGasto}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">
+                          {formatDate(gasto.fechaGasto)}
+                        </td>
                         <td className="py-3 px-4 text-sm text-gray-700">{gasto.tipoGasto}</td>
                         <td className="py-3 px-4 text-sm text-gray-700">
                           {gasto.proveedorServicio || <span className="text-gray-400">-</span>}
@@ -482,32 +536,55 @@ export default function OCDetailPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">ID Recepción</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Llegada</th>
-                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Bodega</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Cantidad</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Unitario</th>
-                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Costo Total</th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        ID Recepción
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Fecha Llegada
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Bodega
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Cantidad
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Costo Unitario
+                      </th>
+                      <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Costo Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {oc.inventarioRecibido.map((inv) => (
-                      <tr key={inv.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{inv.idRecepcion}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{formatDate(inv.fechaLlegada)}</td>
+                    {oc.inventarioRecibido.map(inv => (
+                      <tr
+                        key={inv.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                          {inv.idRecepcion}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">
+                          {formatDate(inv.fechaLlegada)}
+                        </td>
                         <td className="py-3 px-4 text-sm text-gray-700">{inv.bodegaInicial}</td>
                         <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
                           {inv.cantidadRecibida.toLocaleString()}
                         </td>
                         <td className="py-3 px-4 text-right text-sm text-gray-900">
-                          {inv.costoUnitarioFinalRD !== null
-                            ? formatCurrency(inv.costoUnitarioFinalRD)
-                            : <span className="text-gray-400">-</span>}
+                          {inv.costoUnitarioFinalRD !== null ? (
+                            formatCurrency(inv.costoUnitarioFinalRD)
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </td>
                         <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
-                          {inv.costoTotalRecepcionRD !== null
-                            ? formatCurrency(inv.costoTotalRecepcionRD)
-                            : <span className="text-gray-400">-</span>}
+                          {inv.costoTotalRecepcionRD !== null ? (
+                            formatCurrency(inv.costoTotalRecepcionRD)
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </td>
                       </tr>
                     ))}
