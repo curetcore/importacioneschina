@@ -13,9 +13,10 @@ import { ProveedoresList } from "@/components/registros/ProveedoresList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Settings, Users } from "lucide-react"
+import { Plus, Edit, Trash2, Settings, Users, Calculator } from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 import { useApiQuery } from "@/lib/hooks/useApiQuery"
+import { DistribucionCostosSettings } from "@/components/configuracion/DistribucionCostosSettings"
 
 interface Configuracion {
   id: string
@@ -185,6 +186,10 @@ export default function ConfiguracionPage() {
               <Settings className="w-4 h-4" />
               Configuración
             </TabsTrigger>
+            <TabsTrigger value="distribucion" className="gap-2">
+              <Calculator className="w-4 h-4" />
+              Distribución de Costos
+            </TabsTrigger>
             <TabsTrigger value="proveedores" className="gap-2">
               <Users className="w-4 h-4" />
               Proveedores CRM
@@ -260,6 +265,10 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="distribucion">
+            <DistribucionCostosSettings />
           </TabsContent>
 
           <TabsContent value="proveedores">

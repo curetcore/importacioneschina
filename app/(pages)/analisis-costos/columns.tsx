@@ -20,6 +20,9 @@ export interface ProductoCosto {
     pagos: number
     gastos: number
     comisiones: number
+    metodoPagos?: string
+    metodoGastos?: string
+    metodoComisiones?: string
   }
   costoFinalUnitario: number
   costoTotalRecepcion: number

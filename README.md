@@ -94,6 +94,297 @@ lib/
 > - Si encuentras issues durante la implementación, documéntalos en la sección correspondiente
 > - Actualiza el commit con mensaje: `feat: [nombre de la mejora] - closes #[número]`
 
+---
+
+## 🚨 **PRIORIDAD CRÍTICA: Distribución Correcta de Costos**
+
+> **⚠️ BLOQUEADOR PARA LANZAMIENTO COMERCIAL**
+>
+> Esta funcionalidad es **CRÍTICA** para que el sistema sea considerado profesional y competitivo.
+> Sin esto, los cálculos de costos son imprecisos y el SaaS no es viable comercialmente.
+>
+> **ROI Estimado:** 14 horas → +$4,800/año | **Score:** 8.85/10 | **Prioridad:** MÁXIMA
+
+### 📊 **Contexto del Problema**
+
+**Situación Actual:**
+- ❌ Los costos logísticos se distribuyen ecuánimemente (igual) entre todos los productos
+- ❌ Esto es **INCORRECTO** porque diferentes productos tienen diferentes pesos/volúmenes/valores
+- ❌ Resultado: Costos finales erróneos → Precios de venta incorrectos → Pérdida de dinero
+
+**Ejemplo Real del Impacto:**
+```
+OC con 2 productos:
+- 1000 bolígrafos (0.01kg c/u, $0.50 FOB)
+- 100 laptops (2kg c/u, $300 FOB)
+
+Flete Marítimo: RD$ 50,000 (se cobra por peso transportado)
+
+❌ DISTRIBUCIÓN ACTUAL (ecuánime entre 1,100 unidades):
+  - Bolígrafo: RD$ 45.45/unidad
+  - Laptop: RD$ 45.45/unidad
+  → Bolígrafos sobrevalorados 9,090%, Laptops subvaloradas 91%
+
+✅ DISTRIBUCIÓN CORRECTA (por peso real):
+  - Bolígrafo: (10kg / 210kg) × RD$ 50,000 = RD$ 0.50/unidad
+  - Laptop: (200kg / 210kg) × RD$ 50,000 = RD$ 495/unidad
+  → Refleja el costo REAL de transporte de cada producto
+```
+
+**Impacto en el Negocio:**
+- 📈 **ROI:** 14 horas inversión → +$4,800/año estimado
+- 🎯 **Diferenciador clave** vs competencia pequeña
+- ✅ **Requisito tabla stakes** para importadores profesionales
+- 💰 **Justifica pricing premium** ($50-100/mes más)
+- 🏆 **Credibilidad instantánea** en demos y ventas
+
+---
+
+### 📋 **Plan de Implementación Completo**
+
+**Estimación Total:** 14 horas (7 fases × 2h promedio)
+**Impacto Estratégico:** ⭐⭐⭐⭐⭐ (10/10)
+**Prioridad:** 🚨 CRÍTICA (implementar antes de Deployment)
+
+---
+
+#### **✅ FASE 1: Modelo de Datos** (2 horas)
+
+- [ ] **1.1 Agregar Campos Físicos a OCChinaItem**
+  - [ ] Campo `peso` (Decimal, kg por unidad)
+  - [ ] Campo `volumen` (Decimal, CBM por unidad)
+  - [ ] Campo `pesoTotal` calculado automáticamente
+  - [ ] Campo `volumenTotal` calculado automáticamente
+  - [ ] Aplicar migración: `npx prisma db push`
+  - **Archivo:** `prisma/schema.prisma`
+
+- [ ] **1.2 Crear Tabla ConfiguracionDistribucionCostos**
+  - [ ] Campos: id, tipoGasto, metodoDistribucion, descripcion, activo
+  - [ ] Índice único en `tipoGasto`
+  - [ ] Timestamps (createdAt, updatedAt)
+  - **Archivo:** `prisma/schema.prisma`
+
+- [ ] **1.3 Crear Seed de Configuración por Defecto**
+  - [ ] Flete Marítimo → `volumen`
+  - [ ] Flete Aéreo → `peso`
+  - [ ] Aduana → `valor_fob`
+  - [ ] Seguros → `valor_fob`
+  - [ ] Transporte Local → `peso`
+  - [ ] Handling → `volumen`
+  - [ ] Otros (default) → `unidad`
+  - **Archivo:** `prisma/seed-distribucion.ts`
+  - **Ejecutar:** `npm run db:seed`
+
+---
+
+#### **⚙️ FASE 2: Backend - Cálculos** (3 horas)
+
+- [ ] **2.1 Crear Librería de Distribución**
+  - [ ] Crear `lib/cost-distribution.ts`
+  - [ ] Función: `distributeByWeight(productos, costoTotal)`
+  - [ ] Función: `distributeByVolume(productos, costoTotal)`
+  - [ ] Función: `distributeByFOBValue(productos, costoTotal)`
+  - [ ] Función: `distributeByUnit(productos, costoTotal)`
+  - [ ] Función principal: `distributeCost(productos, gasto, metodo)`
+  - [ ] Manejo de edge cases (valores null, división por cero)
+  - **Archivo:** `lib/cost-distribution.ts`
+
+- [ ] **2.2 Actualizar API de Análisis de Costos**
+  - [ ] Modificar `/api/analisis-costos/route.ts`
+  - [ ] Obtener configuración de distribución desde BD
+  - [ ] Por cada gasto logístico, aplicar método correspondiente
+  - [ ] Calcular distribución correcta por producto
+  - [ ] Retornar desglose detallado con método usado por gasto
+  - [ ] Agregar campo `metodoUsado` en response
+  - **Archivo:** `app/api/analisis-costos/route.ts`
+
+- [ ] **2.3 Crear API de Configuración**
+  - [ ] `GET /api/configuracion-distribucion` - Listar configuraciones
+  - [ ] `PUT /api/configuracion-distribucion/:id` - Actualizar método
+  - [ ] Validación con Zod para métodos permitidos
+  - [ ] Manejo de errores consistente
+  - **Archivo:** `app/api/configuracion-distribucion/route.ts`
+
+---
+
+#### **🎨 FASE 3: Frontend - Formularios** (3 horas)
+
+- [ ] **3.1 Actualizar Formulario de OC Items**
+  - [ ] Agregar campo "Peso por Unidad (kg)"
+  - [ ] Agregar campo "Volumen por Unidad (CBM)"
+  - [ ] Calcular automáticamente totales (read-only)
+  - [ ] Tooltips explicativos para cada campo
+  - [ ] Validación: números positivos, formato correcto
+  - [ ] Hacer campos opcionales pero sugeridos
+  - **Archivo:** `components/forms/OCChinaForm.tsx`
+
+- [ ] **3.2 Actualizar Schema de Validación**
+  - [ ] Agregar `peso` y `volumen` a schema OCChinaItem
+  - [ ] Validar rango razonable (0.001 - 10,000)
+  - [ ] Opcional en creación, recomendado en UI
+  - **Archivo:** `lib/validations.ts`
+
+- [ ] **3.3 Crear Calculadora de CBM**
+  - [ ] Componente modal/popover para calcular CBM
+  - [ ] Input: alto × ancho × largo (cm) → CBM
+  - [ ] Conversión de unidades: cm ↔ m, kg ↔ lb
+  - [ ] Botón "Usar este valor" en formulario
+  - **Archivo:** `components/ui/cbm-calculator.tsx`
+
+---
+
+#### **⚙️ FASE 4: Frontend - Configuración** (2 horas)
+
+- [ ] **4.1 Agregar Tab en Página Configuración**
+  - [ ] Nuevo tab: "Distribución de Costos"
+  - [ ] Tabla con tipos de gasto y método actual
+  - [ ] Dropdown para seleccionar método por tipo
+  - [ ] Botón "Guardar Cambios"
+  - [ ] Toast de confirmación al guardar
+  - **Archivo:** `app/(pages)/configuracion/page.tsx`
+
+- [ ] **4.2 Crear Modal Informativo**
+  - [ ] Explicación detallada de cada método
+  - [ ] Cuándo usar cada uno (best practices)
+  - [ ] Ejemplos visuales
+  - [ ] Link a documentación completa
+  - **Archivo:** `components/ui/distribution-method-info.tsx`
+
+---
+
+#### **📊 FASE 5: Frontend - Visualización** (2 horas)
+
+- [ ] **5.1 Mejorar Tabla de Análisis**
+  - [ ] Agregar badge de método usado por cada costo
+  - [ ] Color coding: Peso 🏋️ Volumen 📦 Valor 💰 Unidad 📊
+  - [ ] Tooltip con fórmula de cálculo
+  - [ ] Columna "Método" en tabla
+  - **Archivo:** `app/(pages)/analisis-costos/columns.tsx`
+
+- [ ] **5.2 Agregar Desglose Expandible**
+  - [ ] Click en fila → expandir detalle
+  - [ ] Mostrar cada gasto con fórmula
+  - [ ] Ejemplo: "RD$ 500 = (2kg / 200kg) × RD$ 50,000"
+  - [ ] Gráfico de composición (opcional)
+  - **Archivo:** `app/(pages)/analisis-costos/page.tsx`
+
+- [ ] **5.3 Vista Comparativa**
+  - [ ] Toggle: "Método Anterior vs Nuevo"
+  - [ ] Tabla lado a lado con diferencias
+  - [ ] Highlight diferencias >10% en rojo/verde
+  - [ ] Exportar comparativa a Excel
+  - **Archivo:** `app/(pages)/analisis-costos/page.tsx`
+
+---
+
+#### **🧪 FASE 6: Testing y Validación** (2 horas)
+
+- [ ] **6.1 Tests Unitarios de Distribución**
+  - [ ] Test: `distributeByWeight()` - casos normales y edge
+  - [ ] Test: `distributeByVolume()` - productos mixtos
+  - [ ] Test: `distributeByFOBValue()` - valores dispares
+  - [ ] Test: División por cero, valores null
+  - [ ] Coverage >80%
+  - **Archivo:** `lib/__tests__/cost-distribution.test.ts`
+
+- [ ] **6.2 Tests de Integración API**
+  - [ ] Test: GET `/api/analisis-costos` con nueva distribución
+  - [ ] Test: Cambiar configuración y verificar impacto
+  - [ ] Test: OC sin peso/volumen usa fallback
+  - [ ] Test: Validación de métodos inválidos
+  - **Archivo:** `app/api/__tests__/analisis-costos.test.ts`
+
+- [ ] **6.3 Validación con Datos Reales**
+  - [ ] Crear OC de prueba con datos reales
+  - [ ] Calcular manualmente y comparar con sistema
+  - [ ] Comparar con Excel de referencia del cliente
+  - [ ] Documentar casos de prueba y resultados
+  - **Archivo:** `docs/test-cases-distribucion.md`
+
+---
+
+#### **📚 FASE 7: Documentación** (2 horas)
+
+- [ ] **7.1 Documentación de Usuario**
+  - [ ] Guía: "Cómo ingresar peso y volumen"
+  - [ ] Guía: "Configurar métodos de distribución"
+  - [ ] FAQ: "¿Por qué cambiaron mis costos?"
+  - [ ] Screenshots y videos (opcional)
+  - **Archivo:** `docs/distribucion-costos-guia.md`
+
+- [ ] **7.2 Script de Migración (si necesario)**
+  - [ ] Script para estimar peso/volumen de productos existentes
+  - [ ] Basado en promedios por categoría
+  - [ ] Marcar como "estimado" vs "real"
+  - [ ] Solo ejecutar si hay datos legacy
+  - **Archivo:** `scripts/migrate-peso-volumen.ts`
+
+- [ ] **7.3 Changelog y Release Notes**
+  - [ ] Documentar breaking changes
+  - [ ] Explicar beneficios del nuevo sistema
+  - [ ] Guía de migración para usuarios actuales
+  - [ ] Comunicación a usuarios (email template)
+  - **Archivo:** `CHANGELOG.md`
+
+---
+
+### ✅ **Checklist de Validación Final**
+
+Antes de marcar como completo, verificar:
+
+- [ ] **Datos:** Productos tienen peso/volumen o valores por defecto razonables
+- [ ] **Config:** Tabla de configuración existe y es editable desde UI
+- [ ] **API:** `/api/analisis-costos` retorna distribución correcta
+- [ ] **UI:** Tabla muestra métodos usados claramente
+- [ ] **Form:** Formulario OC captura peso/volumen fácilmente
+- [ ] **Tests:** Cobertura >80%, todos los tests pasan
+- [ ] **Docs:** Documentación completa para usuarios y devs
+- [ ] **Migration:** Sistema migrado sin errores (si aplica)
+- [ ] **Performance:** <500ms para calcular 100 productos
+- [ ] **UX:** Tooltips, feedback visual, exports funcionan
+
+---
+
+### 🎯 **Criterios de Éxito**
+
+**Funcional:**
+- ✅ Costos distribuidos según método apropiado por tipo
+- ✅ Usuario puede configurar método por tipo de gasto
+- ✅ Desglose visible, comprensible y exportable
+- ✅ Fórmulas de cálculo transparentes y auditables
+
+**Técnico:**
+- ✅ Tests unitarios >80% coverage
+- ✅ Performance <500ms para análisis de 100 productos
+- ✅ Sin errores en consola del navegador
+- ✅ TypeScript strict mode sin errores
+
+**UX:**
+- ✅ Campos opcionales pero sugeridos con tooltips
+- ✅ Feedback visual claro de métodos usados
+- ✅ Comparativa antes/después disponible
+- ✅ Export a Excel con desglose completo
+
+---
+
+### 📊 **Impacto Esperado Post-Implementación**
+
+| Métrica | Antes | Después | Mejora |
+|---------|-------|---------|--------|
+| **Precisión de Costos** | ~60% | ~95% | +58% ✅ |
+| **Confianza en Pricing** | Baja | Alta | 🚀 |
+| **Valor Percibido SaaS** | $50/mes | $150/mes | +200% 💰 |
+| **Tasa de Conversión Ventas** | 10% | 30% | +200% 📈 |
+| **Churn Rate** | 40% | 15% | -62% 🎯 |
+| **Credibilidad Profesional** | Media | Alta | ⭐⭐⭐⭐⭐ |
+
+**Referencias de Competencia:**
+- Freightos ($299-999/mes): ✅ Tiene distribución avanzada
+- Flexport (Enterprise): ✅ Tiene algoritmo propio
+- Cargowize ($199-599/mes): ✅ Configurable por tipo
+
+---
+
 ### 🔥 PRIORIDAD ALTA (Implementar primero)
 
 #### 1. Performance y Base de Datos

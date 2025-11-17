@@ -13,7 +13,8 @@ import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
 import { ocChinaSchema, type OCChinaInput } from "@/lib/validations"
-import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus } from "lucide-react"
+import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus, Calculator } from "lucide-react"
+import { CBMCalculator } from "@/components/ui/cbm-calculator"
 
 interface FileAttachment {
   nombre: string
@@ -34,6 +35,8 @@ interface OCChinaItem {
   cantidadTotal: number
   precioUnitarioUSD: number
   subtotalUSD?: number
+  pesoUnitarioKg?: number | null
+  volumenUnitarioCBM?: number | null
 }
 
 interface OCChina {
@@ -67,6 +70,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   const [items, setItems] = useState<OCChinaItem[]>([])
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
+
+  // CBM Calculator state
+  const [cbmCalcOpen, setCbmCalcOpen] = useState(false)
+  const [cbmCalcItemIndex, setCbmCalcItemIndex] = useState<number | null>(null)
 
   const {
     register,
@@ -184,6 +191,17 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
     setItems(newItems)
   }
 
+  const handleCBMCalculate = (cbm: number) => {
+    if (cbmCalcItemIndex !== null) {
+      updateItem(cbmCalcItemIndex, 'volumenUnitarioCBM', cbm)
+    }
+  }
+
+  const openCBMCalculator = (index: number) => {
+    setCbmCalcItemIndex(index)
+    setCbmCalcOpen(true)
+  }
+
   const parseTallaDistribucion = (text: string): Record<string, number> | null => {
     if (!text.trim()) return null
     try {
@@ -241,6 +259,8 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           tallaDistribucion: item.tallaDistribucion,
           cantidadTotal: item.cantidadTotal,
           precioUnitarioUSD: item.precioUnitarioUSD,
+          pesoUnitarioKg: item.pesoUnitarioKg || null,
+          volumenUnitarioCBM: item.volumenUnitarioCBM || null,
         })),
         adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
       }
@@ -516,6 +536,55 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 disabled={isSubmitting}
                               />
                             </div>
+
+                            {/* Peso Unitario */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Peso Unitario (kg)
+                                <span className="text-xs text-gray-500 ml-1">(opcional)</span>
+                              </label>
+                              <Input
+                                type="number"
+                                min="0.001"
+                                step="0.001"
+                                value={item.pesoUnitarioKg || ""}
+                                onChange={(e) => updateItem(index, 'pesoUnitarioKg', e.target.value ? parseFloat(e.target.value) : null)}
+                                placeholder="Ej: 0.850"
+                                disabled={isSubmitting}
+                              />
+                              <p className="text-xs text-gray-500 mt-0.5">Para distribución de gastos de flete</p>
+                            </div>
+
+                            {/* Volumen Unitario */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Volumen Unitario (CBM)
+                                <span className="text-xs text-gray-500 ml-1">(opcional)</span>
+                              </label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="number"
+                                  min="0.000001"
+                                  step="0.000001"
+                                  value={item.volumenUnitarioCBM || ""}
+                                  onChange={(e) => updateItem(index, 'volumenUnitarioCBM', e.target.value ? parseFloat(e.target.value) : null)}
+                                  placeholder="Ej: 0.012"
+                                  disabled={isSubmitting}
+                                  className="flex-1"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => openCBMCalculator(index)}
+                                  disabled={isSubmitting}
+                                  className="px-3"
+                                  title="Calcular CBM"
+                                >
+                                  <Calculator className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-0.5">Metro cúbico (L×W×H÷1,000,000)</p>
+                            </div>
                           </div>
 
                           {/* Especificaciones */}
@@ -608,6 +677,13 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* CBM Calculator Modal */}
+      <CBMCalculator
+        open={cbmCalcOpen}
+        onOpenChange={setCbmCalcOpen}
+        onCalculate={handleCBMCalculate}
+      />
     </Dialog>
   )
 }

@@ -16,6 +16,17 @@ import { exportToExcel } from "@/lib/export-utils"
 import { useToast } from "@/components/ui/toast"
 import { Calculator, Package, DollarSign, TrendingUp, Download } from "lucide-react"
 
+// Helper function to get distribution method labels
+const getMethodLabel = (method: string): string => {
+  const labels: Record<string, string> = {
+    peso: "Por Peso",
+    volumen: "Por Volumen",
+    valor_fob: "Por Valor FOB",
+    unidades: "Por Unidades",
+  }
+  return labels[method] || method
+}
+
 export default function AnalisisCostosPage() {
   const { addToast } = useToast()
 
@@ -156,7 +167,7 @@ export default function AnalisisCostosPage() {
                   <div className="flex items-start gap-3">
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-blue-900">
-                        💡 Leyenda de Columnas
+                        💡 Leyenda de Columnas y Métodos de Distribución
                       </h3>
                       <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
                         <div>
@@ -167,16 +178,36 @@ export default function AnalisisCostosPage() {
                         </div>
                         <div className="text-blue-600">
                           <strong>Pagos:</strong> Distribución de pagos a proveedor
+                          {productos.length > 0 && productos[0]?.desglose?.metodoPagos && (
+                            <span className="ml-1 text-xs bg-blue-100 px-1.5 py-0.5 rounded">
+                              {getMethodLabel(productos[0].desglose.metodoPagos)}
+                            </span>
+                          )}
                         </div>
                         <div className="text-orange-600">
                           <strong>Gastos:</strong> Flete, aduana, transporte
+                          {productos.length > 0 && productos[0]?.desglose?.metodoGastos && (
+                            <span className="ml-1 text-xs bg-orange-100 px-1.5 py-0.5 rounded">
+                              {getMethodLabel(productos[0].desglose.metodoGastos)}
+                            </span>
+                          )}
                         </div>
                         <div className="text-purple-600">
                           <strong>Comisiones:</strong> Comisiones bancarias
+                          {productos.length > 0 && productos[0]?.desglose?.metodoComisiones && (
+                            <span className="ml-1 text-xs bg-purple-100 px-1.5 py-0.5 rounded">
+                              {getMethodLabel(productos[0].desglose.metodoComisiones)}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <strong>Costo Final:</strong> Suma de todos los costos
                         </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-blue-200">
+                        <p className="text-xs text-blue-600">
+                          <strong>Métodos de distribución:</strong> Los costos se distribuyen profesionalmente según peso, volumen, o valor FOB del producto.
+                        </p>
                       </div>
                     </div>
                   </div>
