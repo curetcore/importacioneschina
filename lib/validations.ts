@@ -48,7 +48,7 @@ export type PagosChinaInput = z.infer<typeof pagosChinaSchema>
 
 export const gastosLogisticosSchema = z.object({
   idGasto: z.string().min(1, "El ID de gasto es requerido").optional(), // Opcional en CREATE (autogenerado)
-  ocId: z.string().min(1, "La OC es requerida"),
+  ocIds: z.array(z.string().min(1, "El ID de OC no puede estar vacio")).min(1, "Debe seleccionar al menos una OC"),
   fechaGasto: z.coerce
     .date({
       required_error: "La fecha del gasto es requerida",

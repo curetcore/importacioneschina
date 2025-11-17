@@ -16,10 +16,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         deletedAt: null,
       },
       include: {
-        ocChina: {
-          select: {
-            oc: true,
-            proveedor: true,
+        ordenesCompra: {
+          include: {
+            ocChina: {
+              select: {
+                oc: true,
+                proveedor: true,
+              },
+            },
           },
         },
       },
@@ -47,6 +51,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const existing = await db.gastosLogisticos.findUnique({
       where: { id },
+      include: {
+        ordenesCompra: {
+          include: {
+            ocChina: {
+              select: {
+                oc: true,
+                proveedor: true,
+              },
+            },
+          },
+        },
+      },
     })
 
     if (!existing) {
@@ -61,29 +77,63 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Extraer adjuntos (no validado por Zod)
     const { adjuntos } = body
 
-    const oc = await db.oCChina.findUnique({
-      where: { id: validatedData.ocId },
-    })
-
-    if (!oc) {
-      throw Errors.notFound("Orden de compra", validatedData.ocId)
+    // Validar que todos los OC IDs existen
+    for (const ocId of validatedData.ocIds) {
+      const oc = await db.oCChina.findUnique({
+        where: { id: ocId },
+      })
+      if (!oc) {
+        throw Errors.notFound("Orden de compra", ocId)
+      }
     }
 
-    // Actualizar el gasto
+    // Actualizar el gasto usando una transacción
     // NOTA: idGasto NO se puede modificar (es autogenerado e inmutable)
-    const updatedGasto = await db.gastosLogisticos.update({
-      where: { id },
-      data: {
-        // idGasto es inmutable - se mantiene el valor existente
-        ocId: validatedData.ocId,
-        fechaGasto: new Date(validatedData.fechaGasto),
-        tipoGasto: validatedData.tipoGasto,
-        proveedorServicio: validatedData.proveedorServicio,
-        metodoPago: validatedData.metodoPago,
-        montoRD: validatedData.montoRD,
-        notas: validatedData.notas,
-        adjuntos: adjuntos || null,
-      },
+    const updatedGasto = await db.$transaction(async (tx) => {
+      // 1. Actualizar datos principales del gasto
+      const gasto = await tx.gastosLogisticos.update({
+        where: { id },
+        data: {
+          // idGasto es inmutable - se mantiene el valor existente
+          fechaGasto: new Date(validatedData.fechaGasto),
+          tipoGasto: validatedData.tipoGasto,
+          proveedorServicio: validatedData.proveedorServicio,
+          metodoPago: validatedData.metodoPago,
+          montoRD: validatedData.montoRD,
+          notas: validatedData.notas,
+          adjuntos: adjuntos || null,
+        },
+      })
+
+      // 2. Eliminar todas las relaciones existentes con OCs
+      await tx.gastoLogisticoOC.deleteMany({
+        where: { gastoId: id },
+      })
+
+      // 3. Crear las nuevas relaciones con OCs
+      await tx.gastoLogisticoOC.createMany({
+        data: validatedData.ocIds.map((ocId) => ({
+          gastoId: id,
+          ocId,
+        })),
+      })
+
+      // 4. Retornar gasto con relaciones incluidas
+      return tx.gastosLogisticos.findUnique({
+        where: { id },
+        include: {
+          ordenesCompra: {
+            include: {
+              ocChina: {
+                select: {
+                  oc: true,
+                  proveedor: true,
+                },
+              },
+            },
+          },
+        },
+      })
     })
 
     // Audit log
