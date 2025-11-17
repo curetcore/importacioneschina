@@ -9,7 +9,7 @@ const pastDateValidator = (date: Date) => {
 
 // Schema base para OC (sin items, cantidadOrdenada y costoFOBTotalUSD se calculan desde items)
 export const ocChinaSchema = z.object({
-  oc: z.string().min(1, "El codigo OC es requerido"),
+  oc: z.string().min(1, "El codigo OC es requerido").optional(), // Opcional en CREATE (autogenerado)
   proveedor: z.string().min(1, "El proveedor es requerido"),
   fechaOC: z.coerce
     .date({
