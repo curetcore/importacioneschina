@@ -37,12 +37,12 @@ export async function GET(request: NextRequest) {
       where: {
         ...(ocId ? { ocId } : {}),
         deletedAt: null, // Only active inventory
+        ocChina: {
+          deletedAt: null, // Only from active OCs
+        },
       },
       include: {
         ocChina: {
-          where: {
-            deletedAt: null, // Only active OCs
-          },
           include: {
             items: {
               where: {
@@ -61,11 +61,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        item: {
-          where: {
-            deletedAt: null, // Only active items
-          },
-        },
+        item: true,
       },
       orderBy: {
         fechaLlegada: "desc",
