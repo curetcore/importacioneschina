@@ -78,6 +78,8 @@ export default function NotificacionesPage() {
   // Marcar como leída
   const markAsRead = async (id: string, url: string | null) => {
     try {
+      console.log("🔔 Marcando notificación como leída:", { id, url })
+
       await fetch(`/api/notificaciones/${id}`, {
         method: "PUT",
       })
@@ -85,9 +87,13 @@ export default function NotificacionesPage() {
       queryClient.invalidateQueries({ queryKey: ["notificaciones"] })
 
       if (url) {
+        console.log("🔔 Navegando a:", url)
         router.push(url)
+      } else {
+        console.log("🔔 No hay URL para navegar")
       }
     } catch (error) {
+      console.error("🔔 Error:", error)
       addToast({
         type: "error",
         title: "Error al marcar notificación como leída",
