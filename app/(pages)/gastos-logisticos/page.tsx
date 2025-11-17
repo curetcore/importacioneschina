@@ -16,7 +16,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { getGastosColumns, GastoLogistico } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
-import { exportToExcel } from "@/lib/export-utils"
+import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 
 // Lazy load heavy components
 const GastosLogisticosForm = dynamicImport(() => import("@/components/forms/GastosLogisticosForm").then(mod => ({ default: mod.GastosLogisticosForm })), {
@@ -25,12 +25,13 @@ const GastosLogisticosForm = dynamicImport(() => import("@/components/forms/Gast
 const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
   loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
 })
-import { Plus, Truck, DollarSign, TrendingUp, Package, Download, FileText, Search, Settings2 } from "lucide-react"
+import { Plus, Truck, DollarSign, TrendingUp, Package, Download, FileText, Search, Settings2, FileSpreadsheet } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -110,7 +111,19 @@ export default function GastosLogisticosPage() {
     setGastoToEdit(null)
   }
 
-  const handleExport = () => {
+  const prepareExportData = () => {
+    return gastos.map((gasto: GastoLogistico) => ({
+      "ID Gasto": gasto.idGasto,
+      "OC": gasto.ocChina.oc,
+      "Proveedor": gasto.ocChina.proveedor,
+      "Fecha": new Date(gasto.fechaGasto).toLocaleDateString(),
+      "Tipo de Gasto": gasto.tipoGasto,
+      "Proveedor Servicio": gasto.proveedorServicio || "",
+      "Monto RD$": parseFloat(gasto.montoRD.toString()),
+    }))
+  }
+
+  const handleExportExcel = () => {
     if (gastos.length === 0) {
       addToast({
         type: "warning",
@@ -120,21 +133,31 @@ export default function GastosLogisticosPage() {
       return
     }
 
-    const dataToExport = gastos.map((gasto: GastoLogistico) => ({
-      "ID Gasto": gasto.idGasto,
-      "OC": gasto.ocChina.oc,
-      "Proveedor": gasto.ocChina.proveedor,
-      "Fecha": new Date(gasto.fechaGasto).toLocaleDateString(),
-      "Tipo de Gasto": gasto.tipoGasto,
-      "Proveedor Servicio": gasto.proveedorServicio || "",
-      "Monto RD$": parseFloat(gasto.montoRD.toString()),
-    }))
-
+    const dataToExport = prepareExportData()
     exportToExcel(dataToExport, "gastos_logisticos", "Gastos Logísticos")
     addToast({
       type: "success",
       title: "Exportación exitosa",
       description: `${gastos.length} gastos exportados a Excel`,
+    })
+  }
+
+  const handleExportPDF = () => {
+    if (gastos.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay gastos para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
+    exportToPDF(dataToExport, "gastos_logisticos", "Gastos Logísticos - Sistema de Importaciones")
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${gastos.length} gastos exportados a PDF`,
     })
   }
 
@@ -272,15 +295,28 @@ export default function GastosLogisticosPage() {
                     })}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="gap-1.5 h-8 px-3 text-xs"
-                disabled={gastos.length === 0}
-              >
-                <Download size={14} />
-                Exportar
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={gastos.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                    <FileSpreadsheet size={16} />
+                    Exportar a Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                    <FileText size={16} />
+                    Exportar a PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={() => setFormOpen(true)}
                 variant="outline"

@@ -21,13 +21,14 @@ import { DataTable } from "@/components/ui/data-table"
 import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
-import { exportToExcel } from "@/lib/export-utils"
-import { Plus, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download, Search, Settings2 } from "lucide-react"
+import { exportToExcel, exportToPDF } from "@/lib/export-utils"
+import { Plus, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -100,17 +101,8 @@ export default function InventarioRecibidoPage() {
     setInventarioToEdit(null)
   }
 
-  const handleExport = () => {
-    if (inventarios.length === 0) {
-      addToast({
-        type: "warning",
-        title: "Sin datos",
-        description: "No hay recepciones para exportar",
-      })
-      return
-    }
-
-    const dataToExport = inventarios.map((inventario: InventarioRecibido) => ({
+  const prepareExportData = () => {
+    return inventarios.map((inventario: InventarioRecibido) => ({
       "ID Recepción": inventario.idRecepcion,
       "OC": inventario.ocChina.oc,
       "Proveedor": inventario.ocChina.proveedor,
@@ -122,12 +114,43 @@ export default function InventarioRecibidoPage() {
       "Costo Unitario RD$": inventario.costoUnitarioFinalRD !== null ? parseFloat(inventario.costoUnitarioFinalRD.toString()) : 0,
       "Costo Total RD$": inventario.costoTotalRecepcionRD !== null ? parseFloat(inventario.costoTotalRecepcionRD.toString()) : 0,
     }))
+  }
 
+  const handleExportExcel = () => {
+    if (inventarios.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay recepciones para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
     exportToExcel(dataToExport, "inventario_recibido", "Inventario Recibido")
     addToast({
       type: "success",
       title: "Exportación exitosa",
       description: `${inventarios.length} recepciones exportadas a Excel`,
+    })
+  }
+
+  const handleExportPDF = () => {
+    if (inventarios.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay recepciones para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
+    exportToPDF(dataToExport, "inventario_recibido", "Inventario Recibido - Sistema de Importaciones")
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${inventarios.length} recepciones exportadas a PDF`,
     })
   }
 
@@ -267,15 +290,28 @@ export default function InventarioRecibidoPage() {
                     })}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="gap-1.5 h-8 px-3 text-xs"
-                disabled={inventarios.length === 0}
-              >
-                <Download size={14} />
-                Exportar
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={inventarios.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                    <FileSpreadsheet size={16} />
+                    Exportar a Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                    <FileText size={16} />
+                    Exportar a PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={() => setFormOpen(true)}
                 variant="outline"

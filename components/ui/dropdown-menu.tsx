@@ -25,6 +25,12 @@ interface DropdownMenuCheckboxItemProps {
   children: React.ReactNode
 }
 
+interface DropdownMenuItemProps {
+  onClick?: () => void
+  className?: string
+  children: React.ReactNode
+}
+
 const DropdownMenuContext = React.createContext<{
   isOpen: boolean
   setIsOpen: (open: boolean) => void
@@ -125,6 +131,29 @@ export function DropdownMenuCheckboxItem({
     >
       <span>{children}</span>
       {checked && <Check className="h-4 w-4 text-gray-900" />}
+    </button>
+  )
+}
+
+export function DropdownMenuItem({
+  onClick,
+  className = "",
+  children,
+}: DropdownMenuItemProps) {
+  const { setIsOpen } = React.useContext(DropdownMenuContext)
+
+  const handleClick = () => {
+    onClick?.()
+    setIsOpen(false)
+  }
+
+  return (
+    <button
+      type="button"
+      className={`flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${className}`}
+      onClick={handleClick}
+    >
+      {children}
     </button>
   )
 }

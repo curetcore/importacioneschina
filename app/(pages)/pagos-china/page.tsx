@@ -16,7 +16,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { getPagosColumns, Pago } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
-import { exportToExcel } from "@/lib/export-utils"
+import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 
 // Lazy load heavy components
 const PagosChinaForm = dynamicImport(() => import("@/components/forms/PagosChinaForm").then(mod => ({ default: mod.PagosChinaForm })), {
@@ -25,12 +25,13 @@ const PagosChinaForm = dynamicImport(() => import("@/components/forms/PagosChina
 const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
   loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
 })
-import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download, Search, Settings2 } from "lucide-react"
+import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -110,18 +111,8 @@ export default function PagosChinaPage() {
     setPagoToEdit(null)
   }
 
-  const handleExport = () => {
-    if (pagos.length === 0) {
-      addToast({
-        type: "warning",
-        title: "Sin datos",
-        description: "No hay pagos para exportar",
-      })
-      return
-    }
-
-    // Preparar datos para exportación
-    const dataToExport = pagos.map((pago: Pago) => ({
+  const prepareExportData = () => {
+    return pagos.map((pago: Pago) => ({
       "ID Pago": pago.idPago,
       "OC": pago.ocChina.oc,
       "Proveedor": pago.ocChina.proveedor,
@@ -135,13 +126,45 @@ export default function PagosChinaPage() {
       "Monto RD$": parseFloat(pago.montoRD.toString()),
       "Monto RD$ Neto": parseFloat(pago.montoRDNeto.toString()),
     }))
+  }
 
+  const handleExportExcel = () => {
+    if (pagos.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay pagos para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
     exportToExcel(dataToExport, "pagos_china", "Pagos a China")
 
     addToast({
       type: "success",
       title: "Exportación exitosa",
       description: `${pagos.length} pagos exportados a Excel`,
+    })
+  }
+
+  const handleExportPDF = () => {
+    if (pagos.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay pagos para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
+    exportToPDF(dataToExport, "pagos_china", "Pagos a China - Sistema de Importaciones")
+
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${pagos.length} pagos exportados a PDF`,
     })
   }
 
@@ -281,15 +304,28 @@ export default function PagosChinaPage() {
                     })}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="gap-1.5 h-8 px-3 text-xs"
-                disabled={pagos.length === 0}
-              >
-                <Download size={14} />
-                Exportar
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={pagos.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                    <FileSpreadsheet size={16} />
+                    Exportar a Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                    <FileText size={16} />
+                    Exportar a PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={() => setFormOpen(true)}
                 variant="outline"

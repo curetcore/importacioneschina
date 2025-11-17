@@ -20,15 +20,16 @@ const OCChinaForm = dynamicImport(() => import("@/components/forms/OCChinaForm")
 import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
-import { exportToExcel } from "@/lib/export-utils"
+import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 import { DataTable } from "@/components/ui/data-table"
 import { getOrdenesColumns, OCChina } from "./columns"
-import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search, Settings2 } from "lucide-react"
+import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search, Settings2, FileSpreadsheet, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -116,7 +117,19 @@ export default function OrdenesPage() {
     queryClient.invalidateQueries({ queryKey: ["oc-china"] })
   }
 
-  const handleExport = () => {
+  const prepareExportData = () => {
+    return ocs.map((oc: OCChina) => ({
+      "OC": oc.oc,
+      "Proveedor": oc.proveedor,
+      "Fecha": new Date(oc.fechaOC).toLocaleDateString(),
+      "Categoría": oc.categoriaPrincipal,
+      "Productos": oc.items?.length || 0,
+      "Unidades": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0,
+      "Costo FOB (USD)": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
+    }))
+  }
+
+  const handleExportExcel = () => {
     if (ocs.length === 0) {
       addToast({
         type: "warning",
@@ -126,22 +139,33 @@ export default function OrdenesPage() {
       return
     }
 
-    const dataToExport = ocs.map((oc: OCChina) => ({
-      "OC": oc.oc,
-      "Proveedor": oc.proveedor,
-      "Fecha": new Date(oc.fechaOC).toLocaleDateString(),
-      "Categoría": oc.categoriaPrincipal,
-      "Productos": oc.items?.length || 0,
-      "Unidades": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0,
-      "Costo FOB (USD)": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
-    }))
-
+    const dataToExport = prepareExportData()
     exportToExcel(dataToExport, "ordenes", "Órdenes de Compra")
 
     addToast({
       type: "success",
       title: "Exportación exitosa",
       description: `${ocs.length} órdenes exportadas a Excel`,
+    })
+  }
+
+  const handleExportPDF = () => {
+    if (ocs.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay órdenes para exportar",
+      })
+      return
+    }
+
+    const dataToExport = prepareExportData()
+    exportToPDF(dataToExport, "ordenes", "Órdenes de Compra - Sistema de Importaciones")
+
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${ocs.length} órdenes exportadas a PDF`,
     })
   }
 
@@ -274,15 +298,28 @@ export default function OrdenesPage() {
                     })}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="gap-1.5 h-8 px-3 text-xs"
-                disabled={ocs.length === 0}
-              >
-                <Download size={14} />
-                Exportar
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={ocs.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                    <FileSpreadsheet size={16} />
+                    Exportar a Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                    <FileText size={16} />
+                    Exportar a PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={() => setFormOpen(true)}
                 variant="outline"
