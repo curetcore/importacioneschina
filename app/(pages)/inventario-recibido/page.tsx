@@ -5,12 +5,17 @@ export const dynamic = 'force-dynamic'
 import { useState, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
+import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
-import { InventarioRecibidoForm } from "@/components/forms/InventarioRecibidoForm"
+
+// Lazy load heavy form component
+const InventarioRecibidoForm = dynamicImport(() => import("@/components/forms/InventarioRecibidoForm").then(mod => ({ default: mod.InventarioRecibidoForm })), {
+  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+})
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DataTable } from "@/components/ui/data-table"
 import { getInventarioColumns, InventarioRecibido } from "./columns"

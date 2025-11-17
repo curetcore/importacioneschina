@@ -4,19 +4,9 @@ import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from "recharts"
+import { BarChart, Bar } from "recharts"
+import { PieChart, Pie, Cell } from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 export const dynamic = 'force-dynamic'
 

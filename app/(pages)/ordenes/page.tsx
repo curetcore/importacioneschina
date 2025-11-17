@@ -6,20 +6,31 @@ import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
+import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
-import { OCChinaForm } from "@/components/forms/OCChinaForm"
+
+// Lazy load heavy form component
+const OCChinaForm = dynamicImport(() => import("@/components/forms/OCChinaForm").then(mod => ({ default: mod.OCChinaForm })), {
+  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+})
 import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
 import { DataTable } from "@/components/ui/data-table"
 import { getOrdenesColumns, OCChina } from "./columns"
-import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search } from "lucide-react"
+import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search, Settings2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface OCChinaItem {
   id: string
@@ -39,6 +50,7 @@ export default function OrdenesPage() {
   const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
   // Fetch all OCs
   const { data: ocs = [], isLoading } = useQuery({
@@ -232,6 +244,36 @@ export default function OrdenesPage() {
                   className="pl-8 h-8 w-64 text-xs"
                 />
               </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-8 px-3 text-xs">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Columnas
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  {columns
+                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
+                    .map((column) => {
+                      const id = (column as any).accessorKey as string
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={id}
+                          className="capitalize"
+                          checked={columnVisibility[id] !== false}
+                          onCheckedChange={(value) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [id]: value,
+                            }))
+                          }
+                        >
+                          {id}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -281,6 +323,8 @@ export default function OrdenesPage() {
                 data={filteredOcs}
                 pageSize={20}
                 showToolbar={false}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
               />
             )}
           </CardContent>

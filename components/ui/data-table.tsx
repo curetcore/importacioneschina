@@ -33,6 +33,8 @@ interface DataTableProps<TData, TValue> {
   showColumnToggle?: boolean
   showPagination?: boolean
   showToolbar?: boolean
+  columnVisibility?: VisibilityState
+  onColumnVisibilityChange?: (visibility: VisibilityState) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -45,11 +47,28 @@ export function DataTable<TData, TValue>({
   showColumnToggle = true,
   showPagination = true,
   showToolbar = true,
+  columnVisibility: controlledColumnVisibility,
+  onColumnVisibilityChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  // Use controlled columnVisibility if provided, otherwise use internal state
+  const columnVisibility = controlledColumnVisibility !== undefined ? controlledColumnVisibility : internalColumnVisibility
+
+  const handleColumnVisibilityChange = React.useCallback((updaterOrValue: any) => {
+    if (onColumnVisibilityChange) {
+      if (typeof updaterOrValue === 'function') {
+        onColumnVisibilityChange(updaterOrValue(columnVisibility))
+      } else {
+        onColumnVisibilityChange(updaterOrValue)
+      }
+    } else {
+      setInternalColumnVisibility(updaterOrValue)
+    }
+  }, [onColumnVisibilityChange, columnVisibility])
 
   const table = useReactTable({
     data,
@@ -60,7 +79,7 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,

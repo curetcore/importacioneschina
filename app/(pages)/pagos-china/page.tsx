@@ -5,19 +5,26 @@ export const dynamic = 'force-dynamic'
 import { useState, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
+import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
-import { PagosChinaForm } from "@/components/forms/PagosChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DataTable } from "@/components/ui/data-table"
 import { getPagosColumns, Pago } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
-import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
+
+// Lazy load heavy components
+const PagosChinaForm = dynamicImport(() => import("@/components/forms/PagosChinaForm").then(mod => ({ default: mod.PagosChinaForm })), {
+  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando formulario...</div>
+})
+const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
+  loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
+})
 import { Plus, DollarSign, Banknote, Coins, TrendingUp, Download } from "lucide-react"
 
 export default function PagosChinaPage() {
