@@ -121,31 +121,46 @@ async function checkConfigurationInUse(
     switch (categoria) {
       case "proveedores":
         const ocsWithProveedor = await db.oCChina.count({
-          where: { proveedor: valor },
+          where: {
+            proveedor: valor,
+            deletedAt: null, // Solo contar OCs activas
+          },
         })
         if (ocsWithProveedor > 0) usedIn.push(`${ocsWithProveedor} órdenes de compra`)
         break
 
       case "categorias":
         const ocsWithCategoria = await db.oCChina.count({
-          where: { categoriaPrincipal: valor },
+          where: {
+            categoriaPrincipal: valor,
+            deletedAt: null, // Solo contar OCs activas
+          },
         })
         if (ocsWithCategoria > 0) usedIn.push(`${ocsWithCategoria} órdenes de compra`)
         break
 
       case "tiposPago":
         const pagosWithTipo = await db.pagosChina.count({
-          where: { tipoPago: valor },
+          where: {
+            tipoPago: valor,
+            deletedAt: null, // Solo contar pagos activos
+          },
         })
         if (pagosWithTipo > 0) usedIn.push(`${pagosWithTipo} pagos`)
         break
 
       case "metodosPago":
         const pagosWithMetodo = await db.pagosChina.count({
-          where: { metodoPago: valor },
+          where: {
+            metodoPago: valor,
+            deletedAt: null, // Solo contar pagos activos
+          },
         })
         const gastosWithMetodo = await db.gastosLogisticos.count({
-          where: { metodoPago: valor },
+          where: {
+            metodoPago: valor,
+            deletedAt: null, // Solo contar gastos activos
+          },
         })
         if (pagosWithMetodo > 0) usedIn.push(`${pagosWithMetodo} pagos`)
         if (gastosWithMetodo > 0) usedIn.push(`${gastosWithMetodo} gastos logísticos`)
@@ -153,14 +168,20 @@ async function checkConfigurationInUse(
 
       case "tiposGasto":
         const gastosWithTipo = await db.gastosLogisticos.count({
-          where: { tipoGasto: valor },
+          where: {
+            tipoGasto: valor,
+            deletedAt: null, // Solo contar gastos activos
+          },
         })
         if (gastosWithTipo > 0) usedIn.push(`${gastosWithTipo} gastos logísticos`)
         break
 
       case "bodegas":
         const inventarioWithBodega = await db.inventarioRecibido.count({
-          where: { bodegaInicial: valor },
+          where: {
+            bodegaInicial: valor,
+            deletedAt: null, // Solo contar inventario activo
+          },
         })
         if (inventarioWithBodega > 0)
           usedIn.push(`${inventarioWithBodega} recepciones de inventario`)
