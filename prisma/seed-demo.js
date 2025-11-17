@@ -193,6 +193,30 @@ async function seedDemoDatabase() {
     })
     console.log("✅ Recepción creada:", recepcion1.idRecepcion)
 
+    // 6. Crear configuraciones de distribución de costos
+    const configs = [
+      { tipoCosto: "Flete Marítimo", metodoDistribucion: "peso" },
+      { tipoCosto: "Aduana", metodoDistribucion: "valor_fob" },
+      { tipoCosto: "Flete Interno", metodoDistribucion: "unidades" },
+      { tipoCosto: "Almacenaje", metodoDistribucion: "volumen" },
+    ]
+
+    for (const config of configs) {
+      await prismaDemo.configuracionDistribucionCostos.upsert({
+        where: { tipoCosto: config.tipoCosto },
+        create: {
+          tipoCosto: config.tipoCosto,
+          metodoDistribucion: config.metodoDistribucion,
+          activo: true,
+        },
+        update: {
+          metodoDistribucion: config.metodoDistribucion,
+          activo: true,
+        },
+      })
+    }
+    console.log("✅ Configuraciones creadas:", configs.length, "métodos de distribución")
+
     console.log("\n🎉 Base de datos DEMO poblada exitosamente!")
     console.log("\n📊 Resumen:")
     console.log("  - 1 Usuario demo")
@@ -201,6 +225,7 @@ async function seedDemoDatabase() {
     console.log("  - 2 Pagos")
     console.log("  - 2 Gastos logísticos")
     console.log("  - 1 Recepción de inventario")
+    console.log("  - 4 Configuraciones de distribución")
     console.log("\n🔐 Credenciales demo:")
     console.log("  Email: demo@sistema.com")
     console.log("  Password: Demo123!")
