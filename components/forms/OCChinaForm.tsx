@@ -78,7 +78,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   } = useForm<OCChinaInput>({
     resolver: zodResolver(ocChinaSchema),
     defaultValues: {
-      oc: "",
+      oc: undefined,
       proveedor: "",
       fechaOC: undefined,
       descripcionLote: "",
@@ -132,7 +132,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       setExpandedItems(new Set())
     } else {
       reset({
-        oc: "",
+        oc: undefined,
         proveedor: "",
         fechaOC: undefined,
         descripcionLote: "",
@@ -215,9 +215,15 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   const { totalUnidades, totalUSD } = calculateTotals()
 
   const onSubmit = async (data: OCChinaInput) => {
+    console.log("=== SUBMIT INICIADO ===")
+    console.log("Datos del formulario:", data)
+    console.log("Es modo edición:", isEditMode)
+    console.log("Items:", items)
+
     try {
       // Validar items (no manejados por react-hook-form)
       if (items.length === 0) {
+        console.error("ERROR: No hay productos")
         throw new Error("Debes agregar al menos un producto")
       }
 
@@ -225,6 +231,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         if (!item.sku || !item.nombre || !item.cantidadTotal || !item.precioUnitarioUSD) {
+          console.error(`ERROR: Producto #${i + 1} incompleto`, item)
           throw new Error(`El producto #${i + 1} tiene campos incompletos (SKU, nombre, cantidad o precio)`)
         }
       }
@@ -282,7 +289,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           <DialogTitle>{isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.error("=== ERRORES DE VALIDACIÓN ===", errors)
+        })}>
           <div className="p-6 space-y-6">
             {/* SECCIÓN 1: Información General */}
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
