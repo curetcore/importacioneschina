@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { TallaDistribucion } from "@/lib/calculations"
 import type { InputJsonValue } from "@prisma/client/runtime/library"
-import { softDelete } from "@/lib/db-helpers"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
@@ -63,7 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     const { id } = params
 
-    const oc = await prisma.oCChina.findFirst({
+    // Obtener el cliente Prisma apropiado (demo o producción)
+    const db = await getPrismaClient()
+
+    const oc = await db.oCChina.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -113,8 +115,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const { oc, proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
 
+    // Obtener el cliente Prisma apropiado (demo o producción)
+    const db = await getPrismaClient()
+
     // Verificar que la OC existe
-    const existing = await prisma.oCChina.findUnique({
+    const existing = await db.oCChina.findUnique({
       where: { id },
     })
 
@@ -152,7 +157,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Si se está cambiando el código OC, verificar que no exista otro con ese código
     if (oc !== existing.oc) {
-      const duplicate = await prisma.oCChina.findUnique({
+      const duplicate = await db.oCChina.findUnique({
         where: { oc },
       })
 
@@ -239,7 +244,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const estadoAnterior = { ...existing }
 
     // Actualizar OC y reemplazar items en una transacción (Problema #3)
-    const updatedOC = await prisma.$transaction(async tx => {
+    const updatedOC = await db.$transaction(async tx => {
       // VALIDACIÓN: Verificar si hay inventario vinculado a items específicos
       const itemsConInventario = await tx.inventarioRecibido.findFirst({
         where: {
@@ -303,8 +308,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const cascade = searchParams.get("cascade") === "true"
     const preview = searchParams.get("preview") === "true"
 
+    // Obtener el cliente Prisma apropiado (demo o producción)
+    const db = await getPrismaClient()
+
     // Verificar que la OC existe y obtener datos relacionados
-    const existing = await prisma.oCChina.findUnique({
+    const existing = await db.oCChina.findUnique({
       where: { id },
       include: {
         pagosChina: {
@@ -408,7 +416,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Si se pidió cascade, soft delete en cascada
     if (cascade && hasRelatedData) {
       const now = new Date()
-      await prisma.$transaction(async tx => {
+      await db.$transaction(async tx => {
         // 1. Soft delete inventario recibido
         if (existing._count.inventarioRecibido > 0) {
           await tx.inventarioRecibido.updateMany({
@@ -441,7 +449,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       })
     } else {
       // Soft delete solo la OC (sin datos relacionados)
-      await softDelete("oCChina", id)
+      const now = new Date()
+      await db.oCChina.update({
+        where: { id },
+        data: { deletedAt: now },
+      })
     }
 
     // Audit log

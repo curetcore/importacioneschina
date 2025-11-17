@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { generateUniqueId } from "@/lib/id-generator"
 import { TallaDistribucion } from "@/lib/calculations"
 import type { InputJsonValue } from "@prisma/client/runtime/library"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
-import { notDeletedFilter } from "@/lib/db-helpers"
+import { notDeletedFilter, getPrismaClient } from "@/lib/db-helpers"
 import { auditCreate } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
@@ -67,6 +66,9 @@ export async function GET(request: NextRequest) {
   if (rateLimitError) return rateLimitError
 
   try {
+    // Obtener el cliente Prisma apropiado (demo o producción)
+    const db = await getPrismaClient()
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get("page") || "1")
     const requestedLimit = parseInt(searchParams.get("limit") || "20")
@@ -91,7 +93,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [ocs, total] = await Promise.all([
-      prisma.oCChina.findMany({
+      db.oCChina.findMany({
         where,
         skip,
         take: limit,
@@ -110,7 +112,7 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.oCChina.count({ where }),
+      db.oCChina.count({ where }),
     ])
 
     return NextResponse.json({
@@ -135,6 +137,9 @@ export async function POST(request: NextRequest) {
   if (rateLimitError) return rateLimitError
 
   try {
+    // Obtener el cliente Prisma apropiado (demo o producción)
+    const db = await getPrismaClient()
+
     const body = await request.json()
 
     const { proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
@@ -221,7 +226,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear OC con items validados
-    const nuevaOC = await prisma.oCChina.create({
+    const nuevaOC = await db.oCChina.create({
       data: {
         oc,
         proveedor,
