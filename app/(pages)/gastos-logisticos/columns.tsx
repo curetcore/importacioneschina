@@ -24,10 +24,12 @@ export interface GastoLogistico {
   montoRD: number
   notas: string | null
   adjuntos?: FileAttachment[]
-  ocChina: {
-    oc: string
-    proveedor: string
-  }
+  ordenesCompra: {
+    ocChina: {
+      oc: string
+      proveedor: string
+    }
+  }[]
 }
 
 interface ColumnActions {
@@ -45,14 +47,28 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
     ),
   },
   {
-    accessorKey: "ocChina",
-    header: "OC / Proveedor",
-    cell: ({ row }) => (
-      <div className="whitespace-nowrap">
-        <div className="font-medium text-gray-900">{row.original.ocChina.oc}</div>
-        <div className="text-gray-500 text-xs">{row.original.ocChina.proveedor}</div>
-      </div>
-    ),
+    accessorKey: "ordenesCompra",
+    header: "OCs / Proveedores",
+    cell: ({ row }) => {
+      const ordenesCompra = row.original.ordenesCompra || []
+      if (ordenesCompra.length === 0) return <div className="text-gray-400">-</div>
+
+      return (
+        <div className="max-w-md">
+          <div className="flex flex-wrap gap-1">
+            {ordenesCompra.map((orden, index) => (
+              <div
+                key={index}
+                className="inline-flex flex-col bg-gray-50 rounded px-2 py-1 border border-gray-200"
+              >
+                <span className="font-medium text-gray-900 text-xs">{orden.ocChina.oc}</span>
+                <span className="text-gray-500 text-xs">{orden.ocChina.proveedor}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
   },
   {
     accessorKey: "fechaGasto",

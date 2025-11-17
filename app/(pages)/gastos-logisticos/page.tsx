@@ -138,15 +138,20 @@ export default function GastosLogisticosPage() {
   }
 
   const prepareExportData = () => {
-    return gastos.map((gasto: GastoLogistico) => ({
-      "ID Gasto": gasto.idGasto,
-      OC: gasto.ocChina.oc,
-      Proveedor: gasto.ocChina.proveedor,
-      Fecha: new Date(gasto.fechaGasto).toLocaleDateString(),
-      "Tipo de Gasto": gasto.tipoGasto,
-      "Proveedor Servicio": gasto.proveedorServicio || "",
-      "Monto RD$": parseFloat(gasto.montoRD.toString()),
-    }))
+    return gastos.map((gasto: GastoLogistico) => {
+      const ocs = gasto.ordenesCompra?.map(o => o.ocChina.oc).join(", ") || ""
+      const proveedores = gasto.ordenesCompra?.map(o => o.ocChina.proveedor).join(", ") || ""
+
+      return {
+        "ID Gasto": gasto.idGasto,
+        "OCs": ocs,
+        "Proveedores": proveedores,
+        Fecha: new Date(gasto.fechaGasto).toLocaleDateString(),
+        "Tipo de Gasto": gasto.tipoGasto,
+        "Proveedor Servicio": gasto.proveedorServicio || "",
+        "Monto RD$": parseFloat(gasto.montoRD.toString()),
+      }
+    })
   }
 
   const handleExportExcel = () => {
@@ -203,14 +208,23 @@ export default function GastosLogisticosPage() {
     if (!searchQuery.trim()) return gastos
 
     const query = searchQuery.toLowerCase()
-    return gastos.filter(
-      (gasto: GastoLogistico) =>
+    return gastos.filter((gasto: GastoLogistico) => {
+      // Search in basic fields
+      if (
         gasto.idGasto.toLowerCase().includes(query) ||
-        gasto.ocChina.oc.toLowerCase().includes(query) ||
-        gasto.ocChina.proveedor.toLowerCase().includes(query) ||
         gasto.tipoGasto.toLowerCase().includes(query) ||
         (gasto.proveedorServicio && gasto.proveedorServicio.toLowerCase().includes(query))
-    )
+      ) {
+        return true
+      }
+
+      // Search in all OCs and providers
+      return gasto.ordenesCompra?.some(
+        orden =>
+          orden.ocChina.oc.toLowerCase().includes(query) ||
+          orden.ocChina.proveedor.toLowerCase().includes(query)
+      )
+    })
   }, [gastos, searchQuery])
 
   // Calcular KPIs en tiempo real desde los datos filtrados
