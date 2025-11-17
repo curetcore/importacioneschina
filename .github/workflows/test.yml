@@ -1,0 +1,124 @@
+# GitHub Actions Workflow - Tests Automáticos
+# Se ejecuta cada vez que haces push o creas un Pull Request
+
+name: Tests Automáticos
+
+# ¿Cuándo se ejecuta?
+on:
+  push:
+    branches: [main, develop, claude/**]  # En push a estas ramas
+  pull_request:
+    branches: [main, develop]  # En PRs a estas ramas
+
+jobs:
+  test:
+    name: Ejecutar Tests
+    runs-on: ubuntu-latest  # Servidor Linux donde corren los tests
+
+    # Servicios necesarios (PostgreSQL para tests)
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      # 1. Descargar el código
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Instalar dependencias
+      - name: 📦 Instalar dependencias
+        run: npm ci  # Más rápido y confiable que npm install
+
+      # 4. Generar Prisma Client
+      - name: 🔧 Generar Prisma Client
+        run: npx prisma generate
+
+      # 5. Ejecutar migraciones de BD
+      - name: 🗄️ Ejecutar migraciones
+        run: npx prisma db push
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+
+      # 6. Ejecutar tests
+      - name: 🧪 Ejecutar tests
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          NODE_ENV: test
+
+      # 7. Generar reporte de cobertura
+      - name: 📊 Generar cobertura
+        run: npm test -- --coverage
+
+      # 8. Subir reporte de cobertura (opcional)
+      - name: 📤 Upload coverage
+        uses: codecov/codecov-action@v3
+        if: always()  # Siempre sube, aunque fallen tests
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+
+  # Job adicional: Verificar build
+  build:
+    name: Verificar Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Instalar dependencias
+        run: npm ci
+
+      - name: 🔧 Generar Prisma Client
+        run: npx prisma generate
+
+      - name: 🏗️ Build del proyecto
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+
+  # Job adicional: Linting
+  lint:
+    name: Verificar Código (Lint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Instalar dependencias
+        run: npm ci
+
+      - name: 🔍 Ejecutar lint
+        run: npm run lint
