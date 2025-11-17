@@ -63,6 +63,12 @@ model OCChinaItem {
   precioUnitarioUSD     Decimal  @db.Decimal(10, 4)
   subtotalUSD           Decimal  @db.Decimal(12, 2)
 
+  // Medidas físicas (para distribución de costos)
+  pesoUnitarioKg        Decimal? @map("peso_unitario_kg") @db.Decimal(10, 4)     // Peso por unidad en kg
+  volumenUnitarioCBM    Decimal? @map("volumen_unitario_cbm") @db.Decimal(10, 6) // Volumen por unidad en m³
+  pesoTotalKg           Decimal? @map("peso_total_kg") @db.Decimal(12, 4)        // pesoUnitarioKg * cantidadTotal
+  volumenTotalCBM       Decimal? @map("volumen_total_cbm") @db.Decimal(12, 6)    // volumenUnitarioCBM * cantidadTotal
+
   // Relaciones
   ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
   inventarioRecibido    InventarioRecibido[]
@@ -254,4 +260,57 @@ model Proveedor {
   @@index([nombre])
   @@index([activo])
   @@index([pais])
+}
+
+// TABLA 8: CONFIGURACIÓN DE DISTRIBUCIÓN DE COSTOS
+model ConfiguracionDistribucionCostos {
+  id                    String   @id @default(cuid())
+  tipoCosto             String   @map("tipo_costo")  // "pagos", "gastos_flete", "gastos_aduana", "gastos_transporte_local", "comisiones"
+  metodoDistribucion    String   @map("metodo_distribucion")  // "peso", "volumen", "valor_fob", "unidades"
+  activo                Boolean  @default(true)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("config_distribucion_costos")
+  @@unique([tipoCosto])
+  @@index([tipoCosto])
+  @@index([activo])
+}
+
+// TABLA 9: AUDIT LOG - Registro de cambios y acciones
+model AuditLog {
+  id                    String   @id @default(cuid())
+
+  // Qué cambió
+  entidad               String   // "OCChina", "PagosChina", "GastosLogisticos", etc.
+  entidadId             String   @map("entidad_id")  // ID del registro afectado
+  accion                String   // "CREATE", "UPDATE", "DELETE", "RESTORE"
+
+  // Quién y cuándo
+  usuarioId             String?  @map("usuario_id")  // ID del usuario (futuro)
+  usuarioEmail          String?  @map("usuario_email")  // Email del usuario
+  ipAddress             String?  @map("ip_address")  // IP del cliente
+  userAgent             String?  @map("user_agent")  // Navegador/cliente
+
+  // Qué datos cambiaron
+  cambiosAntes          Json?    @map("cambios_antes")  // Estado anterior (para UPDATE/DELETE)
+  cambiosDespues        Json?    @map("cambios_despues")  // Estado nuevo (para CREATE/UPDATE)
+  camposModificados     String[] @map("campos_modificados")  // ["proveedor", "fechaOC"]
+
+  // Contexto adicional
+  descripcion           String?  @db.Text  // Descripción legible del cambio
+  metadata              Json?    // Metadata adicional
+
+  // Timestamp
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+  @@index([entidad])
+  @@index([entidadId])
+  @@index([accion])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@index([entidad, entidadId])  // Índice compuesto para buscar logs de un registro específico
 }
