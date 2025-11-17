@@ -30,6 +30,7 @@ import {
   Calculator,
 } from "lucide-react"
 import { CBMCalculator } from "@/components/ui/cbm-calculator"
+import { SizeDistributionInput } from "@/components/ui/size-distribution-input"
 
 interface FileAttachment {
   nombre: string
@@ -652,26 +653,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
                           {/* Distribución de Tallas */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               Distribución de Tallas (opcional)
                             </label>
-                            <Input
-                              value={
-                                item.tallaDistribucion ? JSON.stringify(item.tallaDistribucion) : ""
-                              }
-                              onChange={e =>
-                                updateItem(
-                                  index,
-                                  "tallaDistribucion",
-                                  parseTallaDistribucion(e.target.value)
-                                )
-                              }
-                              placeholder='Ej: {"38": 10, "39": 20, "40": 20} o 38:10 / 39:20 / 40:20'
+                            <SizeDistributionInput
+                              value={item.tallaDistribucion || null}
+                              onChange={value => updateItem(index, "tallaDistribucion", value)}
                               disabled={isSubmitting}
                             />
-                            <p className="text-xs text-gray-500 mt-1">
-                              Formato JSON o "talla:cantidad / talla:cantidad"
-                            </p>
                           </div>
 
                           {/* Subtotal calculado */}
