@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
         {showColumnToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="ml-auto">
+              <Button variant="outline" className="ml-auto h-8 px-3 text-xs">
                 <Settings2 className="mr-2 h-4 w-4" />
                 Columnas
               </Button>
@@ -233,7 +233,7 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
-                size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -241,7 +241,7 @@ export function DataTable<TData, TValue>({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -249,7 +249,7 @@ export function DataTable<TData, TValue>({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
@@ -257,7 +257,7 @@ export function DataTable<TData, TValue>({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                className="h-8 w-8 p-0"
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >

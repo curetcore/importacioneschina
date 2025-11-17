@@ -2,34 +2,23 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectOption } from "@/components/ui/select"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
-import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
-import { formatDate, formatCurrency } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
-import { AttachmentsList } from "@/components/ui/attachments-list"
-import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList, Package, DollarSign, AlertCircle, Download } from "lucide-react"
-
-interface FileAttachment {
-  nombre: string
-  url: string
-  tipo: string
-  size: number
-  uploadedAt: string
-}
+import { DataTable } from "@/components/ui/data-table"
+import { getOrdenesColumns, OCChina } from "./columns"
+import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download } from "lucide-react"
 
 interface OCChinaItem {
   id: string
@@ -40,20 +29,6 @@ interface OCChinaItem {
   subtotalUSD: number
 }
 
-interface OCChina {
-  id: string
-  oc: string
-  proveedor: string
-  fechaOC: string
-  categoriaPrincipal: string
-  descripcionLote?: string | null
-  items?: OCChinaItem[]
-  adjuntos?: FileAttachment[]
-  _count?: {
-    items: number
-  }
-}
-
 export default function OrdenesPage() {
   const router = useRouter()
   const { addToast } = useToast()
@@ -62,66 +37,29 @@ export default function OrdenesPage() {
   const [ocToEdit, setOcToEdit] = useState<OCChina | null>(null)
   const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [proveedorFilter, setProveedorFilter] = useState("")
 
-  // Fetch OCs with pagination and filters
-  const { data: ocsData, isLoading } = useQuery({
-    queryKey: ["oc-china", currentPage, searchQuery, proveedorFilter],
+  // Fetch all OCs
+  const { data: ocs = [], isLoading } = useQuery({
+    queryKey: ["oc-china"],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "20",
-      })
-      if (searchQuery) params.append("search", searchQuery)
-      if (proveedorFilter) params.append("proveedor", proveedorFilter)
-
-      const response = await fetch(`/api/oc-china?${params.toString()}`)
+      const response = await fetch("/api/oc-china")
       const result = await response.json()
 
       if (!result.success) {
         throw new Error(result.error || "Error al cargar órdenes")
       }
 
-      return result
+      return result.data as OCChina[]
     },
   })
-
-  const ocs = ocsData?.data || []
-  const totalPages = ocsData?.pagination?.pages || 1
-
-  // Fetch all OCs for provider filter options
-  const { data: allOcsData } = useQuery({
-    queryKey: ["oc-china-all"],
-    queryFn: async () => {
-      const response = await fetch("/api/oc-china")
-      const result = await response.json()
-      if (!result.success) {
-        throw new Error(result.error || "Error al cargar proveedores")
-      }
-      return result.data
-    },
-  })
-
-  const proveedoresOptions: SelectOption[] = useMemo(() => {
-    if (!allOcsData) return [{ value: "", label: "Todos los proveedores" }]
-
-    const uniqueProveedores = Array.from(new Set(allOcsData.map((oc: OCChina) => oc.proveedor)))
-    return [
-      { value: "", label: "Todos los proveedores" },
-      ...uniqueProveedores.map((p) => ({ value: p as string, label: p as string })),
-    ]
-  }, [allOcsData])
-
-  // Reset page to 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, proveedorFilter])
 
   const handleEdit = (oc: OCChina) => {
     setOcToEdit(oc)
     setFormOpen(true)
+  }
+
+  const handleView = (oc: OCChina) => {
+    router.push(`/ordenes/${oc.id}`)
   }
 
   const handleDelete = async () => {
@@ -129,25 +67,24 @@ export default function OrdenesPage() {
 
     setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/oc-china/${ocToDelete.id}?cascade=true`, {
+      const response = await fetch(`/api/oc-china/${ocToDelete.id}`, {
         method: "DELETE",
       })
 
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || "Error al eliminar la orden")
+        throw new Error(result.error || "Error al eliminar")
       }
 
       addToast({
         type: "success",
-        title: "Orden eliminada",
-        description: result.message || `Orden ${ocToDelete.oc} eliminada exitosamente`,
+        title: "OC eliminada",
+        description: `La orden ${ocToDelete.oc} ha sido eliminada correctamente`,
       })
 
-      setOcToDelete(null)
       queryClient.invalidateQueries({ queryKey: ["oc-china"] })
-      queryClient.invalidateQueries({ queryKey: ["oc-china-all"] })
+      setOcToDelete(null)
     } catch (error) {
       addToast({
         type: "error",
@@ -159,9 +96,10 @@ export default function OrdenesPage() {
     }
   }
 
-  const handleFormClose = () => {
+  const handleFormSuccess = () => {
     setFormOpen(false)
     setOcToEdit(null)
+    queryClient.invalidateQueries({ queryKey: ["oc-china"] })
   }
 
   const handleExport = () => {
@@ -174,15 +112,14 @@ export default function OrdenesPage() {
       return
     }
 
-    // Preparar datos para exportación
     const dataToExport = ocs.map((oc: OCChina) => ({
       "OC": oc.oc,
       "Proveedor": oc.proveedor,
-      "Fecha": formatDate(oc.fechaOC),
+      "Fecha": new Date(oc.fechaOC).toLocaleDateString(),
       "Categoría": oc.categoriaPrincipal,
       "Productos": oc.items?.length || 0,
-      "Unidades": oc.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0,
-      "Costo FOB (USD)": oc.items?.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
+      "Unidades": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0,
+      "Costo FOB (USD)": oc.items?.reduce((sum: number, item: OCChinaItem) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
     }))
 
     exportToExcel(dataToExport, "ordenes", "Órdenes de Compra")
@@ -194,7 +131,7 @@ export default function OrdenesPage() {
     })
   }
 
-  // Calcular KPIs en tiempo real desde los datos filtrados
+  // Calcular KPIs
   const stats = useMemo(() => {
     const totalOCs = ocs.length
 
@@ -213,6 +150,16 @@ export default function OrdenesPage() {
     return { totalOCs, totalItems, totalUnidades, totalFOB, pendientes }
   }, [ocs])
 
+  const columns = useMemo(
+    () =>
+      getOrdenesColumns({
+        onView: handleView,
+        onEdit: handleEdit,
+        onDelete: setOcToDelete,
+      }),
+    []
+  )
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -230,7 +177,7 @@ export default function OrdenesPage() {
             icon={<ClipboardList className="w-4 h-4" />}
             label="Total Órdenes"
             value={stats.totalOCs}
-            subtitle={searchQuery || proveedorFilter ? "Filtradas" : "Registradas"}
+            subtitle="Registradas"
           />
 
           <StatCard
@@ -281,46 +228,13 @@ export default function OrdenesPage() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="overflow-hidden">
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    type="text"
-                    placeholder="Buscar por número de OC..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-10"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="w-64">
-                <Select
-                  options={proveedoresOptions}
-                  value={proveedorFilter}
-                  onChange={setProveedorFilter}
-                  placeholder="Filtrar por proveedor"
-                />
-              </div>
-            </div>
-
+          <CardContent>
             {ocs.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardList size={48} className="mx-auto text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No hay órdenes registradas</h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  {searchQuery || proveedorFilter
-                    ? "No se encontraron resultados con los filtros aplicados"
-                    : "Comienza creando tu primera orden de compra"}
+                  Comienza creando tu primera orden de compra
                 </p>
                 <Button onClick={() => setFormOpen(true)} className="gap-2">
                   <Plus size={18} />
@@ -328,120 +242,44 @@ export default function OrdenesPage() {
                 </Button>
               </div>
             ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full" style={{ minWidth: "1400px" }}>
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>OC</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Proveedor</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "120px" }}>Fecha</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Categoría</th>
-                        <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Productos</th>
-                        <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "100px" }}>Unidades</th>
-                        <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "130px" }}>Costo FOB</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "140px" }}>Adjuntos</th>
-                        <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: "150px" }}>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ocs.map((oc: OCChina) => {
-                        const totalUnidades = oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.cantidadTotal, 0) || 0
-                        const totalFOB = oc.items?.reduce((sum: number, item: OCChinaItem) => sum + item.subtotalUSD, 0) || 0
-                        const numProductos = oc.items?.length || 0
-
-                        return (
-                          <tr key={oc.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap">{oc.oc}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{oc.proveedor}</td>
-                            <td className="py-3 px-4 text-sm text-gray-500 whitespace-nowrap">{formatDate(oc.fechaOC)}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">{oc.categoriaPrincipal}</td>
-                            <td className="py-3 px-4 text-sm text-right text-gray-900 whitespace-nowrap">{numProductos}</td>
-                            <td className="py-3 px-4 text-sm text-right text-gray-900 whitespace-nowrap">{totalUnidades.toLocaleString()}</td>
-                            <td className="py-3 px-4 text-sm text-right font-medium text-gray-900 whitespace-nowrap">{formatCurrency(totalFOB, "USD")}</td>
-                            <td className="py-3 px-4 whitespace-nowrap">
-                              <AttachmentsList attachments={oc.adjuntos || []} compact />
-                            </td>
-                            <td className="py-3 px-4 whitespace-nowrap">
-                              <div className="flex items-center justify-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => router.push(`/ordenes/${oc.id}`)}
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleEdit(oc)}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  onClick={() => setOcToDelete(oc)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-gray-50 border-t-2 border-gray-200">
-                        <td className="py-3 px-4 text-sm font-semibold text-gray-700 whitespace-nowrap" colSpan={4}>
-                          Total
-                        </td>
-                        <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.length || 0), 0)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + item.cantidadTotal, 0) || 0), 0).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {formatCurrency(ocs.reduce((sum: number, oc: OCChina) => sum + (oc.items?.reduce((s: number, item: OCChinaItem) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0), 0), "USD")}
-                        </td>
-                        <td className="py-3 px-4 whitespace-nowrap"></td>
-                        <td className="py-3 px-4 whitespace-nowrap"></td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </>
+              <DataTable
+                columns={columns}
+                data={ocs}
+                searchKey="oc"
+                searchPlaceholder="Buscar por número de OC..."
+                pageSize={20}
+              />
             )}
           </CardContent>
         </Card>
+      </div>
 
+      {/* Form Dialog */}
+      {formOpen && (
         <OCChinaForm
           open={formOpen}
-          onOpenChange={handleFormClose}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["oc-china"] })
-            queryClient.invalidateQueries({ queryKey: ["oc-china-all"] })
-            handleFormClose()
+          onOpenChange={(open) => {
+            setFormOpen(open)
+            if (!open) setOcToEdit(null)
           }}
+          onSuccess={handleFormSuccess}
           ocToEdit={ocToEdit}
         />
+      )}
 
+      {/* Delete Dialog */}
+      {ocToDelete && (
         <CascadeDeleteDialog
           open={!!ocToDelete}
-          onOpenChange={(open) => !open && setOcToDelete(null)}
+          onOpenChange={(open) => {
+            if (!open) setOcToDelete(null)
+          }}
           onConfirm={handleDelete}
-          ocId={ocToDelete?.id || ""}
-          ocNumber={ocToDelete?.oc || ""}
           loading={deleteLoading}
+          ocId={ocToDelete.id}
+          ocNumber={ocToDelete.oc}
         />
-      </div>
+      )}
     </MainLayout>
   )
 }
