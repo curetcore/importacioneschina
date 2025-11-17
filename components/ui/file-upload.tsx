@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { Upload, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react"
+import { useDropzone } from "react-dropzone"
+import { Upload, X, FileText, Image as ImageIcon, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "./button"
 import { useToast } from "./toast"
 
@@ -29,7 +30,6 @@ export function FileUpload({
   disabled = false,
 }: FileUploadProps) {
   const { addToast } = useToast()
-  const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -94,34 +94,26 @@ export function FileUpload({
     }
   }
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    files.forEach(uploadFile)
-    e.target.value = "" // Reset input
-  }
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      setIsDragging(false)
-
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
       if (disabled || uploading) return
-
-      const files = Array.from(e.dataTransfer.files)
-      files.forEach(uploadFile)
+      acceptedFiles.forEach(uploadFile)
     },
     [disabled, uploading, attachments]
   )
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }, [])
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+      "application/pdf": [".pdf"],
+    },
+    maxSize: MAX_FILE_SIZE,
+    maxFiles: maxFiles - attachments.length,
+    disabled: disabled || uploading || attachments.length >= maxFiles,
+    multiple: true,
+  })
 
   const removeFile = async (attachment: FileAttachment) => {
     try {
@@ -168,41 +160,33 @@ export function FileUpload({
 
   return (
     <div className="space-y-3">
-      {/* Drop zone */}
+      {/* Drop zone with react-dropzone */}
       <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        {...getRootProps()}
         className={`
-          border-2 border-dashed rounded-lg p-6 text-center transition-colors
-          ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}
-          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}
+          border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200
+          ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300"}
+          ${isDragReject ? "border-red-500 bg-red-50" : ""}
+          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-gray-400 hover:bg-gray-50"}
         `}
       >
-        <input
-          type="file"
-          id="file-upload"
-          className="hidden"
-          onChange={handleFileInput}
-          accept=".jpg,.jpeg,.png,.pdf"
-          multiple
-          disabled={disabled || uploading || attachments.length >= maxFiles}
-        />
+        <input {...getInputProps()} />
 
-        <label
-          htmlFor="file-upload"
-          className={`flex flex-col items-center gap-2 ${
-            disabled || uploading ? "cursor-not-allowed" : "cursor-pointer"
-          }`}
-        >
+        <div className="flex flex-col items-center gap-2">
           {uploading ? (
             <Loader2 size={32} className="text-gray-400 animate-spin" />
+          ) : isDragActive ? (
+            <CheckCircle2 size={32} className="text-blue-500" />
           ) : (
             <Upload size={32} className="text-gray-400" />
           )}
           <div className="text-sm text-gray-600">
             {uploading ? (
               "Subiendo archivo..."
+            ) : isDragActive ? (
+              <span className="font-medium text-blue-600">Suelta los archivos aquí</span>
+            ) : isDragReject ? (
+              <span className="font-medium text-red-600">Archivos no permitidos</span>
             ) : (
               <>
                 <span className="font-medium text-blue-600">Haz clic para subir</span> o arrastra archivos aquí
@@ -211,8 +195,9 @@ export function FileUpload({
           </div>
           <div className="text-xs text-gray-500">
             JPG, PNG o PDF (máx. 10MB) • Máximo {maxFiles} archivos
+            {attachments.length > 0 && ` • ${maxFiles - attachments.length} restantes`}
           </div>
-        </label>
+        </div>
       </div>
 
       {/* Lista de archivos */}
