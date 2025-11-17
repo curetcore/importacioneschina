@@ -164,7 +164,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8 px-6 pb-6">
           {/* Información básica */}
           <div className="space-y-5">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Básica</h3>
