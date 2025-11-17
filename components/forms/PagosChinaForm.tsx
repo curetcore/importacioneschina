@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -49,8 +51,6 @@ const monedasOptions: SelectOption[] = [
 
 export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: PagosChinaFormProps) {
   const { addToast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<Partial<Record<keyof PagosChinaInput, string>>>({})
   const isEditMode = !!pagoToEdit
 
   const [ocsOptions, setOcsOptions] = useState<SelectOption[]>([])
@@ -61,22 +61,42 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   const [metodosPagoOptions, setMetodosPagoOptions] = useState<SelectOption[]>([])
   const [loadingConfig, setLoadingConfig] = useState(false)
 
-  const [formData, setFormData] = useState<Partial<PagosChinaInput>>({
-    idPago: "",
-    ocId: "",
-    fechaPago: undefined,
-    tipoPago: "",
-    metodoPago: "",
-    moneda: "USD",
-    montoOriginal: undefined,
-    tasaCambio: 1,
-    comisionBancoRD: 0,
-  })
   const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<PagosChinaInput>({
+    resolver: zodResolver(pagosChinaSchema),
+    defaultValues: {
+      idPago: "",
+      ocId: "",
+      fechaPago: undefined,
+      tipoPago: "",
+      metodoPago: "",
+      moneda: "USD",
+      montoOriginal: undefined,
+      tasaCambio: 1,
+      comisionBancoRD: 0,
+    },
+  })
+
+  const ocIdValue = watch("ocId")
+  const fechaPagoValue = watch("fechaPago")
+  const tipoPagoValue = watch("tipoPago")
+  const metodoPagoValue = watch("metodoPago")
+  const monedaValue = watch("moneda")
+  const montoOriginalValue = watch("montoOriginal")
+  const tasaCambioValue = watch("tasaCambio")
+  const comisionBancoRDValue = watch("comisionBancoRD")
+
   // Cálculos automáticos
-  const montoRD = (formData.montoOriginal ?? 0) * (formData.tasaCambio ?? 1)
-  const montoRDNeto = montoRD + (formData.comisionBancoRD ?? 0)  // FIX: SUMA la comisión (costo total real)
+  const montoRD = (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
+  const montoRDNeto = montoRD + (comisionBancoRDValue ?? 0)  // FIX: SUMA la comisión (costo total real)
 
   // Cargar OCs disponibles y configuraciones
   useEffect(() => {
@@ -125,7 +145,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   // Cargar datos cuando se abre en modo edición
   useEffect(() => {
     if (pagoToEdit) {
-      setFormData({
+      reset({
         idPago: pagoToEdit.idPago,
         ocId: pagoToEdit.ocId,
         fechaPago: new Date(pagoToEdit.fechaPago),
@@ -138,7 +158,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       })
       setAdjuntos(pagoToEdit.adjuntos || [])
     } else {
-      setFormData({
+      reset({
         idPago: "",
         ocId: "",
         fechaPago: undefined,
@@ -151,21 +171,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       })
       setAdjuntos([])
     }
-    setErrors({})
-  }, [pagoToEdit])
+  }, [pagoToEdit, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrors({})
-    setLoading(true)
-
+  const onSubmit = async (data: PagosChinaInput) => {
     try {
-      // En modo creación, remover idPago antes de validar (se genera automáticamente)
-      const dataToValidate = isEditMode ? formData : { ...formData, idPago: undefined }
-
-      // Validar con Zod
-      const validatedData = pagosChinaSchema.parse(dataToValidate)
-
       // Enviar al API
       const url = isEditMode ? `/api/pagos-china/${pagoToEdit.id}` : "/api/pagos-china"
       const method = isEditMode ? "PUT" : "POST"
@@ -176,7 +185,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...validatedData,
+          ...data,
           adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
         }),
       })
@@ -191,11 +200,11 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       addToast({
         type: "success",
         title: isEditMode ? "Pago actualizado" : "Pago creado",
-        description: `Pago ${result.data?.idPago || validatedData.idPago} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
+        description: `Pago ${result.data?.idPago || data.idPago} ${isEditMode ? "actualizado" : "creado"} exitosamente`,
       })
 
       // Resetear formulario
-      setFormData({
+      reset({
         idPago: "",
         ocId: "",
         fechaPago: undefined,
@@ -211,29 +220,16 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
-      if (error.errors) {
-        // Errores de validación Zod
-        const validationErrors: Partial<Record<keyof PagosChinaInput, string>> = {}
-        error.errors.forEach((err: any) => {
-          const field = err.path[0] as keyof PagosChinaInput
-          validationErrors[field] = err.message
-        })
-        setErrors(validationErrors)
-      } else {
-        // Otros errores
-        addToast({
-          type: "error",
-          title: "Error",
-          description: error.message || "Error al procesar el pago",
-        })
-      }
-    } finally {
-      setLoading(false)
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "Error al procesar el pago",
+      })
     }
   }
 
   const handleCancel = () => {
-    setFormData({
+    reset({
       idPago: "",
       ocId: "",
       fechaPago: undefined,
@@ -245,7 +241,6 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       comisionBancoRD: 0,
     })
     setAdjuntos([])
-    setErrors({})
     onOpenChange(false)
   }
 
@@ -257,7 +252,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
           <DialogTitle>{isEditMode ? "Editar Pago" : "Nuevo Pago"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 space-y-4">
             {/* ID Pago - Solo mostrar en modo edición */}
             {isEditMode && (
@@ -267,7 +262,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </label>
                 <Input
                   id="idPago"
-                  value={formData.idPago}
+                  {...register("idPago")}
                   disabled={true}
                   className="bg-gray-100"
                 />
@@ -281,12 +276,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
               </label>
               <Select
                 options={ocsOptions}
-                value={formData.ocId || ""}
-                onChange={(value) => setFormData({ ...formData, ocId: value })}
-                error={errors.ocId}
+                value={ocIdValue || ""}
+                onChange={(value) => setValue("ocId", value)}
                 placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
-                disabled={loading || loadingOcs}
+                disabled={isSubmitting || loadingOcs}
               />
+              {errors.ocId && (
+                <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>
+              )}
             </div>
 
             {/* Fecha Pago */}
@@ -296,11 +293,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
               </label>
               <DatePicker
                 id="fechaPago"
-                value={formData.fechaPago}
-                onChange={(date) => setFormData({ ...formData, fechaPago: date || undefined })}
-                error={errors.fechaPago}
-                disabled={loading}
+                value={fechaPagoValue}
+                onChange={(date) => setValue("fechaPago", date as any)}
+                disabled={isSubmitting}
               />
+              {errors.fechaPago && (
+                <p className="text-xs text-red-600 mt-1">{errors.fechaPago.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -311,12 +310,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </label>
                 <Select
                   options={tiposPagoOptions}
-                  value={formData.tipoPago || ""}
-                  onChange={(value) => setFormData({ ...formData, tipoPago: value })}
-                  error={errors.tipoPago}
+                  value={tipoPagoValue || ""}
+                  onChange={(value) => setValue("tipoPago", value)}
                   placeholder={loadingConfig ? "Cargando tipos..." : "Selecciona tipo"}
-                  disabled={loading || loadingConfig}
+                  disabled={isSubmitting || loadingConfig}
                 />
+                {errors.tipoPago && (
+                  <p className="text-xs text-red-600 mt-1">{errors.tipoPago.message}</p>
+                )}
               </div>
 
               {/* Método de Pago */}
@@ -326,12 +327,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </label>
                 <Select
                   options={metodosPagoOptions}
-                  value={formData.metodoPago || ""}
-                  onChange={(value) => setFormData({ ...formData, metodoPago: value })}
-                  error={errors.metodoPago}
+                  value={metodoPagoValue || ""}
+                  onChange={(value) => setValue("metodoPago", value)}
                   placeholder={loadingConfig ? "Cargando métodos..." : "Selecciona método"}
-                  disabled={loading || loadingConfig}
+                  disabled={isSubmitting || loadingConfig}
                 />
+                {errors.metodoPago && (
+                  <p className="text-xs text-red-600 mt-1">{errors.metodoPago.message}</p>
+                )}
               </div>
             </div>
 
@@ -343,12 +346,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </label>
                 <Select
                   options={monedasOptions}
-                  value={formData.moneda || ""}
-                  onChange={(value) => setFormData({ ...formData, moneda: value as "USD" | "CNY" | "RD$" })}
-                  error={errors.moneda}
+                  value={monedaValue || ""}
+                  onChange={(value) => setValue("moneda", value as "USD" | "CNY" | "RD$")}
                   placeholder="Selecciona moneda"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
+                {errors.moneda && (
+                  <p className="text-xs text-red-600 mt-1">{errors.moneda.message}</p>
+                )}
               </div>
 
               {/* Monto Original */}
@@ -361,12 +366,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   type="number"
                   min="0.01"
                   step="0.01"
-                  value={formData.montoOriginal ?? ""}
-                  onChange={(e) => setFormData({ ...formData, montoOriginal: e.target.value ? parseFloat(e.target.value) : undefined })}
-                  error={errors.montoOriginal}
+                  {...register("montoOriginal", { valueAsNumber: true })}
                   placeholder="Ej: 10000.00"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
+                {errors.montoOriginal && (
+                  <p className="text-xs text-red-600 mt-1">{errors.montoOriginal.message}</p>
+                )}
               </div>
             </div>
 
@@ -381,12 +387,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   type="number"
                   min="0.01"
                   step="0.01"
-                  value={formData.tasaCambio ?? ""}
-                  onChange={(e) => setFormData({ ...formData, tasaCambio: e.target.value ? parseFloat(e.target.value) : 1 })}
-                  error={errors.tasaCambio}
+                  {...register("tasaCambio", { valueAsNumber: true })}
                   placeholder="Ej: 60.50"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
+                {errors.tasaCambio && (
+                  <p className="text-xs text-red-600 mt-1">{errors.tasaCambio.message}</p>
+                )}
               </div>
 
               {/* Comisión Banco RD */}
@@ -399,12 +406,13 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.comisionBancoRD ?? ""}
-                  onChange={(e) => setFormData({ ...formData, comisionBancoRD: e.target.value ? parseFloat(e.target.value) : 0 })}
-                  error={errors.comisionBancoRD}
+                  {...register("comisionBancoRD", { valueAsNumber: true })}
                   placeholder="Ej: 500.00"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
+                {errors.comisionBancoRD && (
+                  <p className="text-xs text-red-600 mt-1">{errors.comisionBancoRD.message}</p>
+                )}
               </div>
             </div>
 
@@ -420,7 +428,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                     RD$ {montoRD.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {formData.montoOriginal?.toLocaleString() || '0'} × {formData.tasaCambio || '1'}
+                    {montoOriginalValue?.toLocaleString() || '0'} × {tasaCambioValue || '1'}
                   </p>
                 </div>
                 <div>
@@ -446,7 +454,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 module="pagos-china"
                 attachments={adjuntos}
                 onChange={setAdjuntos}
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -456,12 +464,12 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
