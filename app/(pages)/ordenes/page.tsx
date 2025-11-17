@@ -2,13 +2,15 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectOption } from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
@@ -16,7 +18,7 @@ import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate, formatCurrency } from "@/lib/utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
-import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList, Package, DollarSign, AlertCircle } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -157,6 +159,25 @@ export default function OrdenesPage() {
     setOcToEdit(null)
   }
 
+  // Calcular KPIs en tiempo real desde los datos filtrados
+  const stats = useMemo(() => {
+    const totalOCs = ocs.length
+
+    const totalItems = ocs.reduce((sum, oc) => sum + (oc.items?.length || 0), 0)
+
+    const totalUnidades = ocs.reduce((sum, oc) => {
+      return sum + (oc.items?.reduce((s, item) => s + item.cantidadTotal, 0) || 0)
+    }, 0)
+
+    const totalFOB = ocs.reduce((sum, oc) => {
+      return sum + (oc.items?.reduce((s, item) => s + parseFloat(item.subtotalUSD.toString()), 0) || 0)
+    }, 0)
+
+    const pendientes = ocs.filter(oc => !oc._count || oc._count.items === 0).length
+
+    return { totalOCs, totalItems, totalUnidades, totalFOB, pendientes }
+  }, [ocs])
+
   if (loading) {
     return (
       <MainLayout>
@@ -168,6 +189,37 @@ export default function OrdenesPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<ClipboardList className="w-4 h-4" />}
+            label="Total Órdenes"
+            value={stats.totalOCs}
+            subtitle={searchQuery || proveedorFilter ? "Filtradas" : "Registradas"}
+          />
+
+          <StatCard
+            icon={<Package className="w-4 h-4" />}
+            label="Total Productos"
+            value={stats.totalItems.toLocaleString()}
+            subtitle={`${stats.totalUnidades.toLocaleString()} unidades`}
+          />
+
+          <StatCard
+            icon={<DollarSign className="w-4 h-4" />}
+            label="FOB Total"
+            value={formatCurrency(stats.totalFOB, "USD")}
+            subtitle={`Promedio: ${formatCurrency(stats.totalOCs > 0 ? stats.totalFOB / stats.totalOCs : 0, "USD")}/OC`}
+          />
+
+          <StatCard
+            icon={<AlertCircle className="w-4 h-4" />}
+            label="OCs Pendientes"
+            value={stats.pendientes}
+            subtitle="Sin items registrados"
+          />
+        </StatsGrid>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
