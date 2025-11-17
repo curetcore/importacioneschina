@@ -237,15 +237,17 @@ lib/
 
 #### 7. Exportación y Reportes
 
-- [ ] **Export a PDF Profesional**
-  - [ ] Instalar `jspdf` y `jspdf-autotable`
-  - [ ] Crear `lib/pdf-generator.ts`
+- [x] **Export a PDF Profesional** (2025-01-17) ⚠️ PARCIAL
+  - [x] Instalar `jspdf` y `jspdf-autotable`
+  - [x] Crear funciones de exportación PDF en `lib/export-utils.ts`
   - [ ] Implementar reporte de órdenes con logo y totales
   - [ ] Implementar reporte financiero mensual
-  - [ ] Agregar botón "Exportar PDF" en cada módulo
+  - [x] Agregar botón "Exportar PDF" en cada módulo (dropdown Excel/PDF)
   - **Impacto:** Reportes profesionales para clientes
-  - **Esfuerzo:** 3 horas
-  - **Archivos:** `lib/pdf-generator.ts`, componentes de páginas
+  - **Esfuerzo:** 3 horas (1.5h completado, 1.5h pendiente)
+  - **Archivos:** `lib/export-utils.ts`, componentes de páginas
+  - **Completado:** Exportación básica a PDF con tablas en 4 módulos
+  - **Pendiente:** Logo, headers personalizados, reportes financieros mensuales
 
 - [ ] **Reportes Programados**
   - [ ] Instalar `node-cron`
@@ -307,12 +309,13 @@ lib/
 ```
 Prioridad Alta:    [ ] 0/5  (0%)
 Prioridad Media:   [ ] 0/5  (0%)
-Prioridad Baja:    [ ] 0/9  (0%)
+Prioridad Baja:    [▓] 0.5/9  (6%) - PDF Export parcial
 ─────────────────────────────────
-TOTAL:             [ ] 0/19 (0%)
+TOTAL:             [▓] 0.5/19 (3%)
 ```
 
 **Última revisión:** 2025-01-17
+**Última implementación:** PDF Export básico (2025-01-17)
 
 ---
 
