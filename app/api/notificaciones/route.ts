@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { handleApiError } from "@/lib/api-error-handler"
 import { markAllNotificationsAsRead } from "@/lib/notification-service"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 
 // GET /api/notificaciones - Obtener notificaciones del usuario
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
 
@@ -50,6 +55,10 @@ export async function GET(request: NextRequest) {
 // PUT /api/notificaciones - Marcar todas como leídas
 export async function PUT(request: NextRequest) {
   try {
+    // Rate limiting para mutations - 20 req/10s
+    const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+    if (rateLimitError) return rateLimitError
+
     const body = await request.json()
     const { usuarioId } = body
 

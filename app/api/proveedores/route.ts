@@ -3,10 +3,15 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { proveedorSchema } from "@/lib/validations/proveedor"
 import { handleApiError } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 // GET /api/proveedores - Obtener todos los proveedores
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const activo = searchParams.get("activo")
@@ -32,6 +37,10 @@ export async function GET(request: NextRequest) {
 // POST /api/proveedores - Crear nuevo proveedor
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting para mutations - 20 req/10s
+    const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const body = await request.json()
 

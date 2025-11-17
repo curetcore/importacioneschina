@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises"
 import { existsSync } from "fs"
 import path from "path"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 // Configuración
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -18,6 +19,10 @@ const MODULE_FOLDERS: { [key: string]: string } = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting para uploads - 3 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.upload)
+    if (rateLimitError) return rateLimitError
+
     const formData = await request.formData()
     const file = formData.get("file") as File | null
     const module = formData.get("module") as string | null

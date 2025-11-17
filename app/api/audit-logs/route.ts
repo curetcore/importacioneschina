@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { handleApiError } from "@/lib/api-error-handler"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 
 // GET /api/audit-logs - Obtener logs de auditoría
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
 

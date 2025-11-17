@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 const configuracionSchema = z.object({
   categoria: z.enum([
@@ -20,6 +21,10 @@ const configuracionSchema = z.object({
 // GET /api/configuracion - Obtener todas las configuraciones o filtrar por categoría
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get("categoria")
@@ -55,6 +60,10 @@ export async function GET(request: NextRequest) {
 // POST /api/configuracion - Crear nueva configuración
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting para mutations - 20 req/10s
+    const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
     const body = await request.json()
     const validatedData = configuracionSchema.parse(body)
