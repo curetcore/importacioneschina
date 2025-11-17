@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { useToast } from "@/components/ui/toast"
 import { apiPost, apiPut, getErrorMessage } from "@/lib/api-client"
+import { ocChinaSchema, type OCChinaInput } from "@/lib/validations"
 import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, PackagePlus } from "lucide-react"
 
 interface FileAttachment {
@@ -53,7 +56,6 @@ interface OCChinaFormProps {
 
 export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChinaFormProps) {
   const { addToast } = useToast()
-  const [loading, setLoading] = useState(false)
   const isEditMode = !!ocToEdit
 
   // Opciones de configuración dinámica
@@ -61,17 +63,32 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   const [categoriaOptions, setCategoriaOptions] = useState<SelectOption[]>([])
   const [loadingConfig, setLoadingConfig] = useState(false)
 
-  const [formData, setFormData] = useState({
-    oc: "",
-    proveedor: "",
-    fechaOC: undefined as Date | undefined,
-    descripcionLote: "",
-    categoriaPrincipal: "",
-  })
-
+  // Items and attachments kept in separate state (complex dynamic arrays)
   const [items, setItems] = useState<OCChinaItem[]>([])
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [adjuntos, setAdjuntos] = useState<FileAttachment[]>([])
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<OCChinaInput>({
+    resolver: zodResolver(ocChinaSchema),
+    defaultValues: {
+      oc: "",
+      proveedor: "",
+      fechaOC: undefined,
+      descripcionLote: "",
+      categoriaPrincipal: "",
+    },
+  })
+
+  const proveedorValue = watch("proveedor")
+  const fechaOCValue = watch("fechaOC")
+  const categoriaPrincipalValue = watch("categoriaPrincipal")
 
   // Cargar configuraciones dinámicas
   useEffect(() => {
@@ -103,7 +120,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
   // Cargar datos cuando se abre en modo edición
   useEffect(() => {
     if (ocToEdit) {
-      setFormData({
+      reset({
         oc: ocToEdit.oc,
         proveedor: ocToEdit.proveedor,
         fechaOC: new Date(ocToEdit.fechaOC),
@@ -114,7 +131,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       setAdjuntos(ocToEdit.adjuntos || [])
       setExpandedItems(new Set())
     } else {
-      setFormData({
+      reset({
         oc: "",
         proveedor: "",
         fechaOC: undefined,
@@ -125,7 +142,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       setAdjuntos([])
       setExpandedItems(new Set())
     }
-  }, [ocToEdit, open])
+  }, [ocToEdit, open, reset])
 
   const toggleItemExpanded = (index: number) => {
     const newExpanded = new Set(expandedItems)
@@ -197,21 +214,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
   const { totalUnidades, totalUSD } = calculateTotals()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+  const onSubmit = async (data: OCChinaInput) => {
     try {
-      // Validaciones
-      if (!formData.proveedor || !formData.fechaOC || !formData.categoriaPrincipal) {
-        throw new Error("Por favor completa todos los campos requeridos")
-      }
-
-      // En modo edición, validar que exista el código OC
-      if (isEditMode && !formData.oc) {
-        throw new Error("El código OC es requerido en modo edición")
-      }
-
+      // Validar items (no manejados por react-hook-form)
       if (items.length === 0) {
         throw new Error("Debes agregar al menos un producto")
       }
@@ -226,7 +231,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
       // En modo creación, no enviar el campo 'oc' (se genera automáticamente)
       const payload = {
-        ...(isEditMode ? formData : { ...formData, oc: undefined }),
+        ...(isEditMode ? data : { ...data, oc: undefined }),
         items: items.map(item => ({
           sku: item.sku,
           nombre: item.nombre,
@@ -251,7 +256,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       addToast({
         type: "success",
         title: isEditMode ? "Orden actualizada" : "Orden creada",
-        description: `Orden ${result.data?.oc || formData.oc} ${isEditMode ? "actualizada" : "creada"} con ${items.length} producto(s)`,
+        description: `Orden ${result.data?.oc || data.oc} ${isEditMode ? "actualizada" : "creada"} con ${items.length} producto(s)`,
       })
 
       onOpenChange(false)
@@ -262,8 +267,6 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         title: "Error",
         description: getErrorMessage(error),
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -279,7 +282,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           <DialogTitle>{isEditMode ? "Editar Orden de Compra" : "Nueva Orden de Compra"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 space-y-6">
             {/* SECCIÓN 1: Información General */}
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
@@ -293,7 +296,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                       Código OC
                     </label>
                     <Input
-                      value={formData.oc}
+                      {...register("oc")}
                       disabled={true}
                       className="bg-gray-100"
                     />
@@ -307,11 +310,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   </label>
                   <Select
                     options={proveedorOptions}
-                    value={formData.proveedor || ""}
-                    onChange={(value) => setFormData({ ...formData, proveedor: value })}
+                    value={proveedorValue || ""}
+                    onChange={(value) => setValue("proveedor", value)}
                     placeholder={loadingConfig ? "Cargando proveedores..." : "Selecciona un proveedor"}
-                    disabled={loading || loadingConfig}
+                    disabled={isSubmitting || loadingConfig}
                   />
+                  {errors.proveedor && (
+                    <p className="text-xs text-red-600 mt-1">{errors.proveedor.message}</p>
+                  )}
                 </div>
 
                 {/* Fecha OC */}
@@ -320,10 +326,13 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                     Fecha OC <span className="text-red-500">*</span>
                   </label>
                   <DatePicker
-                    value={formData.fechaOC}
-                    onChange={(date) => setFormData({ ...formData, fechaOC: date || undefined })}
-                    disabled={loading}
+                    value={fechaOCValue}
+                    onChange={(date) => setValue("fechaOC", date as any)}
+                    disabled={isSubmitting}
                   />
+                  {errors.fechaOC && (
+                    <p className="text-xs text-red-600 mt-1">{errors.fechaOC.message}</p>
+                  )}
                 </div>
 
                 {/* Categoría Principal */}
@@ -333,11 +342,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   </label>
                   <Select
                     options={categoriaOptions}
-                    value={formData.categoriaPrincipal || ""}
-                    onChange={(value) => setFormData({ ...formData, categoriaPrincipal: value })}
+                    value={categoriaPrincipalValue || ""}
+                    onChange={(value) => setValue("categoriaPrincipal", value)}
                     placeholder={loadingConfig ? "Cargando categorías..." : "Selecciona una categoría"}
-                    disabled={loading || loadingConfig}
+                    disabled={isSubmitting || loadingConfig}
                   />
+                  {errors.categoriaPrincipal && (
+                    <p className="text-xs text-red-600 mt-1">{errors.categoriaPrincipal.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -347,12 +359,14 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   Descripción del Lote
                 </label>
                 <Textarea
-                  value={formData.descripcionLote || ""}
-                  onChange={(e) => setFormData({ ...formData, descripcionLote: e.target.value })}
+                  {...register("descripcionLote")}
                   placeholder="Descripción opcional del lote..."
                   rows={2}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
+                {errors.descripcionLote && (
+                  <p className="text-xs text-red-600 mt-1">{errors.descripcionLote.message}</p>
+                )}
               </div>
             </div>
 
@@ -364,7 +378,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                   type="button"
                   variant="outline"
                   onClick={addNewItem}
-                  disabled={loading}
+                  disabled={isSubmitting}
                   className="gap-1.5 text-xs h-8 px-3"
                 >
                   <PackagePlus size={14} />
@@ -409,7 +423,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                           type="button"
                           variant="outline"
                           onClick={() => removeItem(index)}
-                          disabled={loading}
+                          disabled={isSubmitting}
                           className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -429,7 +443,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.sku}
                                 onChange={(e) => updateItem(index, 'sku', e.target.value)}
                                 placeholder="Ej: 6018"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
 
@@ -442,7 +456,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.nombre}
                                 onChange={(e) => updateItem(index, 'nombre', e.target.value)}
                                 placeholder="Ej: men leather shoes"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
 
@@ -455,7 +469,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.material || ""}
                                 onChange={(e) => updateItem(index, 'material', e.target.value)}
                                 placeholder="Ej: COW LEATHER + EVA SOLE"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
 
@@ -468,7 +482,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.color || ""}
                                 onChange={(e) => updateItem(index, 'color', e.target.value)}
                                 placeholder="Ej: brown leather + brown lace"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
 
@@ -483,7 +497,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.cantidadTotal || ""}
                                 onChange={(e) => updateItem(index, 'cantidadTotal', parseInt(e.target.value) || 0)}
                                 placeholder="Ej: 90"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
 
@@ -499,7 +513,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                                 value={item.precioUnitarioUSD || ""}
                                 onChange={(e) => updateItem(index, 'precioUnitarioUSD', parseFloat(e.target.value) || 0)}
                                 placeholder="Ej: 25.50"
-                                disabled={loading}
+                                disabled={isSubmitting}
                               />
                             </div>
                           </div>
@@ -514,7 +528,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               onChange={(e) => updateItem(index, 'especificaciones', e.target.value)}
                               placeholder="Notas adicionales sobre el producto..."
                               rows={2}
-                              disabled={loading}
+                              disabled={isSubmitting}
                             />
                           </div>
 
@@ -527,7 +541,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                               value={item.tallaDistribucion ? JSON.stringify(item.tallaDistribucion) : ""}
                               onChange={(e) => updateItem(index, 'tallaDistribucion', parseTallaDistribucion(e.target.value))}
                               placeholder='Ej: {"38": 10, "39": 20, "40": 20} o 38:10 / 39:20 / 40:20'
-                              disabled={loading}
+                              disabled={isSubmitting}
                             />
                             <p className="text-xs text-gray-500 mt-1">
                               Formato JSON o "talla:cantidad / talla:cantidad"
@@ -567,7 +581,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                 module="oc-china"
                 attachments={adjuntos}
                 onChange={setAdjuntos}
-                disabled={loading}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -577,12 +591,12 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {isEditMode ? "Actualizando..." : "Creando..."}
