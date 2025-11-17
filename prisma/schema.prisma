@@ -41,6 +41,8 @@ model OCChina {
   @@index([fechaOC])
   @@index([categoriaPrincipal])
   @@index([deletedAt])
+  @@index([deletedAt, fechaOC])  // Índice compuesto para queries comunes: filtrar activos y ordenar por fecha
+  @@index([proveedor, deletedAt])  // Índice compuesto para buscar por proveedor excluyendo eliminados
 }
 
 // TABLA 1.5: ITEMS DE OC CHINA (productos individuales)
@@ -311,8 +313,10 @@ model AuditLog {
   @@index([entidadId])
   @@index([accion])
   @@index([usuarioId])
+  @@index([usuarioEmail])  // Índice para buscar logs por email de usuario
   @@index([createdAt])
   @@index([entidad, entidadId])  // Índice compuesto para buscar logs de un registro específico
+  @@index([entidad, createdAt])  // Índice compuesto para buscar logs por entidad ordenados por fecha
 }
 
 // TABLA 10: NOTIFICACIONES - Sistema de notificaciones en tiempo real
@@ -355,7 +359,9 @@ model Notificacion {
   @@index([leida])
   @@index([usuarioId])
   @@index([createdAt])
+  @@index([expiresAt])  // Índice para limpiar notificaciones expiradas
   @@index([entidad, entidadId])
   @@index([auditLogId])
   @@index([leida, createdAt])  // Índice compuesto para queries comunes
+  @@index([usuarioId, leida, createdAt])  // Índice compuesto para notificaciones de usuario
 }
