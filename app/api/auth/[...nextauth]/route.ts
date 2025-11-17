@@ -40,7 +40,7 @@ function resetRateLimit(email: string): void {
   loginAttempts.delete(email)
 }
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
