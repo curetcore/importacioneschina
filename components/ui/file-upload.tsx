@@ -4,7 +4,7 @@ import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { Upload, X, FileText, Image as ImageIcon, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "./button"
-import { useToast } from "./toast"
+import { showToast } from "@/lib/toast"
 
 interface FileAttachment {
   nombre: string
@@ -29,7 +29,6 @@ export function FileUpload({
   maxFiles = 5,
   disabled = false,
 }: FileUploadProps) {
-  const { addToast } = useToast()
   const [uploading, setUploading] = useState(false)
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -51,9 +50,7 @@ export function FileUpload({
   const uploadFile = async (file: File) => {
     const error = validateFile(file)
     if (error) {
-      addToast({
-        type: "error",
-        title: "Error de validación",
+      showToast.error("Error de validación", {
         description: error,
       })
       return
@@ -78,15 +75,11 @@ export function FileUpload({
 
       onChange([...attachments, result.data])
 
-      addToast({
-        type: "success",
-        title: "Archivo subido",
+      showToast.success("Archivo subido", {
         description: `${file.name} subido exitosamente`,
       })
     } catch (error: any) {
-      addToast({
-        type: "error",
-        title: "Error",
+      showToast.error("Error al subir archivo", {
         description: error.message || "Error al subir el archivo",
       })
     } finally {
@@ -129,15 +122,11 @@ export function FileUpload({
 
       onChange(attachments.filter(a => a.url !== attachment.url))
 
-      addToast({
-        type: "success",
-        title: "Archivo eliminado",
+      showToast.success("Archivo eliminado", {
         description: `${attachment.nombre} eliminado exitosamente`,
       })
     } catch (error: any) {
-      addToast({
-        type: "error",
-        title: "Error",
+      showToast.error("Error al eliminar archivo", {
         description: error.message || "Error al eliminar el archivo",
       })
     }

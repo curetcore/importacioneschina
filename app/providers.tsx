@@ -13,14 +13,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30 * 1000, // 30 seconds - data stays fresh
-            gcTime: 5 * 60 * 1000, // 5 minutes - cache time (formerly cacheTime)
-            retry: 1, // Retry once on failure
-            refetchOnWindowFocus: false, // Don't refetch on window focus
-            refetchOnReconnect: true, // Refetch on reconnect
+            staleTime: 5 * 60 * 1000, // 5 minutes - datos frescos durante 5 min (optimizado)
+            gcTime: 10 * 60 * 1000, // 10 minutes - mantener en cache 10 min
+            retry: 2, // Reintentar 2 veces si falla (mejorado de 1 a 2)
+            refetchOnWindowFocus: false, // No refetch al cambiar de pestaña
+            refetchOnReconnect: true, // Refetch al reconectar internet
           },
           mutations: {
-            retry: 0, // Don't retry mutations
+            retry: 0, // No reintentar mutaciones automáticamente
+            onError: (error) => {
+              console.error("Mutation error:", error)
+            },
           },
         },
       })

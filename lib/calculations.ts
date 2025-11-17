@@ -572,9 +572,9 @@ export function calcularCostosCompletos(
   // 6. Combinar resultados
   return itemsNormalizados.map(item => {
     // Buscar distribuciones para este producto
-    const pagosDist = pagosDistribuidos.find(d => d.productId === item.id)
-    const gastosDist = gastosDistribuidos.find(d => d.productId === item.id)
-    const comisionesDist = comisionesDistribuidas.find(d => d.productId === item.id)
+    const pagosDist = pagosDistribuidos.find((d: any) => d.productId === item.id)
+    const gastosDist = gastosDistribuidos.find((d: any) => d.productId === item.id)
+    const comisionesDist = comisionesDistribuidas.find((d: any) => d.productId === item.id)
 
     // Costos distribuidos por unidad
     const pagosUnitario = pagosDist?.costoUnitario || 0
