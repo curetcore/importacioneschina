@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectOption } from "@/components/ui/select"
+import { MultiSelect } from "@/components/ui/multi-select"
 import { DatePicker } from "@/components/ui/datepicker"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
@@ -32,7 +33,6 @@ interface FileAttachment {
 interface GastoLogistico {
   id: string
   idGasto: string
-  ocId: string
   fechaGasto: string
   tipoGasto: string
   proveedorServicio?: string | null
@@ -40,6 +40,13 @@ interface GastoLogistico {
   montoRD: number
   notas?: string | null
   adjuntos?: FileAttachment[]
+  ordenesCompra: {
+    ocChina: {
+      id: string
+      oc: string
+      proveedor: string
+    }
+  }[]
 }
 
 interface GastosLogisticosFormProps {
@@ -78,7 +85,7 @@ export function GastosLogisticosForm({
     resolver: zodResolver(gastosLogisticosSchema),
     defaultValues: {
       idGasto: "",
-      ocId: "",
+      ocIds: [],
       fechaGasto: undefined,
       tipoGasto: "",
       proveedorServicio: "",
@@ -88,7 +95,7 @@ export function GastosLogisticosForm({
     },
   })
 
-  const ocIdValue = watch("ocId")
+  const ocIdsValue = watch("ocIds")
   const fechaGastoValue = watch("fechaGasto")
   const tipoGastoValue = watch("tipoGasto")
   const metodoPagoValue = watch("metodoPago")
@@ -142,9 +149,12 @@ export function GastosLogisticosForm({
   // Reset form when edit data changes
   useEffect(() => {
     if (gastoToEdit) {
+      // Extract OC IDs from the ordenesCompra relation
+      const ocIds = gastoToEdit.ordenesCompra.map(rel => rel.ocChina.id)
+
       reset({
         idGasto: gastoToEdit.idGasto,
-        ocId: gastoToEdit.ocId,
+        ocIds: ocIds,
         fechaGasto: new Date(gastoToEdit.fechaGasto),
         tipoGasto: gastoToEdit.tipoGasto,
         proveedorServicio: gastoToEdit.proveedorServicio || "",
@@ -156,7 +166,7 @@ export function GastosLogisticosForm({
     } else {
       reset({
         idGasto: "",
-        ocId: "",
+        ocIds: [],
         fechaGasto: undefined,
         tipoGasto: "",
         proveedorServicio: "",
@@ -241,17 +251,17 @@ export function GastosLogisticosForm({
             )}
 
             <div>
-              <label htmlFor="ocId" className="block text-sm font-medium text-gray-700 mb-1">
-                Orden de Compra <span className="text-red-500">*</span>
+              <label htmlFor="ocIds" className="block text-sm font-medium text-gray-700 mb-1">
+                Ordenes de Compra <span className="text-red-500">*</span>
               </label>
-              <Select
+              <MultiSelect
                 options={ocsOptions}
-                value={ocIdValue}
-                onChange={value => setValue("ocId", value)}
-                placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una OC"}
+                value={ocIdsValue}
+                onChange={values => setValue("ocIds", values)}
+                placeholder={loadingOcs ? "Cargando OCs..." : "Selecciona una o mas OCs"}
                 disabled={isSubmitting || loadingOcs}
               />
-              {errors.ocId && <p className="text-xs text-red-600 mt-1">{errors.ocId.message}</p>}
+              {errors.ocIds && <p className="text-xs text-red-600 mt-1">{errors.ocIds.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
