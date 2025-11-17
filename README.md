@@ -8,7 +8,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-blue)](https://www.postgresql.org/)
 [![NextAuth](https://img.shields.io/badge/NextAuth.js-Latest-purple)](https://next-auth.js.org/)
 
-**📚 Versión 2.5 - Sistema Multi-Producto con Seguridad y Robustez**
+**📚 Versión 2.5.1 - Sistema Multi-Producto con Seguridad y Robustez + Documentación Exhaustiva**
 
 [Características](#-características-principales) • [Arquitectura](#-arquitectura) • [Seguridad](#-seguridad-y-autenticación) • [Instalación](#-instalación) • [Modelo de Datos](#️-modelo-de-datos) • [Cálculos](#-cálculos-y-distribución-de-costos) • [Documentación](#-documentación-técnica)
 
@@ -17,17 +17,21 @@
 ## 📋 Tabla de Contenidos
 
 1. [Características Principales](#-características-principales)
-2. [Seguridad y Autenticación](#-seguridad-y-autenticación)
-3. [Arquitectura del Sistema](#-arquitectura-del-sistema)
-4. [Modelo de Datos](#️-modelo-de-datos)
-5. [Instalación y Configuración](#-instalación)
-6. [Cálculos y Distribución de Costos](#-cálculos-y-distribución-de-costos)
-7. [Uso del Sistema](#-uso-del-sistema)
-8. [Documentación Técnica](#-documentación-técnica)
-9. [API Endpoints](#-api-endpoints)
-10. [Deployment](#-deployment)
-11. [Robustez y Principios de Diseño](#-robustez-y-principios-de-diseño)
-12. [TypeScript y Tipos](#-typescript-y-tipos)
+2. [Métricas del Proyecto](#-métricas-del-proyecto)
+3. [Seguridad y Autenticación](#-seguridad-y-autenticación)
+4. [Arquitectura del Sistema](#-arquitectura-del-sistema)
+5. [Análisis de Componentes](#-análisis-de-componentes)
+6. [Modelo de Datos](#️-modelo-de-datos)
+7. [Instalación y Configuración](#-instalación)
+8. [Cálculos y Distribución de Costos](#-cálculos-y-distribución-de-costos)
+9. [Flujos de Datos Principales](#-flujos-de-datos-principales)
+10. [Uso del Sistema](#-uso-del-sistema)
+11. [Documentación Técnica](#-documentación-técnica)
+12. [API Endpoints](#-api-endpoints)
+13. [Deployment](#-deployment)
+14. [Robustez y Principios de Diseño](#-robustez-y-principios-de-diseño)
+15. [TypeScript y Tipos](#-typescript-y-tipos)
+16. [Patrones de Diseño](#-patrones-de-diseño)
 
 ---
 
@@ -97,6 +101,99 @@
 - ✅ **Manejo de errores robusto** - Error boundaries y type guards
 
 > 📖 **Ver [ROBUSTEZ_SISTEMA.md](./ROBUSTEZ_SISTEMA.md)** para análisis completo de diseño
+
+---
+
+## 📊 Métricas del Proyecto
+
+### Resumen Ejecutivo
+
+| Métrica | Valor |
+|---------|-------|
+| **Versión** | 2.5.0 |
+| **Arquitectura** | Full-stack monolítico (Next.js App Router) |
+| **Modelos de Datos** | 7 tablas (Prisma) |
+| **API Endpoints** | 22 rutas |
+| **Componentes UI** | 28 base + 6 formularios complejos |
+| **Líneas de código** | ~15,000+ (estimado) |
+| **Archivos TypeScript** | ~70 archivos |
+| **Dependencias Prod** | 41 paquetes |
+| **Dependencias Dev** | 14 paquetes |
+| **Cobertura de tests** | Manual (sin tests automáticos aún) |
+
+### Distribución de Código
+
+```
+Estructura del Proyecto:
+├── Backend (API Routes)      ~3,500 líneas
+│   ├── Autenticación         ~150 líneas
+│   ├── CRUD Endpoints        ~2,800 líneas
+│   └── Dashboard/Setup       ~550 líneas
+├── Frontend (Components)     ~5,000 líneas
+│   ├── Formularios           ~2,500 líneas
+│   ├── UI Base               ~1,500 líneas
+│   ├── Layout                ~500 líneas
+│   └── Tablas/Listas         ~500 líneas
+├── Lógica de Negocio (lib/)  ~800 líneas
+│   ├── calculations.ts       ~342 líneas (⭐ crítico)
+│   ├── validations.ts        ~151 líneas
+│   ├── id-generator.ts       ~103 líneas
+│   └── Otros                 ~204 líneas
+├── Modelo de Datos           ~400 líneas
+│   ├── schema.prisma         ~250 líneas
+│   ├── seed.ts               ~150 líneas
+└── Configuración             ~300 líneas
+    ├── Tailwind/Next.js      ~150 líneas
+    ├── TypeScript            ~50 líneas
+    └── Docker                ~100 líneas
+```
+
+### Complejidad por Módulo
+
+| Módulo | Archivos | Complejidad | Criticidad |
+|--------|----------|-------------|------------|
+| **lib/calculations.ts** | 1 | 🔴 Alta | ⭐⭐⭐ Crítico |
+| **Formularios Multi-producto** | 2 | 🔴 Alta | ⭐⭐⭐ Crítico |
+| **API CRUD Endpoints** | 15 | 🟡 Media | ⭐⭐ Importante |
+| **Autenticación NextAuth** | 1 | 🟡 Media | ⭐⭐⭐ Crítico |
+| **Dashboard/KPIs** | 2 | 🟡 Media | ⭐⭐ Importante |
+| **Componentes UI** | 28 | 🟢 Baja | ⭐ Standard |
+| **Validaciones Zod** | 2 | 🟢 Baja | ⭐⭐ Importante |
+| **Generador de IDs** | 1 | 🟡 Media | ⭐⭐⭐ Crítico |
+
+### Stack Tecnológico Detallado
+
+**Core Framework:**
+- Next.js 14.2.0 (App Router, Server Components, API Routes)
+- React 18.3.0 (Server + Client Components)
+- TypeScript 5.5.0 (Strict mode enabled)
+
+**Base de Datos:**
+- Prisma 6.19.0 (ORM con type-safety)
+- PostgreSQL (última versión estable)
+- Migraciones versionadas
+
+**Autenticación y Seguridad:**
+- NextAuth.js 4.24.13 (JWT strategy)
+- bcryptjs 3.0.3 (password hashing)
+- Rate limiting en memoria (5/15min)
+
+**Validación:**
+- Zod 3.23.0 (schema validation)
+- React Hook Form 7.53.0 (formularios)
+- @hookform/resolvers 3.9.0 (integración RHF + Zod)
+
+**UI/UX:**
+- Tailwind CSS 3.4.0
+- Radix UI (componentes headless)
+- Lucide React 0.441.0 (iconos)
+- Recharts 2.12.0 (gráficos)
+- TanStack Table 8.20.0 (tablas avanzadas)
+
+**Deployment:**
+- Docker (multi-stage build)
+- Node.js 20 Alpine (imagen base)
+- Standalone output (Next.js optimizado)
 
 ---
 
@@ -253,6 +350,291 @@ curet-importaciones/
 ├── 📄 Dockerfile                 # Deploy automático multi-stage
 └── 📄 start.sh                   # Script de inicio con migraciones
 ```
+
+---
+
+## 🔍 Análisis de Componentes
+
+### Componentes Críticos del Sistema
+
+#### 1. Formularios Complejos (6 componentes principales)
+
+**OCChinaForm.tsx** (600 líneas) ⭐⭐⭐ **EL MÁS COMPLEJO**
+```typescript
+Responsabilidad: Crear/editar órdenes de compra multi-producto
+Complejidad: 🔴 Alta
+
+Características:
+- Gestión de múltiples productos con expand/collapse
+- Validación de tallaDistribucion (JSON o formato "38:10 / 39:20")
+- Cálculo automático de subtotales y totales en tiempo real
+- Carga dinámica de proveedores y categorías desde configuración
+- Upload de adjuntos (PDFs, imágenes)
+- Modo edición vs creación
+- Validación: min 1 producto, cada uno con SKU + nombre + cantidad + precio
+
+Estados principales:
+- formData: Datos básicos de la OC
+- items[]: Array de productos
+- expandedItems: Set<string> - productos expandidos
+- adjuntos[]: Archivos subidos
+
+Ubicación: components/forms/OCChinaForm.tsx
+API: POST /api/oc-china, PUT /api/oc-china/:id
+```
+
+**InventarioRecibidoForm.tsx** (448 líneas) ⭐⭐⭐
+```typescript
+Responsabilidad: Recepción de inventario con cálculo de costos
+Complejidad: 🔴 Alta
+
+Características:
+- Selector de OC dinámico (carga items, pagos, gastos)
+- Selector de producto específico (opcional)
+- Cálculo automático de costos al seleccionar producto:
+  * Ejecuta distribuirGastosLogisticos() en cliente
+  * Muestra: costoFOBRD, gastosDistribuidos, costoUnitarioRD
+  * Calcula costoTotalRecepcionRD en tiempo real
+- Warning si no se selecciona producto específico
+- Carga dinámica de bodegas desde configuración
+- Validación de sobre-recepción
+
+Estados principales:
+- selectedOcData: OC con items, pagos, gastos
+- selectedItemData: Producto seleccionado
+- itemsOptions[]: Lista de productos disponibles
+- costosCalculados: Resultado de distribuirGastosLogisticos()
+
+Ubicación: components/forms/InventarioRecibidoForm.tsx
+API: POST /api/inventario-recibido
+Depende de: lib/calculations.ts (distribuirGastosLogisticos)
+```
+
+**PagosChinaForm.tsx** (~300 líneas) ⭐⭐
+```typescript
+Responsabilidad: Registro de pagos con conversión de monedas
+Características:
+- Selector de OC
+- Selector de moneda (USD, CNY, RD$)
+- Cálculo automático: montoRD = montoOriginal × tasaCambio
+- Cálculo de montoRDNeto = montoRD + comisionBancoRD
+- Carga dinámica de tipos y métodos de pago
+- Upload de adjuntos (recibos, comprobantes)
+```
+
+**GastosLogisticosForm.tsx** (~250 líneas) ⭐⭐
+```typescript
+Responsabilidad: Registro de gastos logísticos
+Características:
+- Selector de OC
+- Selector de tipoGasto desde configuración
+- Selector de metodoPago desde configuración
+- Upload de adjuntos (facturas, documentos)
+```
+
+**ProveedorForm.tsx** (~350 líneas) ⭐
+```typescript
+Responsabilidad: CRM de proveedores
+Características:
+- Información de contacto completa (20+ campos)
+- Datos comerciales (términos de pago, mínimo de orden)
+- Calificación (0-5 estrellas)
+- Auto-generación de códigos (PROV-001, PROV-002, etc.)
+```
+
+**ConfiguracionForm.tsx** (~200 líneas) ⭐
+```typescript
+Responsabilidad: CRUD de configuraciones dinámicas
+Características:
+- Selector de categoría (proveedores, bodegas, tipos, etc.)
+- Control de orden y estado activo/inactivo
+- Validación de valores únicos por categoría
+```
+
+#### 2. Componentes UI Base (28 componentes)
+
+Todos siguiendo el estilo **shadcn/ui** con Radix UI primitives:
+
+**Componentes de Entrada:**
+- `input.tsx` - Input básico con variantes
+- `textarea.tsx` - Textarea con auto-resize
+- `select.tsx` - Select mejorado con búsqueda
+- `datepicker.tsx` - Selector de fechas (date-fns)
+- `file-upload.tsx` ⭐ - Gestión de archivos con preview
+
+**Componentes de Feedback:**
+- `toast.tsx` - Notificaciones (sonner)
+- `dialog.tsx` - Diálogos modales
+- `confirm-dialog.tsx` ⭐ - Confirmación de acciones
+- `cascade-delete-dialog.tsx` ⭐ - Preview de eliminaciones en cascada
+- `alert.tsx` - Alertas y mensajes
+
+**Componentes de Display:**
+- `card.tsx` - Tarjetas de contenido
+- `badge.tsx` - Etiquetas y estados
+- `button.tsx` ⭐ - Botón mejorado con flex layout
+- `tabs.tsx` - Navegación por pestañas
+- `table.tsx` - Tabla básica
+- `airtable-table.tsx` ⭐ - Tabla estilo Airtable
+
+**Componentes de Layout:**
+- `separator.tsx` - Separadores
+- `scroll-area.tsx` - Área con scroll
+- `sheet.tsx` - Panel lateral
+- `popover.tsx` - Popovers
+- `dropdown-menu.tsx` - Menús desplegables
+
+**Componentes Especializados:**
+- `attachments-list.tsx` ⭐ - Lista de adjuntos con preview
+- `add-attachments-dialog.tsx` - Diálogo para añadir archivos
+- `file-preview-modal.tsx` - Modal de vista previa
+- `pagination.tsx` - Paginación de listas
+
+#### 3. Lógica de Negocio (lib/)
+
+**lib/calculations.ts** (342 líneas) ⭐⭐⭐ **CORAZÓN DEL SISTEMA**
+```typescript
+Funciones principales:
+
+1. calcularTasaCambioPromedio(pagos: PagoChina[]): number
+   - Tasa ponderada por montos
+   - Fórmula: Σ(tasa × monto) / Σ(monto)
+   - Protección: retorna 0 si totalMonto === 0
+
+2. distribuirGastosLogisticos(...): ItemConCostos[] ⭐⭐⭐ CRÍTICA
+   - Distribuye gastos proporcional al % FOB (tipo Odoo)
+   - Para cada producto calcula:
+     * porcentajeFOB = (subtotalUSD / totalFOB) × 100
+     * gastosDistribuidos = (subtotalUSD / totalFOB) × totalGastosRD
+     * costoFOBRD = subtotalUSD × tasaCambioPromedio
+     * costoTotalRD = costoFOBRD + gastosDistribuidos
+     * costoUnitarioRD = costoTotalRD / cantidadTotal
+   - ⚠️ TODAS las divisiones protegidas contra cero
+
+3. calcularResumenFinanciero(...): ResumenFinanciero
+   - KPIs: inversión total, costos promedio, etc.
+   - Usado en dashboard
+
+4. Otras funciones:
+   - calcularMontoRD()
+   - calcularMontoRDNeto()
+   - calcularTotalInversion()
+   - calcularCostoUnitarioFinal()
+   - calcularPorcentajeRecepcion()
+   - calcularCostoTotalRecepcion()
+   - calcularCostoFOBUnitario()
+   - calcularOC() - Función agregadora
+
+Patrones:
+- Normalización de Prisma.Decimal a number
+- Redondeo a 2 decimales (Math.round(x * 100) / 100)
+- Validaciones de valores negativos
+- Protección contra división por cero en TODAS las operaciones
+```
+
+**lib/prisma.ts** (11 líneas) ⭐⭐⭐ **PATRÓN SINGLETON**
+```typescript
+Propósito: Evitar "Too many connections" en desarrollo
+Patrón: Singleton con globalThis
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+⚠️ IMPORTANTE: NUNCA crear múltiples instancias de PrismaClient
+⚠️ SIEMPRE importar desde lib/prisma.ts
+```
+
+**lib/id-generator.ts** (103 líneas) ⭐⭐
+```typescript
+Propósito: Generación de IDs thread-safe
+Patrón: Transacción con isolation level Serializable
+
+generateUniqueId(modelName, fieldName, prefix): Promise<string>
+- Usa transacción Prisma con:
+  * isolationLevel: Serializable (máxima protección)
+  * maxWait: 5000ms
+  * timeout: 10000ms
+- Garantiza IDs únicos incluso con peticiones concurrentes
+- Genera: OC-00001, PAG-00001, GAS-00001, REC-00001, PROV-001
+
+⚠️ NO cambiar el nivel de aislamiento (puede causar IDs duplicados)
+```
+
+**lib/validations.ts** (151 líneas) ⭐⭐
+```typescript
+Schemas Zod para validación:
+- ocChinaSchema
+- pagosChinaSchema
+- gastosLogisticosSchema
+- inventarioRecibidoSchema
+- configuracionSchema
+- proveedorSchema
+
+Características:
+- Validaciones estrictas (min, max, positive, email, url)
+- Coerción de tipos (z.coerce.date(), z.coerce.number())
+- Mensajes de error personalizados
+- Validación de fechas pasadas (no futuras)
+- Enums para monedas, tipos, etc.
+```
+
+**lib/api-client.ts** (~100 líneas)
+```typescript
+Cliente HTTP para frontend:
+- apiGet(url, options)
+- apiPost(url, data, options)
+- apiPut(url, data, options)
+- apiDelete(url, options)
+- getErrorMessage(error): string - Type-safe error handling
+
+Características:
+- Manejo de errores centralizado
+- Type guards para unknown errors
+- Retorna objetos tipados
+```
+
+#### 4. API Routes (22 endpoints)
+
+**Autenticación:**
+- `app/api/auth/[...nextauth]/route.ts` (150 líneas) ⭐⭐⭐
+  * NextAuth.js configuration
+  * Rate limiting en memoria (5/15min)
+  * Mensajes de error genéricos
+  * JWT callbacks con role
+
+**CRUD Principales:**
+- `app/api/oc-china/*` (4 archivos, ~600 líneas)
+  * GET, POST, PUT, DELETE con validaciones
+  * Gestión de items multi-producto
+  * Upload de adjuntos
+  * Cascade delete preview
+
+- `app/api/pagos-china/*` (4 archivos, ~400 líneas)
+  * CRUD pagos + adjuntos
+  * Cálculo de montoRDNeto
+  * Validación de tasas de cambio
+
+- `app/api/gastos-logisticos/*` (4 archivos, ~350 líneas)
+  * CRUD gastos + adjuntos
+  * Validación de montos
+
+- `app/api/inventario-recibido/*` (3 archivos, ~400 líneas) ⭐⭐⭐
+  * Cálculo de costos distribuidos
+  * Validación de sobre-recepción
+  * Vinculación a producto específico
+
+**Utilidades:**
+- `app/api/dashboard/route.ts` (200 líneas) ⭐⭐
+  * KPIs optimizados
+  * Eliminación de N+1 queries
+  * Límite de 500 OCs (previene OOM)
+
+- `app/api/configuracion/*` (3 archivos, ~250 líneas)
+  * CRUD configuraciones dinámicas
+
+- `app/api/proveedores/*` (3 archivos, ~300 líneas)
+  * CRM de proveedores
+  * Auto-generación de códigos
 
 ---
 
@@ -510,6 +892,393 @@ Ver implementación completa en `lib/calculations.ts:231-292`
 - Gastos = 20% × RD$ 17,000 = RD$ 3,400
 - **Total** = RD$ 32,990
 - **Unitario** = RD$ 1,649.50 por unidad
+
+---
+
+## 🔄 Flujos de Datos Principales
+
+### Flujo 1: Crear Orden de Compra con Múltiples Productos
+
+```
+┌─────────────────┐
+│  Usuario (UI)   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  OCChinaForm.tsx                │
+│  - Datos básicos (proveedor,    │
+│    fecha, categoría)            │
+│  - Productos (min 1):           │
+│    * SKU, nombre, cantidad,     │
+│      precio                     │
+│    * Opcional: material, color, │
+│      tallas, especificaciones   │
+│  - Adjuntos (PDFs, imágenes)    │
+│  - Cálculo de subtotales        │
+│    en tiempo real               │
+└────────┬────────────────────────┘
+         │ Submit
+         ▼
+┌─────────────────────────────────┐
+│  POST /api/oc-china             │
+│                                 │
+│  1. Validar campos requeridos   │
+│  2. Validar min 1 producto      │
+│  3. Para cada producto:         │
+│     - SKU, nombre required      │
+│     - cantidad > 0, precio > 0  │
+│     - subtotal = cant × precio  │
+│     - max $999,999.99           │
+│     - Validar tallas (JSON)     │
+│  4. generateUniqueId():         │
+│     - Transacción Serializable  │
+│     - Genera OC-00001, etc.     │
+│  5. Crear OC + items:           │
+│     - 1 registro en oc_china    │
+│     - N registros en items      │
+│     - Relación 1:N CASCADE      │
+└────────┬────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  PostgreSQL Database            │
+│  - oc_china (1 registro)        │
+│  - oc_china_items (N registros) │
+└─────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│  Response → UI                  │
+│  - OC creada con ID             │
+│  - Redirect a detalle de OC     │
+└─────────────────────────────────┘
+```
+
+**Ejemplo de Datos:**
+```json
+{
+  "proveedor": "Nike China",
+  "fechaOC": "2025-01-15",
+  "categoriaPrincipal": "Zapatos",
+  "items": [
+    {
+      "sku": "ZAP-001-01",
+      "nombre": "Zapatos Deportivos Negros",
+      "material": "Cuero sintético",
+      "color": "Negro",
+      "tallaDistribucion": {"38": 10, "39": 20, "40": 15, "41": 5},
+      "cantidadTotal": 50,
+      "precioUnitarioUSD": 12.50,
+      "subtotalUSD": 625.00
+    },
+    {
+      "sku": "ZAP-002-01",
+      "nombre": "Zapatillas Running Blancas",
+      "cantidadTotal": 100,
+      "precioUnitarioUSD": 15.00,
+      "subtotalUSD": 1500.00
+    }
+  ]
+}
+```
+
+---
+
+### Flujo 2: Calcular y Distribuir Gastos Logísticos
+
+```
+┌─────────────────┐
+│  Usuario (UI)   │
+│  - Selecciona   │
+│    recibir      │
+│    inventario   │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  InventarioRecibidoForm.tsx              │
+│                                          │
+│  1. Seleccionar OC                       │
+│     → GET /api/oc-china/:id              │
+│     → Carga: items, pagos, gastos        │
+│                                          │
+│  2. Seleccionar producto (opcional)      │
+│     → Lista de productos de la OC        │
+│                                          │
+│  3. CÁLCULO AUTOMÁTICO (cliente):        │
+│     distribuirGastosLogisticos(          │
+│       oc.items,                          │
+│       oc.gastosLogisticos,               │
+│       oc.pagosChina                      │
+│     )                                    │
+│     ↓                                    │
+│     Muestra en UI:                       │
+│     - Costo FOB RD$                      │
+│     - Gastos Distribuidos (% FOB)        │
+│     - Costo Unitario RD$                 │
+│     - Costo Total Recepción              │
+│                                          │
+│  4. Usuario ingresa:                     │
+│     - Cantidad recibida                  │
+│     - Bodega inicial                     │
+└────────┬─────────────────────────────────┘
+         │ Submit
+         ▼
+┌──────────────────────────────────────────┐
+│  POST /api/inventario-recibido           │
+│                                          │
+│  1. Validar sobre-recepción:             │
+│     totalRecibido = existente + nuevo    │
+│     if (totalRecibido > ordenado) ERROR  │
+│                                          │
+│  2. Calcular costos (servidor):          │
+│     itemsConCostos =                     │
+│       distribuirGastosLogisticos(...)    │
+│                                          │
+│     ALGORITMO:                           │
+│     a) totalFOBUSD = Σ items.subtotalUSD │
+│     b) totalGastosRD = Σ gastos.montoRD  │
+│     c) tasaPromedio = calcular()         │
+│                                          │
+│     Para cada item:                      │
+│     - % FOB = subtotal / totalFOB × 100  │
+│     - gastosItem = (subtotal / totalFOB) │
+│                    × totalGastosRD       │
+│     - costoFOBRD = subtotal × tasa       │
+│     - costoTotalRD = FOB + gastos        │
+│     - costoUnitarioRD = total / cantidad │
+│                                          │
+│  3. Determinar costo a usar:             │
+│     if (itemId especificado)             │
+│       → usar item.costoUnitarioRD        │
+│     else                                 │
+│       → promedio ponderado de OC         │
+│                                          │
+│  4. Crear recepción con costos           │
+└────────┬─────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  PostgreSQL Database                     │
+│  - inventario_recibido                   │
+│    * idRecepcion: REC-00001              │
+│    * ocId: (FK)                          │
+│    * itemId: (FK) - producto específico  │
+│    * cantidadRecibida: 95                │
+│    * costoUnitarioFinalRD: 401.50        │
+│    * costoTotalRecepcionRD: 38,142.50    │
+└────────┬─────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  Response → UI                           │
+│  - Recepción creada                      │
+│  - Mostrar costos finales                │
+│  - Actualizar tabla de inventario        │
+└──────────────────────────────────────────┘
+```
+
+**Ejemplo de Cálculo (OC con 3 productos):**
+
+```
+Datos de Entrada:
+----------------
+Items:
+- Zapatos A: 100 × $10 = $1,000 (40% FOB)
+- Zapatos B: 50 × $20 = $1,000 (40% FOB)
+- Carteras C: 20 × $25 = $500 (20% FOB)
+Total FOB: $2,500
+
+Pagos:
+- $1,000 USD × 58.5 = RD$ 58,500 + comisión RD$ 500 = RD$ 59,000
+- ¥7,300 CNY × 8.2 = RD$ 59,860 + comisión RD$ 250 = RD$ 60,110
+Total Pagado: RD$ 119,110
+
+Gastos:
+- Flete: RD$ 10,000
+- Aduana: RD$ 5,000
+- Broker: RD$ 2,000
+Total Gastos: RD$ 17,000
+
+Cálculos:
+---------
+Tasa Promedio = (58.5×1000 + 8.2×1000) / 2000 = 33.35 RD$/USD
+
+Zapatos A (40% FOB):
+  costoFOBRD = $1,000 × 33.35 = RD$ 33,350
+  gastosDistribuidos = 40% × RD$ 17,000 = RD$ 6,800
+  costoTotalRD = RD$ 40,150
+  costoUnitarioRD = RD$ 40,150 / 100 = RD$ 401.50/unidad ✓
+
+Recepción de 95 zapatos A:
+  costoTotalRecepcionRD = 95 × RD$ 401.50 = RD$ 38,142.50 ✓
+```
+
+---
+
+### Flujo 3: Dashboard con KPIs
+
+```
+┌─────────────────┐
+│  Usuario        │
+│  - Accede a     │
+│    /dashboard   │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  GET /api/dashboard                      │
+│                                          │
+│  1. Cargar datos (máximo 500 OCs):       │
+│     const ocs = await prisma.oCChina     │
+│       .findMany({                        │
+│         take: 500,                       │
+│         orderBy: { createdAt: 'desc' },  │
+│         include: {                       │
+│           items: true,                   │
+│           pagosChina: true,              │
+│           gastosLogisticos: true,        │
+│           inventarioRecibido: {          │
+│             include: { item: true }      │
+│           }                              │
+│         }                                │
+│       })                                 │
+│                                          │
+│  2. Para cada OC, calcular:              │
+│     const calculos = calcularOC({        │
+│       costoFOBTotalUSD: Σ items.subtotal,│
+│       cantidadOrdenada: Σ items.cantidad,│
+│       pagos: oc.pagosChina,              │
+│       gastos: oc.gastosLogisticos,       │
+│       inventario: oc.inventarioRecibido  │
+│     })                                   │
+│                                          │
+│  3. Agregar KPIs:                        │
+│     - inversionTotal = Σ totalInversionRD│
+│     - unidadesOrdenadas = Σ cantidades   │
+│     - unidadesRecibidas = Σ recepciones  │
+│     - costoPromedio = inversión / recib  │
+│                                          │
+│  4. Optimización:                        │
+│     - Usa flatMap en lugar de queries    │
+│       adicionales (elimina N+1)          │
+│     - Límite de 500 OCs (previene OOM)   │
+│     - Carga solo últimas transacciones   │
+│                                          │
+│  5. Estructurar datos:                   │
+│     {                                    │
+│       kpis: {...},                       │
+│       financiero: {...},                 │
+│       gastos: {...},                     │
+│       inventario: {...},                 │
+│       proveedores: {...},                │
+│       tablas: {                          │
+│         topOCs: [...],                   │
+│         transacciones: [...]             │
+│       }                                  │
+│     }                                    │
+└────────┬─────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  Dashboard UI (React)                    │
+│                                          │
+│  - KPI Cards (4-6 tarjetas)              │
+│  - Gráficos (Recharts):                  │
+│    * Inversión por proveedor             │
+│    * Gastos por tipo                     │
+│    * Inventario por bodega               │
+│    * Tendencias temporales               │
+│  - Tablas:                               │
+│    * Top 10 OCs por inversión            │
+│    * Últimas 10 transacciones            │
+└──────────────────────────────────────────┘
+```
+
+**Performance:**
+- Máximo 500 OCs cargadas
+- Sin N+1 queries (usa flatMap)
+- Cálculos en memoria (rápidos)
+- Tiempo de respuesta: ~500ms - 1s
+
+---
+
+### Flujo 4: Autenticación con Rate Limiting
+
+```
+┌─────────────────┐
+│  Usuario        │
+│  - Ingresa      │
+│    email/pass   │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  POST /api/auth/signin (NextAuth)        │
+│                                          │
+│  1. Validar input:                       │
+│     - email presente                     │
+│     - password presente                  │
+│                                          │
+│  2. Verificar rate limit:                │
+│     checkRateLimit(email)                │
+│     - Max 5 intentos / 15 minutos        │
+│     - Usa Map en memoria                 │
+│     if (excedido) → ERROR 429            │
+│                                          │
+│  3. Buscar usuario:                      │
+│     user = await prisma.user.findUnique( │
+│       { where: { email } }               │
+│     )                                    │
+│                                          │
+│  4. Validaciones (mensajes genéricos):   │
+│     if (!user || !user.activo)           │
+│       → "Credenciales incorrectas" ⚠️    │
+│                                          │
+│  5. Verificar password:                  │
+│     passwordMatch = await bcrypt.compare(│
+│       password, user.password            │
+│     )                                    │
+│     if (!passwordMatch)                  │
+│       → "Credenciales incorrectas" ⚠️    │
+│       → Incrementar contador rate limit  │
+│                                          │
+│  6. Login exitoso:                       │
+│     - Resetear contador rate limit       │
+│     - Actualizar lastLogin               │
+│     - Retornar user object               │
+│                                          │
+│  7. NextAuth genera:                     │
+│     - JWT con role incluido              │
+│     - Session cookie (30 días)           │
+└────────┬─────────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────────────────┐
+│  Middleware.ts (protección rutas)        │
+│                                          │
+│  - Verifica session para rutas:          │
+│    /panel, /ordenes, /oc-china,          │
+│    /pagos-china, /gastos-logisticos,     │
+│    /inventario-recibido, /configuracion, │
+│    /dashboard                            │
+│                                          │
+│  - Si no autenticado:                    │
+│    → Redirect a /login                   │
+│                                          │
+│  - Si autenticado:                       │
+│    → Permite acceso                      │
+│    → Session disponible en página        │
+└──────────────────────────────────────────┘
+```
+
+**Seguridad:**
+- ✅ Rate limiting (5/15min)
+- ✅ Mensajes genéricos (previene enumeración)
+- ✅ bcrypt para passwords
+- ✅ JWT con expiración (30 días)
+- ✅ Middleware automático
 
 ---
 
@@ -1199,7 +1968,355 @@ sshpass -p 'PASSWORD' ssh root@IP "docker service logs apps_sistema_de_importaci
 
 ---
 
+## 🎨 Patrones de Diseño
+
+El sistema implementa varios patrones de diseño reconocidos para garantizar mantenibilidad, escalabilidad y robustez:
+
+### 1. Singleton Pattern
+
+**Ubicación:** `lib/prisma.ts`
+
+```typescript
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+```
+
+**Propósito:**
+- Garantiza una única instancia de PrismaClient
+- Previene el error "Too many connections" en desarrollo
+- Reutiliza conexiones a la base de datos
+
+**Beneficios:**
+- ✅ Performance mejorado
+- ✅ Control de recursos (conexiones DB)
+- ✅ Compatibilidad con hot reload de Next.js
+
+---
+
+### 2. Repository Pattern
+
+**Ubicación:** API Routes (`app/api/*`)
+
+Cada módulo tiene su propio "repositorio" encapsulado en API Routes:
+
+```
+app/api/oc-china/         → Repositorio de Órdenes de Compra
+app/api/pagos-china/      → Repositorio de Pagos
+app/api/gastos-logisticos/→ Repositorio de Gastos
+app/api/inventario-recibido/ → Repositorio de Inventario
+```
+
+**Propósito:**
+- Separar lógica de acceso a datos de lógica de negocio
+- Encapsular queries de Prisma
+- Proporcionar interfaz HTTP consistente (GET, POST, PUT, DELETE)
+
+**Beneficios:**
+- ✅ Código organizado y mantenible
+- ✅ Fácil de testear
+- ✅ Cambios en DB no afectan frontend
+
+---
+
+### 3. Strategy Pattern
+
+**Ubicación:** `lib/calculations.ts` (distribuirGastosLogisticos)
+
+El sistema usa diferentes estrategias para calcular costos según el contexto:
+
+```typescript
+// ESTRATEGIA 1: Producto específico seleccionado
+if (itemId) {
+  const itemConCosto = itemsConCostos.find(i => i.id === itemId)
+  costoUnitarioFinalRD = itemConCosto.costoUnitarioRD
+}
+
+// ESTRATEGIA 2: Sin producto específico (lote mixto)
+else {
+  const totalUnidades = itemsConCostos.reduce(...)
+  const totalCosto = itemsConCostos.reduce(...)
+  costoUnitarioFinalRD = totalCosto / totalUnidades // Promedio ponderado
+}
+```
+
+**Propósito:**
+- Permitir diferentes algoritmos de cálculo según contexto
+- Flexibilidad en determinar costos
+
+**Beneficios:**
+- ✅ Flexibilidad
+- ✅ Código extensible
+- ✅ Fácil añadir nuevas estrategias
+
+---
+
+### 4. Factory Pattern
+
+**Ubicación:** `lib/id-generator.ts`
+
+```typescript
+export async function generateUniqueId(
+  modelName: string,
+  fieldName: string,
+  prefix: string
+): Promise<string> {
+  // Factory que crea IDs únicos según el modelo
+  // OC-00001, PAG-00001, GAS-00001, REC-00001, PROV-001
+}
+```
+
+**Propósito:**
+- Centralizar creación de IDs únicos
+- Garantizar formato consistente
+- Thread-safe con isolation Serializable
+
+**Beneficios:**
+- ✅ IDs consistentes en todo el sistema
+- ✅ Sin duplicados (garantizado por transacción)
+- ✅ Fácil de mantener
+
+---
+
+### 5. Composite Pattern
+
+**Ubicación:** Modelo de datos (OCChina + OCChinaItem)
+
+```typescript
+interface OCChina {
+  id: string
+  oc: string
+  proveedor: string
+  // ...
+  items: OCChinaItem[]  // ⭐ Composición
+  pagos: PagoChina[]
+  gastos: GastoLogistico[]
+}
+```
+
+**Propósito:**
+- Modelar relaciones jerárquicas (OC contiene items)
+- Tratar objetos individuales y composiciones de forma uniforme
+
+**Beneficios:**
+- ✅ Estructura de datos natural
+- ✅ Fácil de navegar (oc.items[0].sku)
+- ✅ Queries eficientes con Prisma include
+
+---
+
+### 6. Observer Pattern
+
+**Ubicación:** React State Management
+
+```typescript
+// Componentes observan cambios de estado
+const [items, setItems] = useState<OCItem[]>([])
+
+// Cuando el estado cambia, los componentes se re-renderizan
+useEffect(() => {
+  // Observar cambios y recalcular
+  const nuevoTotal = items.reduce(...)
+  setTotal(nuevoTotal)
+}, [items])  // ⭐ Observer: escucha cambios en 'items'
+```
+
+**Propósito:**
+- Reactividad en la UI
+- Propagación automática de cambios
+
+**Beneficios:**
+- ✅ UI siempre sincronizada
+- ✅ Cálculos automáticos en tiempo real
+- ✅ Menos código boilerplate
+
+---
+
+### 7. Facade Pattern
+
+**Ubicación:** `lib/calculations.ts`
+
+```typescript
+// FACADE que encapsula lógica compleja de cálculos
+export function distribuirGastosLogisticos(
+  items: OCChinaItem[],
+  gastosLogisticos: GastoLogistico[],
+  pagosChina: PagoChina[]
+): ItemConCostos[] {
+  // Internamente usa múltiples funciones:
+  const tasaPromedio = calcularTasaCambioPromedio(pagosChina)
+  const totalFOB = calcularTotalFOB(items)
+  const totalGastos = calcularTotalGastos(gastosLogisticos)
+
+  // Pero expone una interfaz simple
+  return itemsConCostos
+}
+```
+
+**Propósito:**
+- Ocultar complejidad de cálculos
+- Interfaz simple para operaciones complejas
+
+**Beneficios:**
+- ✅ Fácil de usar desde formularios
+- ✅ Lógica encapsulada y testeable
+- ✅ Cambios internos no afectan a clientes
+
+---
+
+### 8. Decorator Pattern
+
+**Ubicación:** Middleware de NextAuth
+
+```typescript
+// middleware.ts - "Decora" rutas con autenticación
+export { default } from "next-auth/middleware"
+
+export const config = {
+  matcher: [
+    "/panel/:path*",
+    "/ordenes/:path*",
+    // ... más rutas
+  ],
+}
+```
+
+**Propósito:**
+- Añadir funcionalidad (autenticación) a rutas existentes
+- Sin modificar el código de las rutas
+
+**Beneficios:**
+- ✅ Separación de concerns
+- ✅ Reutilizable
+- ✅ Fácil de activar/desactivar
+
+---
+
+### 9. Builder Pattern (Implícito)
+
+**Ubicación:** Formularios complejos (OCChinaForm)
+
+```typescript
+// Construcción paso a paso de una OC compleja
+const formData = {
+  // 1. Datos básicos
+  proveedor: "...",
+  fechaOC: "...",
+
+  // 2. Añadir productos (construcción incremental)
+  items: []
+}
+
+// Usuario añade items uno por uno
+const handleAddItem = () => {
+  setItems([...items, nuevoItem])
+}
+
+// 3. Submit final construye objeto completo
+const handleSubmit = () => {
+  const ocCompleta = {
+    ...formData,
+    items: items
+  }
+}
+```
+
+**Propósito:**
+- Construcción incremental de objetos complejos
+- Permitir diferentes representaciones del objeto
+
+**Beneficios:**
+- ✅ Flexibilidad en construcción
+- ✅ Validación en cada paso
+- ✅ UX mejorada (construcción guiada)
+
+---
+
+### 10. Template Method Pattern
+
+**Ubicación:** API Routes (estructura común)
+
+Todos los API endpoints siguen el mismo template:
+
+```typescript
+// TEMPLATE común en todos los endpoints
+export async function POST(request: Request) {
+  try {
+    // 1. Validar input (Zod)
+    const body = await request.json()
+    const validado = schema.parse(body)
+
+    // 2. Lógica de negocio (varía por endpoint)
+    const resultado = await prisma.modelo.create(...)
+
+    // 3. Retornar respuesta (formato estándar)
+    return NextResponse.json({
+      success: true,
+      data: resultado
+    }, { status: 201 })
+
+  } catch (error) {
+    // 4. Manejo de errores (estándar)
+    return NextResponse.json({
+      success: false,
+      error: mensaje
+    }, { status: 500 })
+  }
+}
+```
+
+**Propósito:**
+- Estructura consistente en todos los endpoints
+- Pasos comunes definidos, detalles específicos varían
+
+**Beneficios:**
+- ✅ Código predecible
+- ✅ Fácil de entender
+- ✅ Menos errores
+
+---
+
+### Resumen de Patrones
+
+| Patrón | Ubicación | Propósito Principal |
+|--------|-----------|-------------------|
+| **Singleton** | lib/prisma.ts | Una única instancia de PrismaClient |
+| **Repository** | app/api/* | Encapsular acceso a datos |
+| **Strategy** | lib/calculations.ts | Diferentes algoritmos de cálculo |
+| **Factory** | lib/id-generator.ts | Creación de IDs únicos |
+| **Composite** | Modelo de datos | Estructura jerárquica (OC + items) |
+| **Observer** | React state | Reactividad en UI |
+| **Facade** | lib/calculations.ts | Interfaz simple para lógica compleja |
+| **Decorator** | middleware.ts | Añadir autenticación a rutas |
+| **Builder** | Formularios | Construcción incremental de objetos |
+| **Template Method** | API Routes | Estructura consistente en endpoints |
+
+**Principios SOLID aplicados:**
+
+- ✅ **Single Responsibility:** Cada módulo tiene una responsabilidad clara
+- ✅ **Open/Closed:** Abierto a extensión (añadir endpoints), cerrado a modificación
+- ✅ **Liskov Substitution:** Componentes UI intercambiables
+- ✅ **Interface Segregation:** APIs específicas por módulo
+- ✅ **Dependency Inversion:** Depende de abstracciones (Prisma ORM, NextAuth)
+
+---
+
 ## 📝 Changelog
+
+### v2.5.1 (Noviembre 2025)
+- ✅ **Documentación exhaustiva actualizada**
+  - Métricas del proyecto (15,000+ líneas de código)
+  - Análisis completo de componentes críticos
+  - Flujos de datos principales detallados (4 flujos)
+  - Patrones de diseño documentados (10 patrones)
+  - Distribución de código por módulo
+  - Stack tecnológico detallado
+- ✅ Análisis de complejidad por módulo
+- ✅ Guía completa de arquitectura
 
 ### v2.5.0 (Noviembre 2025)
 - ✅ Autenticación con NextAuth.js
@@ -1234,7 +2351,7 @@ sshpass -p 'PASSWORD' ssh root@IP "docker service logs apps_sistema_de_importaci
 
 ---
 
-**Versión 2.5.0** | Built with Next.js 14 + TypeScript + Prisma + PostgreSQL + NextAuth.js
+**Versión 2.5.1** | Built with Next.js 14 + TypeScript + Prisma + PostgreSQL + NextAuth.js
 
 ---
 
