@@ -2,19 +2,21 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectOption } from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { InventarioRecibidoForm } from "@/components/forms/InventarioRecibidoForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { bodegas } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, PackageCheck, Inbox } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, PackageCheck, Inbox, Package, DollarSign, Warehouse } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
@@ -151,6 +153,29 @@ export default function InventarioRecibidoPage() {
     setInventarioToEdit(null)
   }
 
+  // Calcular KPIs en tiempo real desde los datos filtrados
+  const stats = useMemo(() => {
+    const totalRecepciones = inventarios.length
+
+    const totalUnidades = inventarios.reduce((sum, inv) => sum + inv.cantidadRecibida, 0)
+
+    const totalCostoRD = inventarios.reduce((sum, inv) => {
+      return sum + parseFloat((inv.costoTotalRecepcionRD || 0).toString())
+    }, 0)
+
+    // Calcular bodega con más recepciones
+    const bodegaCounts = inventarios.reduce((acc, inv) => {
+      acc[inv.bodegaInicial] = (acc[inv.bodegaInicial] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const bodegaMasUsada = Object.entries(bodegaCounts).sort((a, b) => b[1] - a[1])[0]
+    const bodegaMasUsadaNombre = bodegaMasUsada?.[0] || "N/A"
+    const bodegaMasUsadaCantidad = bodegaMasUsada?.[1] || 0
+
+    return { totalRecepciones, totalUnidades, totalCostoRD, bodegaMasUsadaNombre, bodegaMasUsadaCantidad }
+  }, [inventarios])
+
   if (loading) {
     return (
       <MainLayout>
@@ -162,6 +187,41 @@ export default function InventarioRecibidoPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<Inbox className="h-5 w-5" />}
+            label="Total Recepciones"
+            value={stats.totalRecepciones}
+            subtitle={searchQuery || ocFilter || bodegaFilter ? "Filtradas" : "Registradas"}
+            variant="default"
+          />
+
+          <StatCard
+            icon={<Package className="h-5 w-5" />}
+            label="Total Unidades"
+            value={stats.totalUnidades.toLocaleString()}
+            subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? 'es' : ''}`}
+            variant="primary"
+          />
+
+          <StatCard
+            icon={<DollarSign className="h-5 w-5" />}
+            label="Costo Total RD$"
+            value={formatCurrency(stats.totalCostoRD)}
+            subtitle={`Promedio: ${formatCurrency(stats.totalRecepciones > 0 ? stats.totalCostoRD / stats.totalRecepciones : 0)}`}
+            variant="success"
+          />
+
+          <StatCard
+            icon={<Warehouse className="h-5 w-5" />}
+            label="Bodega Principal"
+            value={stats.bodegaMasUsadaCantidad}
+            subtitle={stats.bodegaMasUsadaNombre}
+            variant="warning"
+          />
+        </StatsGrid>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">

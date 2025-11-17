@@ -1,14 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Search, Plus, Eye, ClipboardList, Calendar, Package, DollarSign } from "lucide-react"
+import { Search, Plus, Eye, ClipboardList, Calendar, Package, DollarSign, AlertCircle } from "lucide-react"
 import { OCChinaForm } from "@/components/forms/OCChinaForm"
 import { AirtableTable, TableBadge, TableCount } from "@/components/ui/airtable-table"
 
@@ -90,6 +92,27 @@ export default function OCChinaPage() {
     return { cantidadTotal, costoFOBTotal }
   }
 
+  // Calcular KPIs en tiempo real desde los datos filtrados
+  const stats = useMemo(() => {
+    const totalOCs = ocs.length
+
+    const totalItems = ocs.reduce((sum, oc) => sum + oc._count.items, 0)
+
+    const totalUnidades = ocs.reduce((sum, oc) => {
+      const { cantidadTotal } = calculateOCTotals(oc)
+      return sum + cantidadTotal
+    }, 0)
+
+    const totalFOB = ocs.reduce((sum, oc) => {
+      const { costoFOBTotal } = calculateOCTotals(oc)
+      return sum + costoFOBTotal
+    }, 0)
+
+    const pendientes = ocs.filter(oc => oc._count.pagosChina === 0).length
+
+    return { totalOCs, totalItems, totalUnidades, totalFOB, pendientes }
+  }, [ocs])
+
   if (loading) {
     return (
       <MainLayout>
@@ -106,6 +129,41 @@ export default function OCChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<ClipboardList className="h-5 w-5" />}
+            label="Total Órdenes"
+            value={stats.totalOCs}
+            subtitle={searchTerm || proveedorFilter ? "Filtradas" : "Registradas"}
+            variant="default"
+          />
+
+          <StatCard
+            icon={<Package className="h-5 w-5" />}
+            label="Total Productos"
+            value={stats.totalItems.toLocaleString()}
+            subtitle={`${stats.totalUnidades.toLocaleString()} unidades`}
+            variant="primary"
+          />
+
+          <StatCard
+            icon={<DollarSign className="h-5 w-5" />}
+            label="FOB Total"
+            value={formatCurrency(stats.totalFOB)}
+            subtitle={`Promedio: ${formatCurrency(stats.totalOCs > 0 ? stats.totalFOB / stats.totalOCs : 0)}/OC`}
+            variant="success"
+          />
+
+          <StatCard
+            icon={<AlertCircle className="h-5 w-5" />}
+            label="OCs Pendientes"
+            value={stats.pendientes}
+            subtitle="Sin pagos registrados"
+            variant={stats.pendientes > 0 ? "warning" : "success"}
+          />
+        </StatsGrid>
+
         {/* Filtros */}
         <Card>
           <CardContent className="pt-6">

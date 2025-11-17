@@ -2,12 +2,14 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectOption } from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { PagosChinaForm } from "@/components/forms/PagosChinaForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
@@ -15,7 +17,7 @@ import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
-import { Plus, Edit, Trash2, Search, X, DollarSign, Paperclip } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, DollarSign, Paperclip, Banknote, Coins, TrendingUp } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -162,6 +164,29 @@ export default function PagosChinaPage() {
     setPagoToEdit(null)
   }
 
+  // Calcular KPIs en tiempo real desde los datos filtrados
+  const stats = useMemo(() => {
+    const totalRD = pagos.reduce((sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
+
+    const totalUSD = pagos
+      .filter(p => p.moneda === "USD")
+      .reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+
+    const totalCNY = pagos
+      .filter(p => p.moneda === "CNY")
+      .reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+
+    // Calcular tasa promedio ponderada (weighted average)
+    const pagosConMoneda = pagos.filter(p => p.moneda === "USD" || p.moneda === "CNY")
+    const totalWeighted = pagosConMoneda.reduce((sum, p) => {
+      return sum + (parseFloat(p.montoOriginal.toString()) * parseFloat(p.tasaCambio.toString()))
+    }, 0)
+    const totalAmount = pagosConMoneda.reduce((sum, p) => sum + parseFloat(p.montoOriginal.toString()), 0)
+    const tasaPromedio = totalAmount > 0 ? totalWeighted / totalAmount : 0
+
+    return { totalRD, totalUSD, totalCNY, tasaPromedio }
+  }, [pagos])
+
   if (loading) {
     return (
       <MainLayout>
@@ -173,6 +198,41 @@ export default function PagosChinaPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<DollarSign className="h-5 w-5" />}
+            label="Total Pagado RD$"
+            value={formatCurrency(stats.totalRD)}
+            subtitle={`En ${pagos.length} pago${pagos.length !== 1 ? 's' : ''}`}
+            variant="primary"
+          />
+
+          <StatCard
+            icon={<Banknote className="h-5 w-5" />}
+            label="Total USD"
+            value={formatCurrency(stats.totalUSD, "USD")}
+            subtitle={`${pagos.filter(p => p.moneda === "USD").length} pagos`}
+            variant="success"
+          />
+
+          <StatCard
+            icon={<Coins className="h-5 w-5" />}
+            label="Total CNY"
+            value={formatCurrency(stats.totalCNY, "CNY")}
+            subtitle={`${pagos.filter(p => p.moneda === "CNY").length} pagos`}
+            variant="success"
+          />
+
+          <StatCard
+            icon={<TrendingUp className="h-5 w-5" />}
+            label="Tasa Promedio"
+            value={stats.tasaPromedio.toFixed(2)}
+            subtitle="Ponderada por monto"
+            variant="default"
+          />
+        </StatsGrid>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">

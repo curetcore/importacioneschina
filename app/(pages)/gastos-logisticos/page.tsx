@@ -2,12 +2,14 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectOption } from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { GastosLogisticosForm } from "@/components/forms/GastosLogisticosForm"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
@@ -16,7 +18,7 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { tiposGasto } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, Truck, FileText, Paperclip } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Truck, FileText, Paperclip, DollarSign, TrendingUp, Package } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -157,6 +159,27 @@ export default function GastosLogisticosPage() {
     setGastoToEdit(null)
   }
 
+  // Calcular KPIs en tiempo real desde los datos filtrados
+  const stats = useMemo(() => {
+    const totalGastos = gastos.length
+
+    const totalRD = gastos.reduce((sum, gasto) => sum + parseFloat(gasto.montoRD.toString()), 0)
+
+    const promedioGasto = totalGastos > 0 ? totalRD / totalGastos : 0
+
+    // Calcular el tipo de gasto más frecuente
+    const tiposCounts = gastos.reduce((acc, gasto) => {
+      acc[gasto.tipoGasto] = (acc[gasto.tipoGasto] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const tipoMasComun = Object.entries(tiposCounts).sort((a, b) => b[1] - a[1])[0]
+    const tipoMasComunNombre = tipoMasComun?.[0] || "N/A"
+    const tipoMasComunCantidad = tipoMasComun?.[1] || 0
+
+    return { totalGastos, totalRD, promedioGasto, tipoMasComunNombre, tipoMasComunCantidad }
+  }, [gastos])
+
   if (loading) {
     return (
       <MainLayout>
@@ -168,6 +191,41 @@ export default function GastosLogisticosPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<FileText className="h-5 w-5" />}
+            label="Total Gastos"
+            value={stats.totalGastos}
+            subtitle={searchQuery || ocFilter || tipoGastoFilter ? "Filtrados" : "Registrados"}
+            variant="default"
+          />
+
+          <StatCard
+            icon={<DollarSign className="h-5 w-5" />}
+            label="Total RD$"
+            value={formatCurrency(stats.totalRD)}
+            subtitle={`Promedio: ${formatCurrency(stats.promedioGasto)}`}
+            variant="primary"
+          />
+
+          <StatCard
+            icon={<TrendingUp className="h-5 w-5" />}
+            label="Promedio por Gasto"
+            value={formatCurrency(stats.promedioGasto)}
+            subtitle={stats.totalGastos > 0 ? `En ${stats.totalGastos} gastos` : "Sin datos"}
+            variant="success"
+          />
+
+          <StatCard
+            icon={<Package className="h-5 w-5" />}
+            label="Tipo Más Común"
+            value={stats.tipoMasComunCantidad}
+            subtitle={stats.tipoMasComunNombre}
+            variant="warning"
+          />
+        </StatsGrid>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
