@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
@@ -47,22 +47,19 @@ const kpiCards = [
 ]
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      const response = await fetch("/api/dashboard")
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar datos")
+      }
+      return result.data as DashboardData
+    },
+  })
 
-  useEffect(() => {
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setData(result.data)
-        }
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -70,7 +67,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!data) {
+  if (isError || !data) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-red-600">Error al cargar datos</div>
