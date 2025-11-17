@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 
 interface FileAttachment {
   nombre: string
@@ -26,8 +26,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       )
     }
 
+    const db = await getPrismaClient()
+
     // Verificar que la OC existe
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id },
       select: { adjuntos: true },
     })
@@ -47,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const updatedAttachments = [...existingAttachments, ...adjuntos]
 
     // Actualizar en la base de datos
-    const updated = await prisma.oCChina.update({
+    const updated = await db.oCChina.update({
       where: { id },
       data: {
         adjuntos: updatedAttachments as any,
@@ -91,8 +93,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       )
     }
 
+    const db = await getPrismaClient()
+
     // Verificar que la OC existe
-    const oc = await prisma.oCChina.findUnique({
+    const oc = await db.oCChina.findUnique({
       where: { id },
       select: { adjuntos: true },
     })
@@ -112,7 +116,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const updatedAttachments = existingAttachments.filter(att => att.url !== fileUrl)
 
     // Actualizar en la base de datos
-    const updated = await prisma.oCChina.update({
+    const updated = await db.oCChina.update({
       where: { id },
       data: {
         adjuntos: updatedAttachments as any,

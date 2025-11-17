@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getPrismaClient } from "@/lib/db-helpers"
 
 export const dynamic = "force-dynamic"
 
 // GET - Fetch distribution configuration
 export async function GET(request: NextRequest) {
   try {
-    const configs = await prisma.configuracionDistribucionCostos.findMany({
+    const db = await getPrismaClient()
+    const configs = await db.configuracionDistribucionCostos.findMany({
       where: { activo: true },
       orderBy: { tipoCosto: "asc" },
     })
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
 // PUT - Update distribution method for a cost type
 export async function PUT(request: NextRequest) {
   try {
+    const db = await getPrismaClient()
     const body = await request.json()
     const { tipoCosto, metodoDistribucion } = body
 
@@ -57,7 +59,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Upsert the configuration
-    const config = await prisma.configuracionDistribucionCostos.upsert({
+    const config = await db.configuracionDistribucionCostos.upsert({
       where: { tipoCosto },
       create: {
         tipoCosto,
