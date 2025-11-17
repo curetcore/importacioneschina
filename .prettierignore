@@ -1,0 +1,27 @@
+# Build outputs
+.next
+dist
+build
+out
+
+# Dependencies
+node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Database
+*.db
+*.sqlite
+
+# Generated files
+.contentlayer
+.env*.local
+.vercel
+coverage
+
+# Misc
+.DS_Store
+*.pem
