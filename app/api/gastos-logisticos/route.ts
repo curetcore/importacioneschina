@@ -1,28 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { gastosLogisticosSchema } from "@/lib/validations";
-import { generateUniqueId } from "@/lib/id-generator";
-import { Prisma } from "@prisma/client";
-import { withRateLimit, RateLimits } from "@/lib/rate-limit";
-import { notDeletedFilter } from "@/lib/db-helpers";
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { gastosLogisticosSchema } from "@/lib/validations"
+import { generateUniqueId } from "@/lib/id-generator"
+import { Prisma } from "@prisma/client"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
+import { notDeletedFilter } from "@/lib/db-helpers"
+import { auditCreate } from "@/lib/audit-logger"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
 export async function GET(request: NextRequest) {
   // Rate limiting para queries (60 req/min)
-  const rateLimitError = await withRateLimit(request, RateLimits.query);
-  if (rateLimitError) return rateLimitError;
+  const rateLimitError = await withRateLimit(request, RateLimits.query)
+  if (rateLimitError) return rateLimitError
 
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const requestedLimit = parseInt(searchParams.get("limit") || "20");
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get("page") || "1")
+    const requestedLimit = parseInt(searchParams.get("limit") || "20")
     // Validación de límite máximo para prevenir ataques de denegación de servicio
-    const limit = Math.min(requestedLimit, 100); // Máximo 100 registros por página
-    const search = searchParams.get("search") || "";
-    const ocId = searchParams.get("ocId") || "";
-    const tipoGasto = searchParams.get("tipoGasto") || "";
+    const limit = Math.min(requestedLimit, 100) // Máximo 100 registros por página
+    const search = searchParams.get("search") || ""
+    const ocId = searchParams.get("ocId") || ""
+    const tipoGasto = searchParams.get("tipoGasto") || ""
 
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit
 
     const where: Prisma.GastosLogisticosWhereInput = {
       ...notDeletedFilter,
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
       ...(tipoGasto && {
         tipoGasto: tipoGasto,
       }),
-    };
+    }
 
     const [gastos, total] = await Promise.all([
       prisma.gastosLogisticos.findMany({
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.gastosLogisticos.count({ where }),
-    ]);
+    ])
 
     return NextResponse.json({
       success: true,
@@ -69,50 +71,37 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
         limit,
       },
-    });
+    })
   } catch (error) {
-    console.error("Error en GET /api/gastos-logisticos:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener gastos logísticos",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error)
   }
 }
 
 // POST /api/gastos-logisticos - Crear nuevo gasto
 export async function POST(request: NextRequest) {
   // Rate limiting para mutations (20 req/10s)
-  const rateLimitError = await withRateLimit(request, RateLimits.mutation);
-  if (rateLimitError) return rateLimitError;
+  const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+  if (rateLimitError) return rateLimitError
 
   try {
-    const body = await request.json();
+    const body = await request.json()
 
     // Generar ID automático secuencial (thread-safe)
-    const idGasto = await generateUniqueId("gastosLogisticos", "idGasto", "GASTO");
+    const idGasto = await generateUniqueId("gastosLogisticos", "idGasto", "GASTO")
 
     // Validar con Zod (sin necesidad de idGasto en el body)
-    const validatedData = gastosLogisticosSchema.parse(body);
+    const validatedData = gastosLogisticosSchema.parse(body)
 
     // Extraer adjuntos (no validado por Zod)
-    const { adjuntos } = body;
+    const { adjuntos } = body
 
     // Verificar que la OC existe
     const oc = await prisma.oCChina.findUnique({
       where: { id: validatedData.ocId },
-    });
+    })
 
     if (!oc) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
+      throw Errors.notFound("Orden de compra", validatedData.ocId)
     }
 
     // Crear el gasto
@@ -136,7 +125,10 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    });
+    })
+
+    // Audit log
+    await auditCreate("GastosLogisticos", nuevoGasto as any, request)
 
     return NextResponse.json(
       {
@@ -144,27 +136,8 @@ export async function POST(request: NextRequest) {
         data: nuevoGasto,
       },
       { status: 201 }
-    );
+    )
   } catch (error) {
-    console.error("Error en POST /api/gastos-logisticos:", error);
-
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de validación incorrectos",
-          details: error,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al crear gasto logístico",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error)
   }
 }

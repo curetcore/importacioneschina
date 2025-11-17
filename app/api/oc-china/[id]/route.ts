@@ -1,70 +1,67 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import { TallaDistribucion } from "@/lib/calculations";
-import type { InputJsonValue } from "@prisma/client/runtime/library";
-import { softDelete } from "@/lib/db-helpers";
-import { auditUpdate, auditDelete } from "@/lib/audit-logger";
-import { handleApiError, Errors } from "@/lib/api-error-handler";
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
+import { TallaDistribucion } from "@/lib/calculations"
+import type { InputJsonValue } from "@prisma/client/runtime/library"
+import { softDelete } from "@/lib/db-helpers"
+import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 interface OCItemInput {
-  sku: string;
-  nombre: string;
-  material?: string | null;
-  color?: string | null;
-  especificaciones?: string | null;
-  tallaDistribucion?: TallaDistribucion | null;
-  cantidadTotal: number | string;
-  precioUnitarioUSD: number | string;
+  sku: string
+  nombre: string
+  material?: string | null
+  color?: string | null
+  especificaciones?: string | null
+  tallaDistribucion?: TallaDistribucion | null
+  cantidadTotal: number | string
+  precioUnitarioUSD: number | string
 }
 
 interface OCItemValidado {
-  sku: string;
-  nombre: string;
-  material: string | null;
-  color: string | null;
-  especificaciones: string | null;
-  tallaDistribucion?: InputJsonValue;
-  cantidadTotal: number;
-  precioUnitarioUSD: number;
-  subtotalUSD: number;
+  sku: string
+  nombre: string
+  material: string | null
+  color: string | null
+  especificaciones: string | null
+  tallaDistribucion?: InputJsonValue
+  cantidadTotal: number
+  precioUnitarioUSD: number
+  subtotalUSD: number
 }
 
 // Función de validación para tallaDistribucion
 function validarTallaDistribucion(tallas: unknown): InputJsonValue | undefined {
-  if (!tallas) return undefined;
+  if (!tallas) return undefined
 
   // Validar que sea un objeto
-  if (typeof tallas !== 'object' || Array.isArray(tallas)) {
-    console.warn('⚠️ tallaDistribucion inválida: no es un objeto');
-    return undefined;
+  if (typeof tallas !== "object" || Array.isArray(tallas)) {
+    console.warn("⚠️ tallaDistribucion inválida: no es un objeto")
+    return undefined
   }
 
   // Validar que todos los valores sean números positivos
-  const tallasObj = tallas as Record<string, unknown>;
-  const tallasValidadas: TallaDistribucion = {};
+  const tallasObj = tallas as Record<string, unknown>
+  const tallasValidadas: TallaDistribucion = {}
 
   for (const [talla, cantidad] of Object.entries(tallasObj)) {
-    const cantidadNum = typeof cantidad === 'number' ? cantidad : parseInt(String(cantidad));
+    const cantidadNum = typeof cantidad === "number" ? cantidad : parseInt(String(cantidad))
 
     if (isNaN(cantidadNum) || cantidadNum < 0) {
-      console.warn(`⚠️ tallaDistribucion[${talla}] inválida: ${cantidad}`);
-      continue; // Saltar tallas inválidas
+      console.warn(`⚠️ tallaDistribucion[${talla}] inválida: ${cantidad}`)
+      continue // Saltar tallas inválidas
     }
 
-    tallasValidadas[talla] = cantidadNum;
+    tallasValidadas[talla] = cantidadNum
   }
 
-  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : undefined;
+  return Object.keys(tallasValidadas).length > 0 ? tallasValidadas : undefined
 }
 
 // GET /api/oc-china/[id] - Obtener una orden de compra específica
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
+    const { id } = params
 
     const oc = await prisma.oCChina.findFirst({
       where: {
@@ -74,7 +71,7 @@ export async function GET(
       include: {
         items: {
           orderBy: {
-            sku: 'asc',
+            sku: "asc",
           },
         },
         pagosChina: true,
@@ -93,44 +90,33 @@ export async function GET(
           },
         },
       },
-    });
+    })
 
     if (!oc) {
-      throw Errors.notFound("Orden de compra", id);
+      throw Errors.notFound("Orden de compra", id)
     }
 
     return NextResponse.json({
       success: true,
       data: oc,
-    });
+    })
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError(error)
   }
 }
 
 // PUT /api/oc-china/[id] - Actualizar una orden de compra
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
-    const body = await request.json();
+    const { id } = params
+    const body = await request.json()
 
-    const {
-      oc,
-      proveedor,
-      fechaOC,
-      descripcionLote,
-      categoriaPrincipal,
-      items,
-      adjuntos,
-    } = body;
+    const { oc, proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
 
     // Verificar que la OC existe
     const existing = await prisma.oCChina.findUnique({
       where: { id },
-    });
+    })
 
     if (!existing) {
       return NextResponse.json(
@@ -139,7 +125,7 @@ export async function PUT(
           error: "Orden de compra no encontrada",
         },
         { status: 404 }
-      );
+      )
     }
 
     // Validaciones básicas
@@ -150,7 +136,7 @@ export async function PUT(
           error: "Faltan campos requeridos",
         },
         { status: 400 }
-      );
+      )
     }
 
     // Validar que haya al menos un item
@@ -161,14 +147,14 @@ export async function PUT(
           error: "Debe agregar al menos un producto a la orden",
         },
         { status: 400 }
-      );
+      )
     }
 
     // Si se está cambiando el código OC, verificar que no exista otro con ese código
     if (oc !== existing.oc) {
       const duplicate = await prisma.oCChina.findUnique({
         where: { oc },
-      });
+      })
 
       if (duplicate) {
         return NextResponse.json(
@@ -177,12 +163,12 @@ export async function PUT(
             error: "Ya existe una OC con ese código",
           },
           { status: 400 }
-        );
+        )
       }
     }
 
     // Validar y normalizar cada item (Problemas #1 y #2)
-    const itemsValidados: OCItemValidado[] = [];
+    const itemsValidados: OCItemValidado[] = []
     for (const item of items) {
       // Validaciones básicas
       if (!item.sku || !item.nombre) {
@@ -192,11 +178,11 @@ export async function PUT(
             error: "Cada producto debe tener SKU y nombre",
           },
           { status: 400 }
-        );
+        )
       }
 
       // Validar cantidadTotal
-      const cantidad = parseInt(item.cantidadTotal);
+      const cantidad = parseInt(item.cantidadTotal)
       if (isNaN(cantidad) || cantidad <= 0) {
         return NextResponse.json(
           {
@@ -204,11 +190,11 @@ export async function PUT(
             error: `Cantidad inválida para ${item.sku}. Debe ser un número entero mayor a 0`,
           },
           { status: 400 }
-        );
+        )
       }
 
       // Validar precioUnitarioUSD
-      const precio = parseFloat(item.precioUnitarioUSD);
+      const precio = parseFloat(item.precioUnitarioUSD)
       if (isNaN(precio) || precio <= 0) {
         return NextResponse.json(
           {
@@ -216,11 +202,11 @@ export async function PUT(
             error: `Precio inválido para ${item.sku}. Debe ser un número mayor a 0`,
           },
           { status: 400 }
-        );
+        )
       }
 
       // Calcular subtotal
-      const subtotal = precio * cantidad;
+      const subtotal = precio * cantidad
 
       // Validar overflow (máximo razonable: $999,999.99)
       if (subtotal > 999999.99) {
@@ -230,11 +216,11 @@ export async function PUT(
             error: `Subtotal excede límite máximo para ${item.sku}: $${subtotal.toFixed(2)}`,
           },
           { status: 400 }
-        );
+        )
       }
 
       // Validar tallaDistribucion de manera segura (Problema #9)
-      const tallasValidadas = validarTallaDistribucion(item.tallaDistribucion);
+      const tallasValidadas = validarTallaDistribucion(item.tallaDistribucion)
 
       itemsValidados.push({
         sku: item.sku,
@@ -246,33 +232,33 @@ export async function PUT(
         cantidadTotal: cantidad,
         precioUnitarioUSD: precio,
         subtotalUSD: subtotal,
-      });
+      })
     }
 
     // Guardar estado anterior para audit log
-    const estadoAnterior = { ...existing };
+    const estadoAnterior = { ...existing }
 
     // Actualizar OC y reemplazar items en una transacción (Problema #3)
-    const updatedOC = await prisma.$transaction(async (tx) => {
+    const updatedOC = await prisma.$transaction(async tx => {
       // VALIDACIÓN: Verificar si hay inventario vinculado a items específicos
       const itemsConInventario = await tx.inventarioRecibido.findFirst({
         where: {
           ocId: id,
           itemId: { not: null },
         },
-      });
+      })
 
       if (itemsConInventario) {
         throw new Error(
           "No se puede editar la OC porque tiene inventario recibido vinculado a productos específicos. " +
-          "Debe eliminar las recepciones primero o crear una nueva OC."
-        );
+            "Debe eliminar las recepciones primero o crear una nueva OC."
+        )
       }
 
       // Si no hay inventario vinculado, proceder con delete/create
       await tx.oCChinaItem.deleteMany({
         where: { ocId: id },
-      });
+      })
 
       // Actualizar OC y crear nuevos items validados
       return await tx.oCChina.update({
@@ -291,18 +277,18 @@ export async function PUT(
         include: {
           items: true,
         },
-      });
-    });
+      })
+    })
 
     // Audit log
-    await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request);
+    await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request)
 
     return NextResponse.json({
       success: true,
       data: updatedOC,
-    });
+    })
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError(error)
   }
 }
 
@@ -310,15 +296,12 @@ export async function PUT(
 // Query params:
 //   - cascade=true: Eliminar todos los datos relacionados también
 //   - preview=true: Solo mostrar qué se eliminará sin borrar
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
-    const { searchParams } = new URL(request.url);
-    const cascade = searchParams.get("cascade") === "true";
-    const preview = searchParams.get("preview") === "true";
+    const { id } = params
+    const { searchParams } = new URL(request.url)
+    const cascade = searchParams.get("cascade") === "true"
+    const preview = searchParams.get("preview") === "true"
 
     // Verificar que la OC existe y obtener datos relacionados
     const existing = await prisma.oCChina.findUnique({
@@ -354,7 +337,7 @@ export async function DELETE(
           },
         },
       },
-    });
+    })
 
     if (!existing) {
       return NextResponse.json(
@@ -363,14 +346,14 @@ export async function DELETE(
           error: "Orden de compra no encontrada",
         },
         { status: 404 }
-      );
+      )
     }
 
     // Verificar que no tenga datos relacionados
     const hasRelatedData =
       existing._count.pagosChina > 0 ||
       existing._count.gastosLogisticos > 0 ||
-      existing._count.inventarioRecibido > 0;
+      existing._count.inventarioRecibido > 0
 
     // Si es preview, devolver lo que se va a eliminar
     if (preview) {
@@ -386,21 +369,21 @@ export async function DELETE(
             inventario: existing._count.inventarioRecibido,
           },
           details: {
-            pagos: existing.pagosChina.map((p) => ({
+            pagos: existing.pagosChina.map(p => ({
               id: p.idPago,
               monto: parseFloat(p.montoRDNeto?.toString() || "0"),
             })),
-            gastos: existing.gastosLogisticos.map((g) => ({
+            gastos: existing.gastosLogisticos.map(g => ({
               id: g.idGasto,
               monto: parseFloat(g.montoRD.toString()),
             })),
-            inventario: existing.inventarioRecibido.map((i) => ({
+            inventario: existing.inventarioRecibido.map(i => ({
               id: i.idRecepcion,
               cantidad: i.cantidadRecibida,
             })),
           },
         },
-      });
+      })
     }
 
     // Si tiene datos relacionados y no se pidió cascade, rechazar
@@ -416,22 +399,22 @@ export async function DELETE(
           },
         },
         { status: 400 }
-      );
+      )
     }
 
     // Guardar estado para audit log
-    const estadoAnterior = { ...existing };
+    const estadoAnterior = { ...existing }
 
     // Si se pidió cascade, soft delete en cascada
     if (cascade && hasRelatedData) {
-      const now = new Date();
-      await prisma.$transaction(async (tx) => {
+      const now = new Date()
+      await prisma.$transaction(async tx => {
         // 1. Soft delete inventario recibido
         if (existing._count.inventarioRecibido > 0) {
           await tx.inventarioRecibido.updateMany({
             where: { ocId: id },
             data: { deletedAt: now },
-          });
+          })
         }
 
         // 2. Soft delete gastos logísticos
@@ -439,7 +422,7 @@ export async function DELETE(
           await tx.gastosLogisticos.updateMany({
             where: { ocId: id },
             data: { deletedAt: now },
-          });
+          })
         }
 
         // 3. Soft delete pagos
@@ -447,30 +430,30 @@ export async function DELETE(
           await tx.pagosChina.updateMany({
             where: { ocId: id },
             data: { deletedAt: now },
-          });
+          })
         }
 
         // 4. Soft delete la OC
         await tx.oCChina.update({
           where: { id },
           data: { deletedAt: now },
-        });
-      });
+        })
+      })
     } else {
       // Soft delete solo la OC (sin datos relacionados)
-      await softDelete("oCChina", id);
+      await softDelete("oCChina", id)
     }
 
     // Audit log
-    await auditDelete("OCChina", estadoAnterior as any, request);
+    await auditDelete("OCChina", estadoAnterior as any, request)
 
     return NextResponse.json({
       success: true,
       message: cascade
         ? "Orden de compra y todos sus datos relacionados eliminados exitosamente"
         : "Orden de compra eliminada exitosamente",
-    });
+    })
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError(error)
   }
 }

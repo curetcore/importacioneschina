@@ -1,15 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { gastosLogisticosSchema } from "@/lib/validations";
-import { softDelete } from "@/lib/db-helpers";
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { gastosLogisticosSchema } from "@/lib/validations"
+import { softDelete } from "@/lib/db-helpers"
+import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 // GET /api/gastos-logisticos/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
+    const { id } = params
 
     const gasto = await prisma.gastosLogisticos.findFirst({
       where: {
@@ -24,74 +23,49 @@ export async function GET(
           },
         },
       },
-    });
+    })
 
     if (!gasto) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Gasto no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Gasto", id)
     }
 
     return NextResponse.json({
       success: true,
       data: gasto,
-    });
+    })
   } catch (error) {
-    console.error("Error en GET /api/gastos-logisticos/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener gasto",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error)
   }
 }
 
 // PUT /api/gastos-logisticos/[id]
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
-    const body = await request.json();
+    const { id } = params
+    const body = await request.json()
 
     const existing = await prisma.gastosLogisticos.findUnique({
       where: { id },
-    });
+    })
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Gasto no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Gasto", id)
     }
 
-    const validatedData = gastosLogisticosSchema.parse(body);
+    // Guardar estado anterior para audit log
+    const estadoAnterior = { ...existing }
+
+    const validatedData = gastosLogisticosSchema.parse(body)
 
     // Extraer adjuntos (no validado por Zod)
-    const { adjuntos } = body;
+    const { adjuntos } = body
 
     const oc = await prisma.oCChina.findUnique({
       where: { id: validatedData.ocId },
-    });
+    })
 
     if (!oc) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
+      throw Errors.notFound("Orden de compra", validatedData.ocId)
     }
 
     // Actualizar el gasto
@@ -109,73 +83,47 @@ export async function PUT(
         notas: validatedData.notas,
         adjuntos: adjuntos || null,
       },
-    });
+    })
+
+    // Audit log
+    await auditUpdate("GastosLogisticos", estadoAnterior as any, updatedGasto as any, request)
 
     return NextResponse.json({
       success: true,
       data: updatedGasto,
-    });
+    })
   } catch (error) {
-    console.error("Error en PUT /api/gastos-logisticos/[id]:", error);
-
-    if (error && typeof error === 'object' && 'errors' in error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de entrada inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al actualizar gasto",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error)
   }
 }
 
 // DELETE /api/gastos-logisticos/[id]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
+    const { id } = params
 
     const existing = await prisma.gastosLogisticos.findUnique({
       where: { id },
-    });
+    })
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Gasto no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Gasto", id)
     }
 
+    // Guardar estado anterior para audit log
+    const estadoAnterior = { ...existing }
+
     // Soft delete del gasto
-    await softDelete("gastosLogisticos", id);
+    await softDelete("gastosLogisticos", id)
+
+    // Audit log
+    await auditDelete("GastosLogisticos", estadoAnterior as any, request)
 
     return NextResponse.json({
       success: true,
       message: "Gasto eliminado exitosamente",
-    });
+    })
   } catch (error) {
-    console.error("Error en DELETE /api/gastos-logisticos/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al eliminar gasto",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error)
   }
 }
