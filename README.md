@@ -50,18 +50,21 @@ lib/
 ## 🛠 Stack Tecnológico
 
 ### Core
+
 - **Framework:** Next.js 14 (App Router)
 - **Lenguaje:** TypeScript 5.5
 - **Base de datos:** PostgreSQL + Prisma ORM
 - **Autenticación:** NextAuth.js
 
 ### UI & Forms
+
 - **Styling:** Tailwind CSS 3.4
 - **Forms:** React Hook Form + Zod
 - **Tables:** @tanstack/react-table
 - **Icons:** Lucide React
 
 ### Data Management
+
 - **Queries:** @tanstack/react-query
 - **Caching:** React Query DevTools
 - **File uploads:** Manejo en /public/uploads
@@ -71,6 +74,7 @@ lib/
 **Ver:** `ESTADO-PROYECTO.md` para progreso detallado
 
 ### Fases Completadas ✅
+
 - ✅ **Fase 1:** UI Moderno (100%)
 - ✅ **Fase 2:** Forms con Zod (100%)
 - ✅ **Fase 3:** React Query (100%)
@@ -80,6 +84,7 @@ lib/
 - ✅ **Fase 7:** Testing & Quality (100%)
 
 ### Pendientes 📋
+
 - Fase 8: Deployment
 
 **Próximos pasos:** Ver `FASE-4-CONTINUACION.md`
@@ -89,6 +94,7 @@ lib/
 ## 🎯 Mejoras Pendientes de Implementación
 
 > **📌 INSTRUCCIONES PARA CLAUDE:**
+>
 > - Cuando implementes una mejora, marca el checkbox cambiando `- [ ]` a `- [x]`
 > - Añade la fecha de implementación al lado: `- [x] Mejora implementada (2025-01-15)`
 > - Si encuentras issues durante la implementación, documéntalos en la sección correspondiente
@@ -108,11 +114,13 @@ lib/
 ### 📊 **Contexto del Problema**
 
 **Situación Actual:**
+
 - ❌ Los costos logísticos se distribuyen ecuánimemente (igual) entre todos los productos
 - ❌ Esto es **INCORRECTO** porque diferentes productos tienen diferentes pesos/volúmenes/valores
 - ❌ Resultado: Costos finales erróneos → Precios de venta incorrectos → Pérdida de dinero
 
 **Ejemplo Real del Impacto:**
+
 ```
 OC con 2 productos:
 - 1000 bolígrafos (0.01kg c/u, $0.50 FOB)
@@ -132,6 +140,7 @@ Flete Marítimo: RD$ 50,000 (se cobra por peso transportado)
 ```
 
 **Impacto en el Negocio:**
+
 - 📈 **ROI:** 14 horas inversión → +$4,800/año estimado
 - 🎯 **Diferenciador clave** vs competencia pequeña
 - ✅ **Requisito tabla stakes** para importadores profesionales
@@ -219,7 +228,7 @@ Flete Marítimo: RD$ 50,000 (se cobra por peso transportado)
   - **Archivo:** `components/forms/OCChinaForm.tsx` ✅
 
 - [x] **3.2 Schema de Validación** (2025-01-17)
-  - ⚠️  Schema se validará en backend por Prisma (campos opcionales en DB)
+  - ⚠️ Schema se validará en backend por Prisma (campos opcionales en DB)
   - ✅ Frontend maneja validación básica (número, rango positivo)
   - ✅ Campos definidos como nullable en interfaces TypeScript
 
@@ -276,7 +285,7 @@ Flete Marítimo: RD$ 50,000 (se cobra por peso transportado)
   - **Archivo:** `app/(pages)/analisis-costos/page.tsx` ✅
 
 - [ ] **5.3 Vista Comparativa** (No Implementada)
-  - ⚠️  Feature descartada por ahora (complejidad vs valor)
+  - ⚠️ Feature descartada por ahora (complejidad vs valor)
   - ✅ Los usuarios pueden ver los métodos actuales en uso
   - ✅ Pueden exportar a Excel para comparaciones manuales
   - 📋 Puede implementarse en futuro si hay demanda
@@ -315,28 +324,34 @@ Flete Marítimo: RD$ 50,000 (se cobra por peso transportado)
 
 ---
 
-#### **📚 FASE 7: Documentación** (2 horas)
+#### **📚 FASE 7: Documentación** (2 horas) - COMPLETADA (2025-01-17)
 
-- [ ] **7.1 Documentación de Usuario**
-  - [ ] Guía: "Cómo ingresar peso y volumen"
-  - [ ] Guía: "Configurar métodos de distribución"
-  - [ ] FAQ: "¿Por qué cambiaron mis costos?"
-  - [ ] Screenshots y videos (opcional)
-  - **Archivo:** `docs/distribucion-costos-guia.md`
+- [x] **7.1 Documentación de Usuario** (2025-01-17)
+  - [x] Guía completa: Cómo usar distribución de costos
+  - [x] Paso a paso: Ingresar peso y volumen
+  - [x] Paso a paso: Configurar métodos de distribución
+  - [x] Ejemplos prácticos con cálculos reales
+  - [x] FAQ: "¿Por qué cambiaron mis costos?" y más
+  - [x] Mejores prácticas y casos especiales
+  - **Archivo:** `docs/GUIA-DISTRIBUCION-COSTOS.md` ✅
 
-- [ ] **7.2 Script de Migración (si necesario)**
-  - [ ] Script para estimar peso/volumen de productos existentes
-  - [ ] Basado en promedios por categoría
-  - [ ] Marcar como "estimado" vs "real"
-  - [ ] Solo ejecutar si hay datos legacy
-  - **Archivo:** `scripts/migrate-peso-volumen.ts`
+- [x] **7.2 Guía de Migración** (2025-01-17)
+  - [x] Pre-requisitos y checklist
+  - [x] 3 opciones de migración (Prisma, SQL manual, remoto)
+  - [x] Documentación de cambios en base de datos
+  - [x] Scripts de verificación SQL
+  - [x] Troubleshooting de errores comunes
+  - [x] Script completo de deployment
+  - [x] Instrucciones de rollback
+  - **Archivo:** `docs/GUIA-MIGRACION.md` ✅
 
-- [ ] **7.3 Changelog y Release Notes**
-  - [ ] Documentar breaking changes
-  - [ ] Explicar beneficios del nuevo sistema
-  - [ ] Guía de migración para usuarios actuales
-  - [ ] Comunicación a usuarios (email template)
-  - **Archivo:** `CHANGELOG.md`
+- [x] **7.3 Changelog y Release Notes** (2025-01-17)
+  - [x] Changelog completo v1.1.0
+  - [x] Breaking changes documentados
+  - [x] Beneficios del nuevo sistema explicados
+  - [x] Impacto en negocio cuantificado
+  - [x] Referencias a commits y archivos
+  - **Archivo:** `CHANGELOG.md` ✅
 
 ---
 
@@ -360,18 +375,21 @@ Antes de marcar como completo, verificar:
 ### 🎯 **Criterios de Éxito**
 
 **Funcional:**
+
 - ✅ Costos distribuidos según método apropiado por tipo
 - ✅ Usuario puede configurar método por tipo de gasto
 - ✅ Desglose visible, comprensible y exportable
 - ✅ Fórmulas de cálculo transparentes y auditables
 
 **Técnico:**
+
 - ✅ Tests unitarios >80% coverage
 - ✅ Performance <500ms para análisis de 100 productos
 - ✅ Sin errores en consola del navegador
 - ✅ TypeScript strict mode sin errores
 
 **UX:**
+
 - ✅ Campos opcionales pero sugeridos con tooltips
 - ✅ Feedback visual claro de métodos usados
 - ✅ Comparativa antes/después disponible
@@ -381,16 +399,17 @@ Antes de marcar como completo, verificar:
 
 ### 📊 **Impacto Esperado Post-Implementación**
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| **Precisión de Costos** | ~60% | ~95% | +58% ✅ |
-| **Confianza en Pricing** | Baja | Alta | 🚀 |
-| **Valor Percibido SaaS** | $50/mes | $150/mes | +200% 💰 |
-| **Tasa de Conversión Ventas** | 10% | 30% | +200% 📈 |
-| **Churn Rate** | 40% | 15% | -62% 🎯 |
-| **Credibilidad Profesional** | Media | Alta | ⭐⭐⭐⭐⭐ |
+| Métrica                       | Antes   | Después  | Mejora     |
+| ----------------------------- | ------- | -------- | ---------- |
+| **Precisión de Costos**       | ~60%    | ~95%     | +58% ✅    |
+| **Confianza en Pricing**      | Baja    | Alta     | 🚀         |
+| **Valor Percibido SaaS**      | $50/mes | $150/mes | +200% 💰   |
+| **Tasa de Conversión Ventas** | 10%     | 30%      | +200% 📈   |
+| **Churn Rate**                | 40%     | 15%      | -62% 🎯    |
+| **Credibilidad Profesional**  | Media   | Alta     | ⭐⭐⭐⭐⭐ |
 
 **Referencias de Competencia:**
+
 - Freightos ($299-999/mes): ✅ Tiene distribución avanzada
 - Flexport (Enterprise): ✅ Tiene algoritmo propio
 - Cargowize ($199-599/mes): ✅ Configurable por tipo
