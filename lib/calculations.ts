@@ -3,19 +3,25 @@ import type { JsonValue } from "@prisma/client/runtime/library";
 import currency from "currency.js";
 
 // Configuración de currency.js para RD$ (Peso Dominicano)
-const RD = (value: number | string | Prisma.Decimal) => currency(value, {
-  symbol: "RD$",
-  precision: 2,
-  separator: ",",
-  decimal: ".",
-});
+const RD = (value: number | string | Prisma.Decimal) => {
+  const numValue = typeof value === 'object' ? value.toString() : value;
+  return currency(numValue, {
+    symbol: "RD$",
+    precision: 2,
+    separator: ",",
+    decimal: ".",
+  });
+};
 
-const USD = (value: number | string | Prisma.Decimal) => currency(value, {
-  symbol: "US$",
-  precision: 2,
-  separator: ",",
-  decimal: ".",
-});
+const USD = (value: number | string | Prisma.Decimal) => {
+  const numValue = typeof value === 'object' ? value.toString() : value;
+  return currency(numValue, {
+    symbol: "US$",
+    precision: 2,
+    separator: ",",
+    decimal: ".",
+  });
+};
 
 /**
  * Convierte Prisma.Decimal a number de forma segura
