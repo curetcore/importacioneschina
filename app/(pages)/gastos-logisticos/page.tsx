@@ -15,10 +15,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { exportToExcel } from "@/lib/export-utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { tiposGasto } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, Truck, FileText, Paperclip, DollarSign, TrendingUp, Package } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Truck, FileText, Paperclip, DollarSign, TrendingUp, Package, Download } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -159,6 +160,34 @@ export default function GastosLogisticosPage() {
     setGastoToEdit(null)
   }
 
+  const handleExport = () => {
+    if (gastos.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay gastos para exportar",
+      })
+      return
+    }
+
+    const dataToExport = gastos.map((gasto) => ({
+      "ID Gasto": gasto.idGasto,
+      "OC": gasto.ocChina.oc,
+      "Proveedor": gasto.ocChina.proveedor,
+      "Fecha": formatDate(gasto.fechaGasto),
+      "Tipo de Gasto": gasto.tipoGasto,
+      "Proveedor Servicio": gasto.proveedorServicio || "",
+      "Monto RD$": parseFloat(gasto.montoRD.toString()),
+    }))
+
+    exportToExcel(dataToExport, "gastos_logisticos", "Gastos Logísticos")
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${gastos.length} gastos exportados a Excel`,
+    })
+  }
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalGastos = gastos.length
@@ -228,14 +257,25 @@ export default function GastosLogisticosPage() {
               <FileText size={18} />
               Gastos ({gastos.length})
             </CardTitle>
-            <Button
-              onClick={() => setFormOpen(true)}
-              variant="outline"
-              className="gap-1.5 h-8 px-3 text-xs"
-            >
-              <Plus size={14} />
-              Crear Gasto
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+                disabled={gastos.length === 0}
+              >
+                <Download size={14} />
+                Exportar
+              </Button>
+              <Button
+                onClick={() => setFormOpen(true)}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+              >
+                <Plus size={14} />
+                Crear Gasto
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">

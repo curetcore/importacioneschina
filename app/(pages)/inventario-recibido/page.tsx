@@ -15,8 +15,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { exportToExcel } from "@/lib/export-utils"
 import { bodegas } from "@/lib/validations"
-import { Plus, Edit, Trash2, Search, X, PackageCheck, Inbox, Package, DollarSign, Warehouse } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download } from "lucide-react"
 
 interface InventarioRecibido {
   id: string
@@ -153,6 +154,37 @@ export default function InventarioRecibidoPage() {
     setInventarioToEdit(null)
   }
 
+  const handleExport = () => {
+    if (inventarios.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay recepciones para exportar",
+      })
+      return
+    }
+
+    const dataToExport = inventarios.map((inventario) => ({
+      "ID Recepción": inventario.idRecepcion,
+      "OC": inventario.ocChina.oc,
+      "Proveedor": inventario.ocChina.proveedor,
+      "Fecha Llegada": formatDate(inventario.fechaLlegada),
+      "Bodega": inventario.bodegaInicial,
+      "Cantidad Recibida": inventario.cantidadRecibida,
+      "SKU": inventario.item?.sku || "",
+      "Producto": inventario.item?.nombre || "",
+      "Costo Unitario RD$": inventario.costoUnitarioFinalRD !== null ? parseFloat(inventario.costoUnitarioFinalRD.toString()) : 0,
+      "Costo Total RD$": inventario.costoTotalRecepcionRD !== null ? parseFloat(inventario.costoTotalRecepcionRD.toString()) : 0,
+    }))
+
+    exportToExcel(dataToExport, "inventario_recibido", "Inventario Recibido")
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${inventarios.length} recepciones exportadas a Excel`,
+    })
+  }
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalRecepciones = inventarios.length
@@ -224,14 +256,25 @@ export default function InventarioRecibidoPage() {
               <Inbox size={18} />
               Inventario ({inventarios.length})
             </CardTitle>
-            <Button
-              onClick={() => setFormOpen(true)}
-              variant="outline"
-              className="gap-1.5 h-8 px-3 text-xs"
-            >
-              <Plus size={14} />
-              Crear Recepción
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+                disabled={inventarios.length === 0}
+              >
+                <Download size={14} />
+                Exportar
+              </Button>
+              <Button
+                onClick={() => setFormOpen(true)}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+              >
+                <Plus size={14} />
+                Crear Recepción
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">

@@ -15,9 +15,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { exportToExcel } from "@/lib/export-utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
-import { Plus, Edit, Trash2, Search, X, DollarSign, Paperclip, Banknote, Coins, TrendingUp } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, DollarSign, Paperclip, Banknote, Coins, TrendingUp, Download } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -164,6 +165,41 @@ export default function PagosChinaPage() {
     setPagoToEdit(null)
   }
 
+  const handleExport = () => {
+    if (pagos.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay pagos para exportar",
+      })
+      return
+    }
+
+    // Preparar datos para exportación
+    const dataToExport = pagos.map((pago) => ({
+      "ID Pago": pago.idPago,
+      "OC": pago.ocChina.oc,
+      "Proveedor": pago.ocChina.proveedor,
+      "Fecha": formatDate(pago.fechaPago),
+      "Tipo": pago.tipoPago,
+      "Método": pago.metodoPago,
+      "Moneda": pago.moneda,
+      "Monto Original": parseFloat(pago.montoOriginal.toString()),
+      "Tasa Cambio": parseFloat(pago.tasaCambio.toString()),
+      "Comisión Banco (RD$)": parseFloat(pago.comisionBancoRD.toString()),
+      "Monto RD$": parseFloat(pago.montoRD.toString()),
+      "Monto RD$ Neto": parseFloat(pago.montoRDNeto.toString()),
+    }))
+
+    exportToExcel(dataToExport, "pagos_china", "Pagos a China")
+
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${pagos.length} pagos exportados a Excel`,
+    })
+  }
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalRD = pagos.reduce((sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"), 0)
@@ -235,14 +271,25 @@ export default function PagosChinaPage() {
               <DollarSign size={18} />
               Pagos ({pagos.length})
             </CardTitle>
-            <Button
-              onClick={() => setFormOpen(true)}
-              variant="outline"
-              className="gap-1.5 h-8 px-3 text-xs"
-            >
-              <Plus size={14} />
-              Crear Pago
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+                disabled={pagos.length === 0}
+              >
+                <Download size={14} />
+                Exportar
+              </Button>
+              <Button
+                onClick={() => setFormOpen(true)}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+              >
+                <Plus size={14} />
+                Crear Pago
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">

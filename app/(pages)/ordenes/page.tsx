@@ -17,8 +17,9 @@ import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/components/ui/toast"
 import { formatDate, formatCurrency } from "@/lib/utils"
+import { exportToExcel } from "@/lib/export-utils"
 import { AttachmentsList } from "@/components/ui/attachments-list"
-import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList, Package, DollarSign, AlertCircle } from "lucide-react"
+import { Plus, Edit, Trash2, Search, X, Eye, ClipboardList, Package, DollarSign, AlertCircle, Download } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -159,6 +160,36 @@ export default function OrdenesPage() {
     setOcToEdit(null)
   }
 
+  const handleExport = () => {
+    if (ocs.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay órdenes para exportar",
+      })
+      return
+    }
+
+    // Preparar datos para exportación
+    const dataToExport = ocs.map((oc) => ({
+      "OC": oc.oc,
+      "Proveedor": oc.proveedor,
+      "Fecha": formatDate(oc.fechaOC),
+      "Categoría": oc.categoriaPrincipal,
+      "Productos": oc.items?.length || 0,
+      "Unidades": oc.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0,
+      "Costo FOB (USD)": oc.items?.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0,
+    }))
+
+    exportToExcel(dataToExport, "ordenes", "Órdenes de Compra")
+
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${ocs.length} órdenes exportadas a Excel`,
+    })
+  }
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalOCs = ocs.length
@@ -226,14 +257,25 @@ export default function OrdenesPage() {
               <ClipboardList size={18} />
               Órdenes ({ocs.length})
             </CardTitle>
-            <Button
-              onClick={() => setFormOpen(true)}
-              variant="outline"
-              className="gap-1.5 h-8 px-3 text-xs"
-            >
-              <Plus size={14} />
-              Crear Orden
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+                disabled={ocs.length === 0}
+              >
+                <Download size={14} />
+                Exportar
+              </Button>
+              <Button
+                onClick={() => setFormOpen(true)}
+                variant="outline"
+                className="gap-1.5 h-8 px-3 text-xs"
+              >
+                <Plus size={14} />
+                Crear Orden
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
             <div className="flex gap-4 mb-6">
