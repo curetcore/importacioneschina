@@ -201,35 +201,31 @@ export default function PagosChinaPage() {
         {/* KPIs Section */}
         <StatsGrid cols={4}>
           <StatCard
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<DollarSign className="w-4 h-4" />}
             label="Total Pagado RD$"
             value={formatCurrency(stats.totalRD)}
             subtitle={`En ${pagos.length} pago${pagos.length !== 1 ? 's' : ''}`}
-            variant="primary"
           />
 
           <StatCard
-            icon={<Banknote className="h-5 w-5" />}
+            icon={<Banknote className="w-4 h-4" />}
             label="Total USD"
             value={formatCurrency(stats.totalUSD, "USD")}
             subtitle={`${pagos.filter(p => p.moneda === "USD").length} pagos`}
-            variant="success"
           />
 
           <StatCard
-            icon={<Coins className="h-5 w-5" />}
+            icon={<Coins className="w-4 h-4" />}
             label="Total CNY"
             value={formatCurrency(stats.totalCNY, "CNY")}
             subtitle={`${pagos.filter(p => p.moneda === "CNY").length} pagos`}
-            variant="success"
           />
 
           <StatCard
-            icon={<TrendingUp className="h-5 w-5" />}
+            icon={<TrendingUp className="w-4 h-4" />}
             label="Tasa Promedio"
             value={stats.tasaPromedio.toFixed(2)}
             subtitle="Ponderada por monto"
-            variant="default"
           />
         </StatsGrid>
 

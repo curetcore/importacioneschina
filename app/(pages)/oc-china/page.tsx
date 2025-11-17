@@ -132,35 +132,31 @@ export default function OCChinaPage() {
         {/* KPIs Section */}
         <StatsGrid cols={4}>
           <StatCard
-            icon={<ClipboardList className="h-5 w-5" />}
+            icon={<ClipboardList className="w-4 h-4" />}
             label="Total Órdenes"
             value={stats.totalOCs}
             subtitle={searchTerm || proveedorFilter ? "Filtradas" : "Registradas"}
-            variant="default"
           />
 
           <StatCard
-            icon={<Package className="h-5 w-5" />}
+            icon={<Package className="w-4 h-4" />}
             label="Total Productos"
             value={stats.totalItems.toLocaleString()}
             subtitle={`${stats.totalUnidades.toLocaleString()} unidades`}
-            variant="primary"
           />
 
           <StatCard
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<DollarSign className="w-4 h-4" />}
             label="FOB Total"
             value={formatCurrency(stats.totalFOB)}
             subtitle={`Promedio: ${formatCurrency(stats.totalOCs > 0 ? stats.totalFOB / stats.totalOCs : 0)}/OC`}
-            variant="success"
           />
 
           <StatCard
-            icon={<AlertCircle className="h-5 w-5" />}
+            icon={<AlertCircle className="w-4 h-4" />}
             label="OCs Pendientes"
             value={stats.pendientes}
             subtitle="Sin pagos registrados"
-            variant={stats.pendientes > 0 ? "warning" : "success"}
           />
         </StatsGrid>
 

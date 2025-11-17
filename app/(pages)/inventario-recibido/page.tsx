@@ -190,35 +190,31 @@ export default function InventarioRecibidoPage() {
         {/* KPIs Section */}
         <StatsGrid cols={4}>
           <StatCard
-            icon={<Inbox className="h-5 w-5" />}
+            icon={<Inbox className="w-4 h-4" />}
             label="Total Recepciones"
             value={stats.totalRecepciones}
             subtitle={searchQuery || ocFilter || bodegaFilter ? "Filtradas" : "Registradas"}
-            variant="default"
           />
 
           <StatCard
-            icon={<Package className="h-5 w-5" />}
+            icon={<Package className="w-4 h-4" />}
             label="Total Unidades"
             value={stats.totalUnidades.toLocaleString()}
             subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? 'es' : ''}`}
-            variant="primary"
           />
 
           <StatCard
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<DollarSign className="w-4 h-4" />}
             label="Costo Total RD$"
             value={formatCurrency(stats.totalCostoRD)}
             subtitle={`Promedio: ${formatCurrency(stats.totalRecepciones > 0 ? stats.totalCostoRD / stats.totalRecepciones : 0)}`}
-            variant="success"
           />
 
           <StatCard
-            icon={<Warehouse className="h-5 w-5" />}
+            icon={<Warehouse className="w-4 h-4" />}
             label="Bodega Principal"
             value={stats.bodegaMasUsadaCantidad}
             subtitle={stats.bodegaMasUsadaNombre}
-            variant="warning"
           />
         </StatsGrid>
 

@@ -194,35 +194,31 @@ export default function GastosLogisticosPage() {
         {/* KPIs Section */}
         <StatsGrid cols={4}>
           <StatCard
-            icon={<FileText className="h-5 w-5" />}
+            icon={<FileText className="w-4 h-4" />}
             label="Total Gastos"
             value={stats.totalGastos}
             subtitle={searchQuery || ocFilter || tipoGastoFilter ? "Filtrados" : "Registrados"}
-            variant="default"
           />
 
           <StatCard
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<DollarSign className="w-4 h-4" />}
             label="Total RD$"
             value={formatCurrency(stats.totalRD)}
             subtitle={`Promedio: ${formatCurrency(stats.promedioGasto)}`}
-            variant="primary"
           />
 
           <StatCard
-            icon={<TrendingUp className="h-5 w-5" />}
+            icon={<TrendingUp className="w-4 h-4" />}
             label="Promedio por Gasto"
             value={formatCurrency(stats.promedioGasto)}
             subtitle={stats.totalGastos > 0 ? `En ${stats.totalGastos} gastos` : "Sin datos"}
-            variant="success"
           />
 
           <StatCard
-            icon={<Package className="h-5 w-5" />}
+            icon={<Package className="w-4 h-4" />}
             label="Tipo Más Común"
             value={stats.tipoMasComunCantidad}
             subtitle={stats.tipoMasComunNombre}
-            variant="warning"
           />
         </StatsGrid>
 
