@@ -1,9 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast"
+import { proveedorSchema, type ProveedorInput } from "@/lib/validations/proveedor"
 import { getErrorMessage, getErrorDetails } from "@/lib/api-client"
 
 interface Proveedor {
@@ -38,32 +41,40 @@ interface ProveedorFormProps {
 
 export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }: ProveedorFormProps) {
   const { addToast } = useToast()
-  const [loading, setLoading] = useState(false)
 
-  const [formData, setFormData] = useState({
-    codigo: "",
-    nombre: "",
-    contactoPrincipal: "",
-    email: "",
-    telefono: "",
-    whatsapp: "",
-    wechat: "",
-    pais: "China",
-    ciudad: "",
-    direccion: "",
-    sitioWeb: "",
-    categoriaProductos: "",
-    tiempoEntregaDias: 30,
-    monedaPreferida: "USD",
-    terminosPago: "",
-    minimoOrden: 0,
-    notas: "",
-    calificacion: 0,
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProveedorInput>({
+    resolver: zodResolver(proveedorSchema),
+    defaultValues: {
+      codigo: "",
+      nombre: "",
+      contactoPrincipal: "",
+      email: "",
+      telefono: "",
+      whatsapp: "",
+      wechat: "",
+      pais: "China",
+      ciudad: "",
+      direccion: "",
+      sitioWeb: "",
+      categoriaProductos: "",
+      tiempoEntregaDias: 30,
+      monedaPreferida: "USD",
+      terminosPago: "",
+      minimoOrden: 0,
+      notas: "",
+      calificacion: 0,
+      activo: true,
+    },
   })
 
   useEffect(() => {
     if (proveedorToEdit) {
-      setFormData({
+      reset({
         codigo: proveedorToEdit.codigo,
         nombre: proveedorToEdit.nombre,
         contactoPrincipal: proveedorToEdit.contactoPrincipal || "",
@@ -76,16 +87,16 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
         direccion: proveedorToEdit.direccion || "",
         sitioWeb: proveedorToEdit.sitioWeb || "",
         categoriaProductos: proveedorToEdit.categoriaProductos || "",
-        tiempoEntregaDias: proveedorToEdit.tiempoEntregaDias || 30,
-        monedaPreferida: proveedorToEdit.monedaPreferida || "USD",
+        tiempoEntregaDias: proveedorToEdit.tiempoEntregaDias || undefined,
+        monedaPreferida: (proveedorToEdit.monedaPreferida as "USD" | "CNY" | "EUR") || "USD",
         terminosPago: proveedorToEdit.terminosPago || "",
-        minimoOrden: proveedorToEdit.minimoOrden ? Number(proveedorToEdit.minimoOrden) : 0,
+        minimoOrden: proveedorToEdit.minimoOrden || undefined,
         notas: proveedorToEdit.notas || "",
         calificacion: proveedorToEdit.calificacion || 0,
+        activo: proveedorToEdit.activo,
       })
     } else {
-      // Reset form for new proveedor
-      setFormData({
+      reset({
         codigo: "",
         nombre: "",
         contactoPrincipal: "",
@@ -104,23 +115,21 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
         minimoOrden: 0,
         notas: "",
         calificacion: 0,
+        activo: true,
       })
     }
-  }, [proveedorToEdit, open])
+  }, [proveedorToEdit, open, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+  const onSubmit = async (data: ProveedorInput) => {
     try {
       const url = proveedorToEdit ? `/api/proveedores/${proveedorToEdit.id}` : "/api/proveedores"
       const method = proveedorToEdit ? "PUT" : "POST"
 
-      // Preparar datos para enviar (sin código si es nuevo proveedor)
+      // Remove codigo for new proveedores (auto-generated)
       const dataToSend = proveedorToEdit
-        ? formData
+        ? data
         : Object.fromEntries(
-            Object.entries(formData).filter(([key]) => key !== "codigo")
+            Object.entries(data).filter(([key]) => key !== "codigo")
           )
 
       const response = await fetch(url, {
@@ -138,7 +147,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
       addToast({
         type: "success",
         title: proveedorToEdit ? "Proveedor actualizado" : "Proveedor creado",
-        description: `${formData.nombre} ${proveedorToEdit ? "actualizado" : "creado"} exitosamente`,
+        description: `${data.nombre} ${proveedorToEdit ? "actualizado" : "creado"} exitosamente`,
       })
 
       onSuccess()
@@ -150,8 +159,6 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
         description: getErrorMessage(error),
         details: getErrorDetails(error),
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -164,7 +171,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8 px-6 pb-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 px-6 pb-6">
           {/* Información básica */}
           <div className="space-y-5">
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Información Básica</h3>
@@ -177,7 +184,7 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                   <input
                     type="text"
                     disabled
-                    value={formData.codigo}
+                    {...register("codigo")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
                 </div>
@@ -188,12 +195,14 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  required
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  {...register("nombre")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Nike China Factory"
+                  disabled={isSubmitting}
                 />
+                {errors.nombre && (
+                  <p className="text-xs text-red-600 mt-1">{errors.nombre.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -208,9 +217,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.contactoPrincipal}
-                  onChange={(e) => setFormData({ ...formData, contactoPrincipal: e.target.value })}
+                  {...register("contactoPrincipal")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -219,10 +228,13 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  {...register("email")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -230,9 +242,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                  {...register("telefono")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -241,10 +253,36 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.whatsapp}
-                  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                  {...register("whatsapp")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  WeChat
+                </label>
+                <input
+                  type="text"
+                  {...register("wechat")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sitio Web
+                </label>
+                <input
+                  type="url"
+                  {...register("sitioWeb")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="https://..."
+                  disabled={isSubmitting}
+                />
+                {errors.sitioWeb && (
+                  <p className="text-xs text-red-600 mt-1">{errors.sitioWeb.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -259,9 +297,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.pais}
-                  onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                  {...register("pais")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -270,9 +308,20 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.ciudad}
-                  onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                  {...register("ciudad")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  {...register("direccion")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -288,10 +337,10 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="text"
-                  value={formData.categoriaProductos}
-                  onChange={(e) => setFormData({ ...formData, categoriaProductos: e.target.value })}
+                  {...register("categoriaProductos")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Zapatos, Carteras, etc."
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -300,9 +349,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                 </label>
                 <input
                   type="number"
-                  value={formData.tiempoEntregaDias}
-                  onChange={(e) => setFormData({ ...formData, tiempoEntregaDias: parseInt(e.target.value) || 0 })}
+                  {...register("tiempoEntregaDias", { valueAsNumber: true })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -310,14 +359,37 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                   Moneda Preferida
                 </label>
                 <select
-                  value={formData.monedaPreferida}
-                  onChange={(e) => setFormData({ ...formData, monedaPreferida: e.target.value })}
+                  {...register("monedaPreferida")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 >
                   <option value="USD">USD</option>
                   <option value="CNY">CNY</option>
                   <option value="EUR">EUR</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mínimo de Orden
+                </label>
+                <input
+                  type="number"
+                  {...register("minimoOrden", { valueAsNumber: true })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Términos de Pago
+                </label>
+                <input
+                  type="text"
+                  {...register("terminosPago")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="50% anticipo, 50% antes de envío"
+                  disabled={isSubmitting}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -327,9 +399,9 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
                   type="number"
                   min="0"
                   max="5"
-                  value={formData.calificacion}
-                  onChange={(e) => setFormData({ ...formData, calificacion: parseInt(e.target.value) || 0 })}
+                  {...register("calificacion", { valueAsNumber: true })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -340,11 +412,11 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
             <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">Notas Adicionales</h3>
             <div>
               <textarea
-                value={formData.notas}
-                onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
+                {...register("notas")}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Información adicional sobre el proveedor..."
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -355,12 +427,12 @@ export function ProveedorForm({ open, onOpenChange, onSuccess, proveedorToEdit }
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : proveedorToEdit ? "Actualizar" : "Crear"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : proveedorToEdit ? "Actualizar" : "Crear"}
             </Button>
           </div>
         </form>
