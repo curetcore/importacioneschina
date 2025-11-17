@@ -104,7 +104,6 @@ export default function PanelPage() {
         {/* Header */}
         <div className="border-b border-gray-200 pb-4">
           <h1 className="text-2xl font-semibold text-gray-900">Panel</h1>
-          <p className="text-sm text-gray-500 mt-1">Métricas y estadísticas en tiempo real</p>
         </div>
 
         {/* 1. KPIs PRINCIPALES */}
