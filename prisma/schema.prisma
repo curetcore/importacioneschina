@@ -34,10 +34,13 @@ model OCChina {
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   @@map("oc_china")
   @@index([proveedor])
   @@index([fechaOC])
+  @@index([categoriaPrincipal])
+  @@index([deletedAt])
 }
 
 // TABLA 1.5: ITEMS DE OC CHINA (productos individuales)
@@ -67,10 +70,12 @@ model OCChinaItem {
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   @@map("oc_china_items")
   @@index([ocId])
   @@index([sku])
+  @@index([deletedAt])
 }
 
 // TABLA 2: PAGOS CHINA
@@ -97,11 +102,15 @@ model PagosChina {
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   @@map("pagos_china")
   @@index([ocId])
   @@index([tipoPago])
+  @@index([metodoPago])
   @@index([fechaPago])
+  @@index([moneda])
+  @@index([deletedAt])
 }
 
 // TABLA 3: GASTOS LOGÍSTICOS
@@ -125,11 +134,14 @@ model GastosLogisticos {
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
 
   @@map("gastos_logisticos")
   @@index([ocId])
   @@index([tipoGasto])
+  @@index([metodoPago])
   @@index([fechaGasto])
+  @@index([deletedAt])
 }
 
 // TABLA 4: INVENTARIO RECIBIDO
@@ -152,12 +164,14 @@ model InventarioRecibido {
   // Timestamps
   createdAt                 DateTime @default(now()) @map("created_at")
   updatedAt                 DateTime @updatedAt @map("updated_at")
+  deletedAt                 DateTime? @map("deleted_at")
 
   @@map("inventario_recibido")
   @@index([ocId])
   @@index([itemId])
   @@index([bodegaInicial])
   @@index([fechaLlegada])
+  @@index([deletedAt])
 }
 
 // TABLA 5: CONFIGURACIONES DEL SISTEMA
