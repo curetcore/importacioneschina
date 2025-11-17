@@ -244,7 +244,7 @@ export function GastosLogisticosForm({ open, onOpenChange, onSuccess, gastoToEdi
                 <DatePicker
                   id="fechaGasto"
                   value={fechaGastoValue}
-                  onChange={(date) => setValue("fechaGasto", date || undefined)}
+                  onChange={(date) => setValue("fechaGasto", date as any)}
                   disabled={isSubmitting}
                 />
                 {errors.fechaGasto && (
