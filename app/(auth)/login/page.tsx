@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Lock, Mail } from "lucide-react"
+import { Lock, Mail, Play } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,6 +34,30 @@ export default function LoginPage() {
       }
     } catch (error) {
       setError("Error al iniciar sesión")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setError("")
+    setLoading(true)
+
+    try {
+      const result = await signIn("credentials", {
+        email: "demo@sistema.com",
+        password: "Demo123!",
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError(result.error)
+      } else {
+        router.push("/panel")
+        router.refresh()
+      }
+    } catch (error) {
+      setError("Error al acceder al demo")
     } finally {
       setLoading(false)
     }
@@ -94,6 +118,32 @@ export default function LoginPage() {
               {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">o</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-6 border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"
+              onClick={handleDemoLogin}
+              disabled={loading}
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Probar Demo
+            </Button>
+
+            <p className="text-xs text-center text-gray-500 mt-3">
+              Accede al modo demo con datos de prueba
+            </p>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">Sistema de gestión de importaciones</p>
