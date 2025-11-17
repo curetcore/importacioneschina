@@ -152,13 +152,17 @@ async function seedDemoDatabase() {
     const gasto1 = await prismaDemo.gastosLogisticos.create({
       data: {
         idGasto: "GASTO-00001",
-        ocId: oc1.id,
         fechaGasto: new Date("2024-02-01"),
         tipoGasto: "Flete Marítimo",
         proveedorServicio: "Ocean Freight International",
         metodoPago: "Transferencia",
         montoRD: 45000,
         notas: "Contenedor 20 pies - Puerto de Guangzhou a Santo Domingo",
+        ordenesCompra: {
+          create: {
+            ocId: oc1.id,
+          },
+        },
       },
     })
     console.log("✅ Gasto creado:", gasto1.idGasto)
@@ -166,13 +170,17 @@ async function seedDemoDatabase() {
     const gasto2 = await prismaDemo.gastosLogisticos.create({
       data: {
         idGasto: "GASTO-00002",
-        ocId: oc1.id,
         fechaGasto: new Date("2024-02-15"),
         tipoGasto: "Aduana",
         proveedorServicio: "Agente Aduanal RD",
         metodoPago: "Efectivo",
         montoRD: 12500,
         notas: "Despacho aduanal + ITBIS",
+        ordenesCompra: {
+          create: {
+            ocId: oc1.id,
+          },
+        },
       },
     })
     console.log("✅ Gasto creado:", gasto2.idGasto)
