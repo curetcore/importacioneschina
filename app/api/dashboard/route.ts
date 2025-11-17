@@ -11,12 +11,30 @@ export async function GET() {
     const MAX_OCS_DASHBOARD = 500 // Límite razonable para dashboard
 
     const ocs = await db.oCChina.findMany({
+      where: {
+        deletedAt: null, // Only active OCs
+      },
       take: MAX_OCS_DASHBOARD,
       include: {
-        items: true,
-        pagosChina: true,
-        gastosLogisticos: true,
+        items: {
+          where: {
+            deletedAt: null, // Only active items
+          },
+        },
+        pagosChina: {
+          where: {
+            deletedAt: null, // Only active payments
+          },
+        },
+        gastosLogisticos: {
+          where: {
+            deletedAt: null, // Only active expenses
+          },
+        },
         inventarioRecibido: {
+          where: {
+            deletedAt: null, // Only active inventory
+          },
           include: {
             item: true,
           },
