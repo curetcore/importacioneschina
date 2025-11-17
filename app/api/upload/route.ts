@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     // Retornar información del archivo
     const fileInfo = {
       nombre: file.name,
-      url: `/uploads/${MODULE_FOLDERS[module]}/${filename}`,
+      url: `/api/uploads/${MODULE_FOLDERS[module]}/${filename}`,
       tipo: file.type,
       size: file.size,
       uploadedAt: new Date().toISOString(),

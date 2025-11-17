@@ -22,7 +22,14 @@ import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
-import { Plus, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download } from "lucide-react"
+import { Plus, PackageCheck, Inbox, Package, DollarSign, Warehouse, Download, Search, Settings2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function InventarioRecibidoPage() {
   const { addToast } = useToast()
@@ -31,6 +38,8 @@ export default function InventarioRecibidoPage() {
   const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
   const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
   // Fetch all inventarios
   const { data: inventarios = [], isLoading } = useQuery({
@@ -132,6 +141,21 @@ export default function InventarioRecibidoPage() {
     []
   )
 
+  // Filtrar inventarios por búsqueda
+  const filteredInventarios = useMemo(() => {
+    if (!searchQuery.trim()) return inventarios
+
+    const query = searchQuery.toLowerCase()
+    return inventarios.filter((inv: InventarioRecibido) =>
+      inv.idRecepcion.toLowerCase().includes(query) ||
+      inv.ocChina.oc.toLowerCase().includes(query) ||
+      inv.ocChina.proveedor.toLowerCase().includes(query) ||
+      inv.bodegaInicial.toLowerCase().includes(query) ||
+      (inv.item?.sku && inv.item.sku.toLowerCase().includes(query)) ||
+      (inv.item?.nombre && inv.item.nombre.toLowerCase().includes(query))
+    )
+  }, [inventarios, searchQuery])
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalRecepciones = inventarios.length
@@ -201,9 +225,48 @@ export default function InventarioRecibidoPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Inbox size={18} />
-              Inventario ({inventarios.length})
+              Inventario ({filteredInventarios.length}{searchQuery ? ` de ${inventarios.length}` : ''})
             </CardTitle>
             <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar ID, OC, SKU, producto..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 w-64 text-xs"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-8 px-3 text-xs">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Columnas
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  {columns
+                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
+                    .map((column) => {
+                      const id = (column as any).accessorKey as string
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={id}
+                          className="capitalize"
+                          checked={columnVisibility[id] !== false}
+                          onCheckedChange={(value) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [id]: value,
+                            }))
+                          }
+                        >
+                          {id}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -236,13 +299,25 @@ export default function InventarioRecibidoPage() {
                   Nueva Recepción
                 </Button>
               </div>
+            ) : filteredInventarios.length === 0 ? (
+              <div className="text-center py-12">
+                <Search size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  No hay recepciones que coincidan con "{searchQuery}"
+                </p>
+                <Button onClick={() => setSearchQuery("")} variant="outline">
+                  Limpiar búsqueda
+                </Button>
+              </div>
             ) : (
               <DataTable
                 columns={columns}
-                data={inventarios}
-                searchKey="idRecepcion"
-                searchPlaceholder="Buscar por ID de recepción..."
+                data={filteredInventarios}
                 pageSize={20}
+                showToolbar={false}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
               />
             )}
           </CardContent>

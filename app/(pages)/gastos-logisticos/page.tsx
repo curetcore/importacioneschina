@@ -25,7 +25,14 @@ const GastosLogisticosForm = dynamicImport(() => import("@/components/forms/Gast
 const AddAttachmentsDialog = dynamicImport(() => import("@/components/ui/add-attachments-dialog").then(mod => ({ default: mod.AddAttachmentsDialog })), {
   loading: () => <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
 })
-import { Plus, Truck, DollarSign, TrendingUp, Package, Download, FileText } from "lucide-react"
+import { Plus, Truck, DollarSign, TrendingUp, Package, Download, FileText, Search, Settings2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function GastosLogisticosPage() {
   const { addToast } = useToast()
@@ -36,6 +43,8 @@ export default function GastosLogisticosPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
   const [selectedGastoForAttachments, setSelectedGastoForAttachments] = useState<GastoLogistico | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
   // Fetch all gastos
   const { data: gastos = [], isLoading } = useQuery({
@@ -140,6 +149,20 @@ export default function GastosLogisticosPage() {
     []
   )
 
+  // Filtrar gastos por búsqueda
+  const filteredGastos = useMemo(() => {
+    if (!searchQuery.trim()) return gastos
+
+    const query = searchQuery.toLowerCase()
+    return gastos.filter((gasto: GastoLogistico) =>
+      gasto.idGasto.toLowerCase().includes(query) ||
+      gasto.ocChina.oc.toLowerCase().includes(query) ||
+      gasto.ocChina.proveedor.toLowerCase().includes(query) ||
+      gasto.tipoGasto.toLowerCase().includes(query) ||
+      (gasto.proveedorServicio && gasto.proveedorServicio.toLowerCase().includes(query))
+    )
+  }, [gastos, searchQuery])
+
   // Calcular KPIs en tiempo real desde los datos filtrados
   const stats = useMemo(() => {
     const totalGastos = gastos.length
@@ -207,9 +230,48 @@ export default function GastosLogisticosPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <FileText size={18} />
-              Gastos ({gastos.length})
+              Gastos ({filteredGastos.length}{searchQuery ? ` de ${gastos.length}` : ''})
             </CardTitle>
             <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar ID, OC, proveedor..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 w-64 text-xs"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-8 px-3 text-xs">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Columnas
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  {columns
+                    .filter((column) => 'accessorKey' in column && typeof column.accessorKey === 'string')
+                    .map((column) => {
+                      const id = (column as any).accessorKey as string
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={id}
+                          className="capitalize"
+                          checked={columnVisibility[id] !== false}
+                          onCheckedChange={(value) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [id]: value,
+                            }))
+                          }
+                        >
+                          {id}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -242,13 +304,25 @@ export default function GastosLogisticosPage() {
                   Nuevo Gasto
                 </Button>
               </div>
+            ) : filteredGastos.length === 0 ? (
+              <div className="text-center py-12">
+                <Search size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  No hay gastos que coincidan con "{searchQuery}"
+                </p>
+                <Button onClick={() => setSearchQuery("")} variant="outline">
+                  Limpiar búsqueda
+                </Button>
+              </div>
             ) : (
               <DataTable
                 columns={columns}
-                data={gastos}
-                searchKey="idGasto"
-                searchPlaceholder="Buscar por ID de gasto..."
+                data={filteredGastos}
                 pageSize={20}
+                showToolbar={false}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
               />
             )}
           </CardContent>
