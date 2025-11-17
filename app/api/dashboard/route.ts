@@ -27,8 +27,8 @@ export async function GET() {
           },
         },
         gastosLogisticos: {
-          where: {
-            deletedAt: null, // Only active expenses
+          include: {
+            gasto: true,
           },
         },
         inventarioRecibido: {
@@ -61,11 +61,14 @@ export async function GET() {
       const costoFOBTotalUSD =
         oc.items?.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0
 
+      // Transform gastosLogisticos from junction table to flat gasto objects
+      const gastosTransformed = oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+
       const calculos = calcularOC({
         costoFOBTotalUSD,
         cantidadOrdenada,
         pagos: oc.pagosChina,
-        gastos: oc.gastosLogisticos,
+        gastos: gastosTransformed,
         inventario: oc.inventarioRecibido,
       })
 
@@ -103,10 +106,12 @@ export async function GET() {
     )
 
     const todosGastos = ocs.flatMap(oc =>
-      oc.gastosLogisticos.map(gasto => ({
-        ...gasto,
-        ocChina: { oc: oc.oc },
-      }))
+      oc.gastosLogisticos
+        .filter(gl => gl.gasto.deletedAt === null)
+        .map(gl => ({
+          ...gl.gasto,
+          ocChina: { oc: oc.oc },
+        }))
     )
 
     // Total de comisiones bancarias

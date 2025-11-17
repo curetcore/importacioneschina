@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     })
 
     // 2b. Fetch all gastos with their associated OCs (many-to-many relationship)
-    const gastosWithOCs = await db.gastoLogistico.findMany({
+    const gastosWithOCs = await db.gastosLogisticos.findMany({
       where: {
         deletedAt: null, // Only active expenses
         ordenesCompra: {

@@ -64,6 +64,13 @@ interface OCDetail {
     proveedorServicio: string | null
     montoRD: number
     notas: string | null
+    ordenesCompra: Array<{
+      ocChina: {
+        id: string
+        oc: string
+        proveedor: string
+      }
+    }>
   }>
   inventarioRecibido: Array<{
     id: string
@@ -488,32 +495,68 @@ export default function OCDetailPage() {
                       <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                         Proveedor
                       </th>
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        OCs Asociadas
+                      </th>
                       <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                         Monto RD$
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {oc.gastosLogisticos.map(gasto => (
-                      <tr
-                        key={gasto.id}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">
-                          {gasto.idGasto}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
-                          {formatDate(gasto.fechaGasto)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{gasto.tipoGasto}</td>
-                        <td className="py-3 px-4 text-sm text-gray-700">
-                          {gasto.proveedorServicio || <span className="text-gray-400">-</span>}
-                        </td>
-                        <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
-                          {formatCurrency(gasto.montoRD)}
-                        </td>
-                      </tr>
-                    ))}
+                    {oc.gastosLogisticos.map(gasto => {
+                      const numOCs = gasto.ordenesCompra?.length || 0
+                      const isShared = numOCs > 1
+                      const currentOCIndex = gasto.ordenesCompra?.findIndex(
+                        rel => rel.ocChina.id === oc.id
+                      )
+
+                      return (
+                        <tr
+                          key={gasto.id}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                            {gasto.idGasto}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-500">
+                            {formatDate(gasto.fechaGasto)}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">{gasto.tipoGasto}</td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {gasto.proveedorServicio || <span className="text-gray-400">-</span>}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="flex flex-wrap gap-1">
+                              {gasto.ordenesCompra?.map((rel, idx) => {
+                                const isCurrent = rel.ocChina.id === oc.id
+                                return (
+                                  <span
+                                    key={rel.ocChina.id}
+                                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                      isCurrent
+                                        ? "bg-blue-100 text-blue-800 ring-1 ring-blue-600"
+                                        : "bg-gray-100 text-gray-700"
+                                    }`}
+                                    title={isCurrent ? "OC actual" : rel.ocChina.proveedor}
+                                  >
+                                    {rel.ocChina.oc}
+                                  </span>
+                                )
+                              })}
+                              {isShared && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 ml-1">
+                                  Compartido ({numOCs} OCs)
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right text-sm font-medium text-gray-900">
+                            {formatCurrency(gasto.montoRD)}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -54,10 +54,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         adjuntos: updatedAttachments as any,
       },
       include: {
-        ocChina: {
-          select: {
-            oc: true,
-            proveedor: true,
+        ordenesCompra: {
+          include: {
+            ocChina: {
+              select: {
+                id: true,
+                oc: true,
+                proveedor: true,
+              },
+            },
           },
         },
       },

@@ -102,7 +102,11 @@ export async function POST(request: NextRequest) {
       include: {
         items: true,
         pagosChina: true,
-        gastosLogisticos: true,
+        gastosLogisticos: {
+          include: {
+            gasto: true,
+          },
+        },
       },
     })
 
@@ -155,7 +159,9 @@ export async function POST(request: NextRequest) {
 
     // NUEVO: Calcular costos COMPLETOS usando el sistema profesional de distribución
     // que incluye FOB + pagos + gastos + comisiones (consistente con análisis-costos)
-    const itemsConCostos = calcularCostosCompletos(oc.items, oc.pagosChina, oc.gastosLogisticos)
+    // Transform gastosLogisticos from junction table to flat gasto objects
+    const gastosTransformed = oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+    const itemsConCostos = calcularCostosCompletos(oc.items, oc.pagosChina, gastosTransformed)
 
     let costoUnitarioFinalRD: number
     let costoTotalRecepcionRD: number

@@ -26,6 +26,7 @@ export interface GastoLogistico {
   adjuntos?: FileAttachment[]
   ordenesCompra: {
     ocChina: {
+      id: string
       oc: string
       proveedor: string
     }

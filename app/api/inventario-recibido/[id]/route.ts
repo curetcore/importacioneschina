@@ -66,7 +66,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       include: {
         items: true,
         pagosChina: true,
-        gastosLogisticos: true,
+        gastosLogisticos: {
+          include: {
+            gasto: true,
+          },
+        },
       },
     })
 
@@ -119,7 +123,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Recalcular costos distribuidos por producto
-    const itemsConCostos = distribuirGastosLogisticos(oc.items, oc.gastosLogisticos, oc.pagosChina)
+    // Transform gastosLogisticos from junction table to flat gasto objects
+    const gastosTransformed = oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+    const itemsConCostos = distribuirGastosLogisticos(oc.items, gastosTransformed, oc.pagosChina)
 
     let costoUnitarioFinalRD: number
     let costoTotalRecepcionRD: number

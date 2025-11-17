@@ -77,7 +77,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           },
         },
         pagosChina: true,
-        gastosLogisticos: true,
+        gastosLogisticos: {
+          include: {
+            gasto: true,
+          },
+        },
         inventarioRecibido: {
           include: {
             item: true,
@@ -98,9 +102,38 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       throw Errors.notFound("Orden de compra", id)
     }
 
+    // Transform gastosLogisticos to include ordenesCompra array
+    const transformedOC = {
+      ...oc,
+      gastosLogisticos: await Promise.all(
+        oc.gastosLogisticos.map(async gl => {
+          // For each gasto, fetch all associated OCs
+          const allOCsForGasto = await db.gastoLogisticoOC.findMany({
+            where: {
+              gastoId: gl.gasto.id,
+            },
+            include: {
+              ocChina: {
+                select: {
+                  id: true,
+                  oc: true,
+                  proveedor: true,
+                },
+              },
+            },
+          })
+
+          return {
+            ...gl.gasto,
+            ordenesCompra: allOCsForGasto,
+          }
+        })
+      ),
+    }
+
     return NextResponse.json({
       success: true,
-      data: oc,
+      data: transformedOC,
     })
   } catch (error) {
     return handleApiError(error)
@@ -326,13 +359,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
           },
         },
         gastosLogisticos: {
-          where: {
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-            idGasto: true,
-            montoRD: true,
+          include: {
+            gasto: {
+              select: {
+                id: true,
+                idGasto: true,
+                montoRD: true,
+                fechaGasto: true,
+                tipoGasto: true,
+                proveedorServicio: true,
+                notas: true,
+              },
+            },
           },
         },
         inventarioRecibido: {
@@ -353,11 +391,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
                 deletedAt: null,
               },
             },
-            gastosLogisticos: {
-              where: {
-                deletedAt: null,
-              },
-            },
+            gastosLogisticos: true,
             inventarioRecibido: {
               where: {
                 deletedAt: null,
@@ -402,9 +436,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
               id: p.idPago,
               monto: parseFloat(p.montoRDNeto?.toString() || "0"),
             })),
-            gastos: existing.gastosLogisticos.map(g => ({
-              id: g.idGasto,
-              monto: parseFloat(g.montoRD.toString()),
+            gastos: existing.gastosLogisticos.map(gl => ({
+              id: gl.gasto.idGasto,
+              monto: parseFloat(gl.gasto.montoRD.toString()),
             })),
             inventario: existing.inventarioRecibido.map(i => ({
               id: i.idRecepcion,
@@ -446,11 +480,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
           })
         }
 
-        // 2. Soft delete gastos logísticos
+        // 2. Delete gastosLogisticos relationships (junction table)
+        // Note: We delete the junction table records, not the gastos themselves
+        // as gastos may be shared with other OCs
         if (existing._count.gastosLogisticos > 0) {
-          await tx.gastosLogisticos.updateMany({
+          await tx.gastoLogisticoOC.deleteMany({
             where: { ocId: id },
-            data: { deletedAt: now },
           })
         }
 

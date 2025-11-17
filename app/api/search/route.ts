@@ -100,7 +100,6 @@ export async function GET(request: NextRequest) {
       where: {
         deletedAt: null,
         OR: [
-          { ocId: { contains: query, mode: "insensitive" } },
           { tipoGasto: { contains: query, mode: "insensitive" } },
           { proveedorServicio: { contains: query, mode: "insensitive" } },
           { notas: { contains: query, mode: "insensitive" } },
@@ -109,7 +108,7 @@ export async function GET(request: NextRequest) {
       take: 5,
       select: {
         id: true,
-        ocId: true,
+        idGasto: true,
         tipoGasto: true,
         proveedorServicio: true,
         montoRD: true,
