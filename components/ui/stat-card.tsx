@@ -26,27 +26,22 @@ const variantStyles = {
   default: {
     icon: "text-gray-600",
     bg: "bg-gray-50",
-    border: "border-gray-200",
   },
   primary: {
     icon: "text-blue-600",
     bg: "bg-blue-50",
-    border: "border-blue-200",
   },
   success: {
     icon: "text-green-600",
     bg: "bg-green-50",
-    border: "border-green-200",
   },
   warning: {
     icon: "text-yellow-600",
     bg: "bg-yellow-50",
-    border: "border-yellow-200",
   },
   danger: {
     icon: "text-red-600",
     bg: "bg-red-50",
-    border: "border-red-200",
   },
 }
 
@@ -71,8 +66,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
       <div
         ref={ref}
         className={cn(
-          "relative overflow-hidden rounded-lg border bg-white p-5 shadow-sm transition-all hover:shadow-md",
-          styles.border,
+          "rounded-lg border border-gray-200 bg-white p-5",
           className
         )}
         {...props}
@@ -121,14 +115,6 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
             </div>
           )}
         </div>
-
-        {/* Decorative gradient */}
-        <div
-          className={cn(
-            "absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-10",
-            styles.bg
-          )}
-        />
       </div>
     )
   }
