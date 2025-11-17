@@ -18,7 +18,8 @@ import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
 import { DataTable } from "@/components/ui/data-table"
 import { getOrdenesColumns, OCChina } from "./columns"
-import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download } from "lucide-react"
+import { Plus, ClipboardList, Package, DollarSign, AlertCircle, Download, Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 interface OCChinaItem {
   id: string
@@ -37,6 +38,7 @@ export default function OrdenesPage() {
   const [ocToEdit, setOcToEdit] = useState<OCChina | null>(null)
   const [ocToDelete, setOcToDelete] = useState<OCChina | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Fetch all OCs
   const { data: ocs = [], isLoading } = useQuery({
@@ -160,6 +162,18 @@ export default function OrdenesPage() {
     []
   )
 
+  // Filtrar órdenes por búsqueda
+  const filteredOcs = useMemo(() => {
+    if (!searchQuery.trim()) return ocs
+
+    const query = searchQuery.toLowerCase()
+    return ocs.filter((oc: OCChina) =>
+      oc.oc.toLowerCase().includes(query) ||
+      oc.proveedor.toLowerCase().includes(query) ||
+      oc.categoriaPrincipal.toLowerCase().includes(query)
+    )
+  }, [ocs, searchQuery])
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -206,9 +220,18 @@ export default function OrdenesPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <ClipboardList size={18} />
-              Órdenes ({ocs.length})
+              Órdenes ({filteredOcs.length}{searchQuery ? ` de ${ocs.length}` : ''})
             </CardTitle>
             <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar OC, proveedor..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 w-64 text-xs"
+                />
+              </div>
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -241,12 +264,21 @@ export default function OrdenesPage() {
                   Nueva Orden
                 </Button>
               </div>
+            ) : filteredOcs.length === 0 ? (
+              <div className="text-center py-12">
+                <Search size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  No hay órdenes que coincidan con "{searchQuery}"
+                </p>
+                <Button onClick={() => setSearchQuery("")} variant="outline">
+                  Limpiar búsqueda
+                </Button>
+              </div>
             ) : (
               <DataTable
                 columns={columns}
-                data={ocs}
-                searchKey="oc"
-                searchPlaceholder="Buscar por número de OC..."
+                data={filteredOcs}
                 pageSize={20}
                 showToolbar={false}
               />
