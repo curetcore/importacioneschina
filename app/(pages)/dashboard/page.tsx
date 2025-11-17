@@ -7,6 +7,7 @@ import { formatCurrency } from "@/lib/utils"
 import { BarChart, Bar } from "recharts"
 import { PieChart, Pie, Cell } from "recharts"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { AuditLogViewer } from "@/components/audit/AuditLogViewer"
 
 export const dynamic = "force-dynamic"
 
@@ -359,6 +360,12 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Actividad Reciente - Audit Log */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h2>
+          <AuditLogViewer limit={10} showFilters={false} />
         </div>
       </div>
     </MainLayout>
