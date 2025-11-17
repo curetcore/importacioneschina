@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { pagosChinaSchema } from "@/lib/validations";
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
 import { Prisma } from "@prisma/client";
+import { softDelete } from "@/lib/db-helpers";
 
 // GET /api/pagos-china/[id] - Obtener un pago específico
 export async function GET(
@@ -12,8 +13,11 @@ export async function GET(
   try {
     const { id } = params;
 
-    const pago = await prisma.pagosChina.findUnique({
-      where: { id },
+    const pago = await prisma.pagosChina.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
       include: {
         ocChina: {
           select: {
@@ -179,10 +183,8 @@ export async function DELETE(
       );
     }
 
-    // Eliminar el pago
-    await prisma.pagosChina.delete({
-      where: { id },
-    });
+    // Soft delete del pago
+    await softDelete("pagosChina", id);
 
     return NextResponse.json({
       success: true,

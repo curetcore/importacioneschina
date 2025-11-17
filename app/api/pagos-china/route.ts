@@ -5,6 +5,7 @@ import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
 import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
+import { notDeletedFilter } from "@/lib/db-helpers";
 
 // GET /api/pagos-china - Obtener todos los pagos
 export async function GET(request: NextRequest) {
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where: Prisma.PagosChinaWhereInput = {
+      ...notDeletedFilter,
       ...(search && {
         idPago: {
           contains: search,

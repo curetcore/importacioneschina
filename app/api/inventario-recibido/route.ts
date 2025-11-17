@@ -5,6 +5,7 @@ import { distribuirGastosLogisticos } from "@/lib/calculations";
 import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
+import { notDeletedFilter } from "@/lib/db-helpers";
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
 export async function GET(request: NextRequest) {
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where: Prisma.InventarioRecibidoWhereInput = {
+      ...notDeletedFilter,
       ...(search && {
         idRecepcion: {
           contains: search,

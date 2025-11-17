@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gastosLogisticosSchema } from "@/lib/validations";
+import { softDelete } from "@/lib/db-helpers";
 
 // GET /api/gastos-logisticos/[id]
 export async function GET(
@@ -10,8 +11,11 @@ export async function GET(
   try {
     const { id } = params;
 
-    const gasto = await prisma.gastosLogisticos.findUnique({
-      where: { id },
+    const gasto = await prisma.gastosLogisticos.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
       include: {
         ocChina: {
           select: {
@@ -157,9 +161,8 @@ export async function DELETE(
       );
     }
 
-    await prisma.gastosLogisticos.delete({
-      where: { id },
-    });
+    // Soft delete del gasto
+    await softDelete("gastosLogisticos", id);
 
     return NextResponse.json({
       success: true,

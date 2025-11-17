@@ -4,6 +4,7 @@ import { gastosLogisticosSchema } from "@/lib/validations";
 import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
+import { notDeletedFilter } from "@/lib/db-helpers";
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
 export async function GET(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where: Prisma.GastosLogisticosWhereInput = {
+      ...notDeletedFilter,
       ...(search && {
         idGasto: {
           contains: search,

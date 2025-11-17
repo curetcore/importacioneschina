@@ -5,6 +5,7 @@ import { generateUniqueId } from "@/lib/id-generator";
 import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
+import { notDeletedFilter } from "@/lib/db-helpers";
 
 interface OCItemInput {
   sku: string;
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where = {
+      ...notDeletedFilter,
       ...(search && {
         oc: {
           contains: search,

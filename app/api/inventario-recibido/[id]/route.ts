@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma, Prisma } from "@/lib/prisma";
 import { inventarioRecibidoSchema } from "@/lib/validations";
 import { distribuirGastosLogisticos } from "@/lib/calculations";
+import { softDelete } from "@/lib/db-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -10,8 +11,11 @@ export async function GET(
   try {
     const { id } = params;
 
-    const inventario = await prisma.inventarioRecibido.findUnique({
-      where: { id },
+    const inventario = await prisma.inventarioRecibido.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
       include: {
         ocChina: {
           select: {
@@ -241,9 +245,8 @@ export async function DELETE(
       );
     }
 
-    await prisma.inventarioRecibido.delete({
-      where: { id },
-    });
+    // Soft delete del inventario
+    await softDelete("inventarioRecibido", id);
 
     return NextResponse.json({
       success: true,

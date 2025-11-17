@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
+import { softDelete } from "@/lib/db-helpers";
 
 interface OCItemInput {
   sku: string;
@@ -63,8 +64,11 @@ export async function GET(
   try {
     const { id } = params;
 
-    const oc = await prisma.oCChina.findUnique({
-      where: { id },
+    const oc = await prisma.oCChina.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
       include: {
         items: {
           orderBy: {
@@ -439,40 +443,43 @@ export async function DELETE(
       );
     }
 
-    // Si se pidió cascade, eliminar todo en orden
+    // Si se pidió cascade, soft delete en cascada
     if (cascade && hasRelatedData) {
+      const now = new Date();
       await prisma.$transaction(async (tx) => {
-        // 1. Eliminar inventario recibido
+        // 1. Soft delete inventario recibido
         if (existing._count.inventarioRecibido > 0) {
-          await tx.inventarioRecibido.deleteMany({
+          await tx.inventarioRecibido.updateMany({
             where: { ocId: id },
+            data: { deletedAt: now },
           });
         }
 
-        // 2. Eliminar gastos logísticos
+        // 2. Soft delete gastos logísticos
         if (existing._count.gastosLogisticos > 0) {
-          await tx.gastosLogisticos.deleteMany({
+          await tx.gastosLogisticos.updateMany({
             where: { ocId: id },
+            data: { deletedAt: now },
           });
         }
 
-        // 3. Eliminar pagos
+        // 3. Soft delete pagos
         if (existing._count.pagosChina > 0) {
-          await tx.pagosChina.deleteMany({
+          await tx.pagosChina.updateMany({
             where: { ocId: id },
+            data: { deletedAt: now },
           });
         }
 
-        // 4. Eliminar la OC (los items se eliminan automáticamente por CASCADE)
-        await tx.oCChina.delete({
+        // 4. Soft delete la OC
+        await tx.oCChina.update({
           where: { id },
+          data: { deletedAt: now },
         });
       });
     } else {
-      // Eliminar solo la OC (sin datos relacionados)
-      await prisma.oCChina.delete({
-        where: { id },
-      });
+      // Soft delete solo la OC (sin datos relacionados)
+      await softDelete("oCChina", id);
     }
 
     return NextResponse.json({
