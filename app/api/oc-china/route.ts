@@ -6,6 +6,8 @@ import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
 import { notDeletedFilter } from "@/lib/db-helpers";
+import { auditCreate } from "@/lib/audit-logger";
+import { handleApiError, Errors } from "@/lib/api-error-handler";
 
 interface OCItemInput {
   sku: string;
@@ -122,14 +124,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error en GET /api/oc-china:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener órdenes de compra",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -153,24 +148,12 @@ export async function POST(request: NextRequest) {
 
     // Validaciones básicas
     if (!proveedor || !fechaOC || !categoriaPrincipal) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Faltan campos requeridos",
-        },
-        { status: 400 }
-      );
+      throw Errors.badRequest("Faltan campos requeridos: proveedor, fechaOC o categoriaPrincipal");
     }
 
     // Validar que haya al menos un item
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Debe agregar al menos un producto a la orden",
-        },
-        { status: 400 }
-      );
+      throw Errors.badRequest("Debe agregar al menos un producto a la orden");
     }
 
     // Generar ID automático secuencial (thread-safe)
@@ -262,6 +245,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Audit log
+    await auditCreate("OCChina", nuevaOC as any, request);
+
     return NextResponse.json(
       {
         success: true,
@@ -270,13 +256,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error en POST /api/oc-china:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al crear orden de compra",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

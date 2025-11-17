@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import { TallaDistribucion } from "@/lib/calculations";
 import type { InputJsonValue } from "@prisma/client/runtime/library";
 import { softDelete } from "@/lib/db-helpers";
+import { auditUpdate, auditDelete } from "@/lib/audit-logger";
+import { handleApiError, Errors } from "@/lib/api-error-handler";
 
 interface OCItemInput {
   sku: string;
@@ -94,13 +96,7 @@ export async function GET(
     });
 
     if (!oc) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Orden de compra no encontrada",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Orden de compra", id);
     }
 
     return NextResponse.json({
@@ -108,14 +104,7 @@ export async function GET(
       data: oc,
     });
   } catch (error) {
-    console.error("Error en GET /api/oc-china/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener orden de compra",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -260,6 +249,9 @@ export async function PUT(
       });
     }
 
+    // Guardar estado anterior para audit log
+    const estadoAnterior = { ...existing };
+
     // Actualizar OC y reemplazar items en una transacción (Problema #3)
     const updatedOC = await prisma.$transaction(async (tx) => {
       // VALIDACIÓN: Verificar si hay inventario vinculado a items específicos
@@ -302,31 +294,15 @@ export async function PUT(
       });
     });
 
+    // Audit log
+    await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request);
+
     return NextResponse.json({
       success: true,
       data: updatedOC,
     });
   } catch (error) {
-    console.error("Error en PUT /api/oc-china/[id]:", error);
-
-    // Distinguir entre errores de validación de negocio (400) y errores del sistema (500)
-    if (error instanceof Error && error.message.includes("inventario recibido vinculado")) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al actualizar orden de compra",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -443,6 +419,9 @@ export async function DELETE(
       );
     }
 
+    // Guardar estado para audit log
+    const estadoAnterior = { ...existing };
+
     // Si se pidió cascade, soft delete en cascada
     if (cascade && hasRelatedData) {
       const now = new Date();
@@ -482,6 +461,9 @@ export async function DELETE(
       await softDelete("oCChina", id);
     }
 
+    // Audit log
+    await auditDelete("OCChina", estadoAnterior as any, request);
+
     return NextResponse.json({
       success: true,
       message: cascade
@@ -489,13 +471,6 @@ export async function DELETE(
         : "Orden de compra eliminada exitosamente",
     });
   } catch (error) {
-    console.error("Error en DELETE /api/oc-china/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al eliminar orden de compra",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

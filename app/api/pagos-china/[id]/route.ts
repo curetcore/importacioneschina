@@ -4,6 +4,8 @@ import { pagosChinaSchema } from "@/lib/validations";
 import { calcularMontoRD, calcularMontoRDNeto } from "@/lib/calculations";
 import { Prisma } from "@prisma/client";
 import { softDelete } from "@/lib/db-helpers";
+import { auditUpdate, auditDelete } from "@/lib/audit-logger";
+import { handleApiError, Errors } from "@/lib/api-error-handler";
 
 // GET /api/pagos-china/[id] - Obtener un pago específico
 export async function GET(
@@ -29,13 +31,7 @@ export async function GET(
     });
 
     if (!pago) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Pago no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Pago", id);
     }
 
     return NextResponse.json({
@@ -43,14 +39,7 @@ export async function GET(
       data: pago,
     });
   } catch (error) {
-    console.error("Error en GET /api/pagos-china/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener pago",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -69,14 +58,11 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Pago no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Pago", id);
     }
+
+    // Guardar estado anterior para audit log
+    const estadoAnterior = { ...existing };
 
     // Validar datos con Zod
     const validatedData = pagosChinaSchema.parse(body);
@@ -90,13 +76,7 @@ export async function PUT(
     });
 
     if (!oc) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
+      throw Errors.notFound("Orden de compra", validatedData.ocId);
     }
 
     // Recalcular montoRD y montoRDNeto (Problema #4)
@@ -131,32 +111,15 @@ export async function PUT(
       },
     });
 
+    // Audit log
+    await auditUpdate("PagosChina", estadoAnterior as any, updatedPago as any, request);
+
     return NextResponse.json({
       success: true,
       data: updatedPago,
     });
   } catch (error) {
-    console.error("Error en PUT /api/pagos-china/[id]:", error);
-
-    // Errores de validación Zod
-    if (error && typeof error === 'object' && 'errors' in error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de entrada inválidos",
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al actualizar pago",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -174,30 +137,23 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Pago no encontrado",
-        },
-        { status: 404 }
-      );
+      throw Errors.notFound("Pago", id);
     }
+
+    // Guardar estado anterior para audit log
+    const estadoAnterior = { ...existing };
 
     // Soft delete del pago
     await softDelete("pagosChina", id);
+
+    // Audit log
+    await auditDelete("PagosChina", estadoAnterior as any, request);
 
     return NextResponse.json({
       success: true,
       message: "Pago eliminado exitosamente",
     });
   } catch (error) {
-    console.error("Error en DELETE /api/pagos-china/[id]:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al eliminar pago",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

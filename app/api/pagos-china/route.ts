@@ -6,6 +6,8 @@ import { generateUniqueId } from "@/lib/id-generator";
 import { Prisma } from "@prisma/client";
 import { withRateLimit, RateLimits } from "@/lib/rate-limit";
 import { notDeletedFilter } from "@/lib/db-helpers";
+import { auditCreate } from "@/lib/audit-logger";
+import { handleApiError, Errors } from "@/lib/api-error-handler";
 
 // GET /api/pagos-china - Obtener todos los pagos
 export async function GET(request: NextRequest) {
@@ -72,14 +74,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error en GET /api/pagos-china:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al obtener pagos",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -107,13 +102,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!oc) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "La OC especificada no existe",
-        },
-        { status: 400 }
-      );
+      throw Errors.notFound("Orden de compra", validatedData.ocId);
     }
 
     // Calcular montoRD y montoRDNeto
@@ -154,6 +143,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Audit log
+    await auditCreate("PagosChina", nuevoPago as any, request);
+
     return NextResponse.json(
       {
         success: true,
@@ -162,25 +154,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error en POST /api/pagos-china:", error);
-
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Datos de validación incorrectos",
-          details: error,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al crear pago",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
