@@ -5,6 +5,7 @@ import {
   ProductDistributionData,
   DistributionMethod,
 } from "@/lib/cost-distribution"
+import { calcularTasaCambioPromedio } from "@/lib/calculations"
 
 export const dynamic = "force-dynamic"
 
@@ -65,7 +66,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Get all items from this OC for distribution calculation
-        const itemsDeOC = inv.ocChina.items.filter(i => i.deletedAt === null)
+        // Note: Using all items, not filtering by deletedAt (field doesn't exist in current schema)
+        const itemsDeOC = inv.ocChina.items
 
         // Prepare product data for distribution
         const productsForDistribution: ProductDistributionData[] = itemsDeOC.map(ocItem => ({
@@ -80,14 +82,8 @@ export async function GET(request: NextRequest) {
           precioUnitarioUSD: parseFloat(ocItem.precioUnitarioUSD.toString()),
         }))
 
-        // Calculate average exchange rate from payments
-        const tasaPromedio =
-          inv.ocChina.pagosChina.length > 0
-            ? inv.ocChina.pagosChina.reduce(
-                (sum, p) => sum + parseFloat(p.tasaCambio.toString()),
-                0
-              ) / inv.ocChina.pagosChina.length
-            : 58 // Default rate
+        // Calculate weighted average exchange rate from payments
+        const tasaPromedio = calcularTasaCambioPromedio(inv.ocChina.pagosChina) || 58
 
         // FOB cost
         const costoFobUsd = parseFloat(item.precioUnitarioUSD.toString())
@@ -132,9 +128,21 @@ export async function GET(request: NextRequest) {
         )
 
         // Find this product's distributed costs
+        // BUG FIX: Use item.id which matches the IDs in productsForDistribution
         const pagosDist = pagosDistribution.find(d => d.productId === item.id)
         const gastosDist = gastosDistribution.find(d => d.productId === item.id)
         const comisionesDist = comisionesDistribution.find(d => d.productId === item.id)
+
+        // Debug logging if distribution not found
+        if (!pagosDist || !gastosDist || !comisionesDist) {
+          console.warn(`⚠️ Distribución no encontrada para producto ${item.id} (${item.sku})`, {
+            itemId: item.id,
+            productsInDistribution: productsForDistribution.map(p => p.id),
+            foundPagos: !!pagosDist,
+            foundGastos: !!gastosDist,
+            foundComisiones: !!comisionesDist,
+          })
+        }
 
         const pagosUnitario = pagosDist?.costoUnitario || 0
         const gastosUnitario = gastosDist?.costoUnitario || 0
