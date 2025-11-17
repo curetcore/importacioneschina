@@ -311,11 +311,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Obtener el cliente Prisma apropiado (demo o producción)
     const db = await getPrismaClient()
 
-    // Verificar que la OC existe y obtener datos relacionados
+    // Verificar que la OC existe y obtener datos relacionados (solo NO eliminados)
     const existing = await db.oCChina.findUnique({
       where: { id },
       include: {
         pagosChina: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             idPago: true,
@@ -323,6 +326,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
           },
         },
         gastosLogisticos: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             idGasto: true,
@@ -330,6 +336,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
           },
         },
         inventarioRecibido: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             idRecepcion: true,
@@ -339,9 +348,21 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
         _count: {
           select: {
             items: true,
-            pagosChina: true,
-            gastosLogisticos: true,
-            inventarioRecibido: true,
+            pagosChina: {
+              where: {
+                deletedAt: null,
+              },
+            },
+            gastosLogisticos: {
+              where: {
+                deletedAt: null,
+              },
+            },
+            inventarioRecibido: {
+              where: {
+                deletedAt: null,
+              },
+            },
           },
         },
       },
