@@ -1,4 +1,6 @@
-import { prisma } from "@/lib/prisma"
+import { prisma, prismaDemo } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 /**
  * Soft delete helper - Marca un registro como eliminado sin borrarlo físicamente
@@ -53,4 +55,46 @@ export const notDeletedFilter = {
  */
 export const onlyDeletedFilter = {
   deletedAt: { not: null },
+}
+
+/**
+ * Email del usuario demo
+ */
+export const DEMO_USER_EMAIL = "demo@sistema.com"
+
+/**
+ * Obtener el cliente Prisma correcto según el usuario actual
+ * - Si es usuario demo: retorna prismaDemo (base de datos demo)
+ * - Si es usuario normal: retorna prisma (base de datos producción)
+ * @returns PrismaClient apropiado según el contexto
+ */
+export async function getPrismaClient() {
+  try {
+    const session = await getServerSession(authOptions)
+
+    // Si es usuario demo, usar base de datos demo
+    if (session?.user?.email === DEMO_USER_EMAIL) {
+      return prismaDemo
+    }
+
+    // Usuario normal: usar base de datos producción
+    return prisma
+  } catch (error) {
+    // Si hay error obteniendo sesión, usar DB producción por defecto
+    console.warn("Error obteniendo sesión, usando DB producción:", error)
+    return prisma
+  }
+}
+
+/**
+ * Verificar si el usuario actual es demo
+ * @returns true si es usuario demo, false si no
+ */
+export async function isDemoUser(): Promise<boolean> {
+  try {
+    const session = await getServerSession(authOptions)
+    return session?.user?.email === DEMO_USER_EMAIL
+  } catch (error) {
+    return false
+  }
 }
