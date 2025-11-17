@@ -195,6 +195,8 @@ interface OCChinaItem {
   cantidadTotal: number
   precioUnitarioUSD: number | Prisma.Decimal
   subtotalUSD: number | Prisma.Decimal
+  pesoUnitarioKg?: number | Prisma.Decimal | null
+  volumenUnitarioCBM?: number | Prisma.Decimal | null
 }
 
 interface GastoLogistico {
