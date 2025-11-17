@@ -77,9 +77,9 @@ lib/
 - ✅ **Fase 4:** Tablas Profesionales (100%)
 - ✅ **Fase 5:** Visualización de Datos (100%)
 - ✅ **Fase 6:** Optimización & Performance (100%)
+- ✅ **Fase 7:** Testing & Quality (100%)
 
 ### Pendientes 📋
-- Fase 7: Testing
 - Fase 8: Deployment
 
 **Próximos pasos:** Ver `FASE-4-CONTINUACION.md`
@@ -103,6 +103,11 @@ npx prisma studio       # UI para ver datos
 npx prisma db push      # Aplicar schema
 npx prisma generate     # Generar cliente
 
+# Testing
+npm test                # Ejecutar tests
+npm run test:watch      # Tests en modo watch
+npm run test:coverage   # Tests con coverage
+
 # Build
 npm run build           # Build producción
 npm run lint            # Linter
@@ -113,6 +118,7 @@ npm run lint            # Linter
 - [Plan de Modernización](./PLAN-MODERNIZACION.md)
 - [Estado del Proyecto](./ESTADO-PROYECTO.md)
 - [Fase 4 - Continuación](./FASE-4-CONTINUACION.md)
+- [Fase 7 - Testing](./FASE-7-TESTING.md)
 - [Prisma Schema](./prisma/schema.prisma)
 
 ## 📦 Dependencias Principales
@@ -127,7 +133,9 @@ npm run lint            # Linter
   "@tanstack/react-table": "^8.21.3",
   "react-hook-form": "^7.x",
   "zod": "^3.x",
-  "tailwindcss": "3.4.1"
+  "tailwindcss": "3.4.1",
+  "jest": "^30.2.0",
+  "@testing-library/react": "^16.3.0"
 }
 ```
 
