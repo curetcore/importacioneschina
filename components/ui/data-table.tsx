@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number
   showColumnToggle?: boolean
   showPagination?: boolean
+  showToolbar?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -43,6 +44,7 @@ export function DataTable<TData, TValue>({
   pageSize = 20,
   showColumnToggle = true,
   showPagination = true,
+  showToolbar = true,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -76,46 +78,48 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        {searchKey && (
-          <Input
-            placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn(searchKey)?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-        )}
+      {showToolbar && (
+        <div className="flex items-center justify-between gap-4">
+          {searchKey && (
+            <Input
+              placeholder={searchPlaceholder}
+              value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn(searchKey)?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          )}
 
-        {showColumnToggle && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto h-8 px-3 text-xs">
-                <Settings2 className="mr-2 h-4 w-4" />
-                Columnas
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+          {showColumnToggle && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto h-8 px-3 text-xs">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Columnas
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[200px]">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-md border border-gray-200 bg-white overflow-hidden">

@@ -248,6 +248,7 @@ export default function OrdenesPage() {
                 searchKey="oc"
                 searchPlaceholder="Buscar por número de OC..."
                 pageSize={20}
+                showToolbar={false}
               />
             )}
           </CardContent>
