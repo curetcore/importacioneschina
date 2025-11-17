@@ -4,6 +4,7 @@ import { z } from "zod"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
+import { CacheTags, CacheDurations, createCachedFn, invalidateCache } from "@/lib/cache"
 
 const configuracionSchema = z.object({
   categoria: z.enum([
@@ -18,17 +19,10 @@ const configuracionSchema = z.object({
   orden: z.number().int().default(0),
 })
 
-// GET /api/configuracion - Obtener todas las configuraciones o filtrar por categoría
-export async function GET(request: NextRequest) {
-  try {
-    // Rate limiting para queries - 60 req/60s
-    const rateLimitError = await withRateLimit(request, RateLimits.query)
-    if (rateLimitError) return rateLimitError
-
+// Cached function to fetch configurations
+const getCachedConfiguraciones = createCachedFn(
+  async (categoria: string | null) => {
     const db = await getPrismaClient()
-    const { searchParams } = new URL(request.url)
-    const categoria = searchParams.get("categoria")
-
     const whereClause = categoria ? { categoria, activo: true } : { activo: true }
 
     const configuraciones = await db.configuracion.findMany({
@@ -36,21 +30,45 @@ export async function GET(request: NextRequest) {
       orderBy: [{ categoria: "asc" }, { orden: "asc" }, { valor: "asc" }],
     })
 
-    // Agrupar por categoría
-    const grouped = configuraciones.reduce(
-      (acc, config) => {
-        if (!acc[config.categoria]) {
-          acc[config.categoria] = []
-        }
-        acc[config.categoria].push(config)
-        return acc
-      },
-      {} as Record<string, typeof configuraciones>
-    )
+    // Agrupar por categoría si no hay filtro específico
+    if (!categoria) {
+      const grouped = configuraciones.reduce(
+        (acc, config) => {
+          if (!acc[config.categoria]) {
+            acc[config.categoria] = []
+          }
+          acc[config.categoria].push(config)
+          return acc
+        },
+        {} as Record<string, typeof configuraciones>
+      )
+      return grouped
+    }
+
+    return configuraciones
+  },
+  {
+    tags: [CacheTags.CONFIGURACION],
+    revalidate: CacheDurations.CONFIGURACION, // 1 hour cache
+  }
+)
+
+// GET /api/configuracion - Obtener todas las configuraciones o filtrar por categoría
+export async function GET(request: NextRequest) {
+  try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
+    const { searchParams } = new URL(request.url)
+    const categoria = searchParams.get("categoria")
+
+    // Use cached function
+    const data = await getCachedConfiguraciones(categoria)
 
     return NextResponse.json({
       success: true,
-      data: categoria ? configuraciones : grouped,
+      data,
     })
   } catch (error) {
     return handleApiError(error)
@@ -92,6 +110,9 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("Configuracion", configuracion as any, request)
+
+    // Invalidate cache after creating new config
+    invalidateCache(CacheTags.CONFIGURACION)
 
     return NextResponse.json(
       {

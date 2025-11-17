@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { CacheTags, invalidateCache } from "@/lib/cache"
 
 const updateSchema = z.object({
   valor: z.string().min(1, "El valor es requerido").optional(),
@@ -52,6 +53,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Audit log
     await auditUpdate("Configuracion", existing as any, updated as any, request)
 
+    // Invalidate cache after update
+    invalidateCache(CacheTags.CONFIGURACION)
+
     return NextResponse.json({
       success: true,
       data: updated,
@@ -92,6 +96,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Audit log
     await auditDelete("Configuracion", existing as any, request)
+
+    // Invalidate cache after delete
+    invalidateCache(CacheTags.CONFIGURACION)
 
     return NextResponse.json({
       success: true,
