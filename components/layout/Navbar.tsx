@@ -3,6 +3,7 @@
 import { User, LogOut } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 import NotificationDropdown from "./NotificationDropdown"
+import GlobalSearch from "./GlobalSearch"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -14,12 +15,18 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex-shrink-0">
             <h1 className="text-xl font-semibold text-gray-900">Sistema de Importación</h1>
             <p className="text-xs text-gray-500">Control financiero automático</p>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Global Search */}
+          <div className="flex-1 max-w-2xl">
+            <GlobalSearch />
+          </div>
+
+          <div className="flex items-center gap-4 flex-shrink-0">
             {session?.user && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg">
                 <User size={16} className="text-gray-600" />
