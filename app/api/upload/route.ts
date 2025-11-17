@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { existsSync } from "fs"
 import path from "path"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 // Configuración
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -23,36 +24,21 @@ export async function POST(request: NextRequest) {
 
     // Validaciones
     if (!file) {
-      return NextResponse.json(
-        { success: false, error: "No se proporcionó ningún archivo" },
-        { status: 400 }
-      )
+      throw Errors.badRequest("No se proporcionó ningún archivo")
     }
 
     if (!module || !MODULE_FOLDERS[module]) {
-      return NextResponse.json({ success: false, error: "Módulo no válido" }, { status: 400 })
+      throw Errors.badRequest("Módulo no válido")
     }
 
     // Validar tipo de archivo
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Tipo de archivo no permitido. Solo JPG, PNG y PDF son válidos.",
-        },
-        { status: 400 }
-      )
+      throw Errors.badRequest("Tipo de archivo no permitido. Solo JPG, PNG y PDF son válidos.")
     }
 
     // Validar tamaño
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "El archivo excede el tamaño máximo de 10MB",
-        },
-        { status: 400 }
-      )
+      throw Errors.badRequest("El archivo excede el tamaño máximo de 10MB")
     }
 
     // SEGURIDAD: Validar extensión del archivo (evitar double extensions como .php.jpg)
@@ -60,25 +46,15 @@ export async function POST(request: NextRequest) {
     const allowedExtensions = [".jpg", ".jpeg", ".png", ".pdf"]
 
     if (!allowedExtensions.includes(originalExtension)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Extensión de archivo no válida. Solo .jpg, .jpeg, .png y .pdf son permitidos.",
-        },
-        { status: 400 }
+      throw Errors.badRequest(
+        "Extensión de archivo no válida. Solo .jpg, .jpeg, .png y .pdf son permitidos."
       )
     }
 
     // SEGURIDAD: Validar que el nombre no contenga caracteres peligrosos o path traversal
     const originalName = file.name
     if (originalName.includes("..") || originalName.includes("/") || originalName.includes("\\")) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Nombre de archivo no válido",
-        },
-        { status: 400 }
-      )
+      throw Errors.badRequest("Nombre de archivo no válido")
     }
 
     // Crear directorio si no existe
@@ -113,10 +89,6 @@ export async function POST(request: NextRequest) {
       data: fileInfo,
     })
   } catch (error) {
-    console.error("Error uploading file:", error)
-    return NextResponse.json(
-      { success: false, error: "Error al subir el archivo" },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

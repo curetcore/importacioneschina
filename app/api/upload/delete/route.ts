@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { unlink } from "fs/promises"
 import { existsSync } from "fs"
 import path from "path"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -9,27 +10,18 @@ export async function DELETE(request: NextRequest) {
     const fileUrl = searchParams.get("url")
 
     if (!fileUrl) {
-      return NextResponse.json(
-        { success: false, error: "No se proporcionó URL del archivo" },
-        { status: 400 }
-      )
+      throw Errors.badRequest("No se proporcionó URL del archivo")
     }
 
     // SEGURIDAD: Validar que no haya path traversal (.., ./, etc)
     if (fileUrl.includes("..") || fileUrl.includes("./") || fileUrl.startsWith("/")) {
       console.warn(`🚨 Path traversal attack detected: ${fileUrl}`)
-      return NextResponse.json(
-        { success: false, error: "Ruta de archivo no válida" },
-        { status: 400 }
-      )
+      throw Errors.badRequest("Ruta de archivo no válida")
     }
 
     // SEGURIDAD: Validar que la URL empiece con /uploads/
     if (!fileUrl.startsWith("uploads/") && !fileUrl.startsWith("/uploads/")) {
-      return NextResponse.json(
-        { success: false, error: "Solo se pueden eliminar archivos de uploads" },
-        { status: 400 }
-      )
+      throw Errors.badRequest("Solo se pueden eliminar archivos de uploads")
     }
 
     // Construir ruta del archivo de manera segura
@@ -43,15 +35,12 @@ export async function DELETE(request: NextRequest) {
 
     if (!normalizedFilepath.startsWith(normalizedUploadsDir)) {
       console.error(`🚨 Path traversal attack blocked: ${fileUrl}`)
-      return NextResponse.json(
-        { success: false, error: "Ruta de archivo no válida" },
-        { status: 403 }
-      )
+      throw Errors.forbidden("Ruta de archivo no válida")
     }
 
     // Verificar que el archivo existe
     if (!existsSync(normalizedFilepath)) {
-      return NextResponse.json({ success: false, error: "El archivo no existe" }, { status: 404 })
+      throw Errors.notFound("Archivo")
     }
 
     // Eliminar archivo
@@ -62,10 +51,6 @@ export async function DELETE(request: NextRequest) {
       message: "Archivo eliminado exitosamente",
     })
   } catch (error) {
-    console.error("Error deleting file:", error)
-    return NextResponse.json(
-      { success: false, error: "Error al eliminar el archivo" },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

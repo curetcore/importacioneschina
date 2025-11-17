@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
+import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { auditUpdate } from "@/lib/audit-logger"
 
 export const dynamic = "force-dynamic"
 
@@ -17,15 +19,7 @@ export async function GET(request: NextRequest) {
       data: configs,
     })
   } catch (error) {
-    console.error("Error fetching distribution config:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al cargar configuración de distribución",
-        details: error instanceof Error ? error.message : "Error desconocido",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -37,26 +31,19 @@ export async function PUT(request: NextRequest) {
     const { tipoCosto, metodoDistribucion } = body
 
     if (!tipoCosto || !metodoDistribucion) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "tipoCosto y metodoDistribucion son requeridos",
-        },
-        { status: 400 }
-      )
+      throw Errors.badRequest("tipoCosto y metodoDistribucion son requeridos")
     }
 
     // Validate metodoDistribucion
     const validMethods = ["peso", "volumen", "valor_fob", "unidades"]
     if (!validMethods.includes(metodoDistribucion)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Método de distribución inválido",
-        },
-        { status: 400 }
-      )
+      throw Errors.badRequest("Método de distribución inválido")
     }
+
+    // Get existing config for audit
+    const existing = await db.configuracionDistribucionCostos.findUnique({
+      where: { tipoCosto },
+    })
 
     // Upsert the configuration
     const config = await db.configuracionDistribucionCostos.upsert({
@@ -72,20 +59,17 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    // Audit log
+    if (existing) {
+      await auditUpdate("ConfiguracionDistribucionCostos", existing as any, config as any, request)
+    }
+
     return NextResponse.json({
       success: true,
       data: config,
       message: "Configuración actualizada exitosamente",
     })
   } catch (error) {
-    console.error("Error updating distribution config:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Error al actualizar configuración de distribución",
-        details: error instanceof Error ? error.message : "Error desconocido",
-      },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
