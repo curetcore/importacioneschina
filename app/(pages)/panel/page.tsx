@@ -74,6 +74,7 @@ interface DashboardData {
 export default function PanelPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -81,10 +82,15 @@ export default function PanelPage() {
       .then(result => {
         if (result.success) {
           setData(result.data)
+        } else {
+          setError(result.error || "Error desconocido al cargar datos")
         }
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(err => {
+        setError(err.message || "Error de conexión al cargar datos")
+        setLoading(false)
+      })
   }, [])
 
   if (loading) {
@@ -104,9 +110,14 @@ export default function PanelPage() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600">Error al cargar datos</p>
+          <div className="text-center max-w-md">
+            <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-900 mb-2">Error al cargar datos</p>
+            {error && (
+              <p className="text-xs text-gray-600 bg-gray-50 p-3 rounded border border-gray-200">
+                {error}
+              </p>
+            )}
           </div>
         </div>
       </MainLayout>
