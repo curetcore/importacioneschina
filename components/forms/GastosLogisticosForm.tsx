@@ -179,20 +179,28 @@ export function GastosLogisticosForm({
   }, [gastoToEdit, reset])
 
   const onSubmit = async (data: GastosLogisticosInput) => {
+    console.log("🚀 Form submitted with data:", data)
+    console.log("📎 Adjuntos:", adjuntos)
+
     try {
       const url = isEditMode ? `/api/gastos-logisticos/${gastoToEdit.id}` : "/api/gastos-logisticos"
       const method = isEditMode ? "PUT" : "POST"
 
+      const payload = {
+        ...data,
+        adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+      }
+      console.log("📤 Sending payload:", payload)
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
-        }),
+        body: JSON.stringify(payload),
       })
 
+      console.log("📥 Response status:", response.status)
       const result = await response.json()
+      console.log("📥 Response data:", result)
 
       if (!result.success) {
         throw new Error(result.error || `Error al ${isEditMode ? "actualizar" : "crear"} el gasto`)
@@ -209,6 +217,7 @@ export function GastosLogisticosForm({
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
+      console.error("❌ Error al crear gasto:", error)
       addToast({
         type: "error",
         title: "Error",
@@ -222,6 +231,13 @@ export function GastosLogisticosForm({
     setAdjuntos([])
     onOpenChange(false)
   }
+
+  // Debug: Log validation errors
+  React.useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log("❌ Validation errors:", errors)
+    }
+  }, [errors])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -348,7 +364,7 @@ export function GastosLogisticosForm({
                 type="number"
                 min="0.01"
                 step="0.01"
-                {...register("montoRD")}
+                {...register("montoRD", { valueAsNumber: true })}
                 placeholder="Ej: 5000.00"
                 disabled={isSubmitting}
               />
