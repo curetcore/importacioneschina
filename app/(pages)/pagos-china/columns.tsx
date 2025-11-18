@@ -21,7 +21,7 @@ export interface Pago {
   fechaPago: string
   tipoPago: string
   metodoPago: string
-  moneda: "USD" | "CNY" | "RD$"
+  moneda: "USD" | "RD$"
   montoOriginal: number
   tasaCambio: number
   comisionBancoUSD: number

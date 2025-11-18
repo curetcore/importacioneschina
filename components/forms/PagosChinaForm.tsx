@@ -35,7 +35,7 @@ interface PagoChina {
   fechaPago: string
   tipoPago: string
   metodoPago: string
-  moneda: "USD" | "CNY" | "RD$"
+  moneda: "USD" | "RD$"
   montoOriginal: number
   tasaCambio: number
   comisionBancoUSD: number
@@ -52,7 +52,6 @@ interface PagosChinaFormProps {
 // Monedas fijas (no configurables)
 const monedasOptions: SelectOption[] = [
   { value: "USD", label: "USD" },
-  { value: "CNY", label: "CNY" },
   { value: "RD$", label: "RD$" },
 ]
 
@@ -360,7 +359,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 <Select
                   options={monedasOptions}
                   value={monedaValue || ""}
-                  onChange={value => setValue("moneda", value as "USD" | "CNY" | "RD$")}
+                  onChange={value => setValue("moneda", value as "USD" | "RD$")}
                   placeholder="Selecciona moneda"
                   disabled={isSubmitting}
                 />

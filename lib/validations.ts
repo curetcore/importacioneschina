@@ -36,7 +36,7 @@ export const pagosChinaSchema = z.object({
     }),
   tipoPago: z.string().min(1, "El tipo de pago es requerido"),
   metodoPago: z.string().min(1, "El metodo de pago es requerido"),
-  moneda: z.enum(["USD", "CNY", "RD$"], {
+  moneda: z.enum(["USD", "RD$"], {
     required_error: "La moneda es requerida",
   }),
   montoOriginal: z.coerce.number().positive("El monto debe ser mayor a 0"),
@@ -119,7 +119,7 @@ export const categorias = ["Zapatos", "Carteras", "Cinturones", "Accesorios", "M
 
 export const bodegas = ["Boveda", "Piantini", "Villa Mella", "Oficina", "Otra"] as const
 
-export const monedas = ["USD", "CNY", "RD$"] as const
+export const monedas = ["USD", "RD$"] as const
 
 // Schema para Configuración
 export const configuracionSchema = z.object({

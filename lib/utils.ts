@@ -27,7 +27,6 @@ export function formatCurrency(amount: number | string, currency: string = "DOP"
   // Mapeo de monedas a sus símbolos personalizados
   const currencySymbols: Record<string, string> = {
     USD: "US$",
-    CNY: "CNY¥",
     DOP: "RD$",
     RD$: "RD$",
   }
@@ -238,9 +237,7 @@ export function distributeCurrency(total: number, weights: number[]): number[] {
  * @example applyPercentage(1000, -10) → 900 (restar 10%)
  */
 export function applyPercentage(amount: number, percentage: number): number {
-  return currency(amount)
-    .multiply(1 + percentage / 100)
-    .value
+  return currency(amount).multiply(1 + percentage / 100).value
 }
 
 /**
@@ -273,10 +270,7 @@ export function formatDateRelative(date: Date | string): string {
  * @example formatDateDistance(futureDate, now) → "en 5 días"
  * @example formatDateDistance(pastDate, now) → "hace 2 meses"
  */
-export function formatDateDistanceBetween(
-  date: Date | string,
-  baseDate: Date | string
-): string {
+export function formatDateDistanceBetween(date: Date | string, baseDate: Date | string): string {
   const dateObj = typeof date === "string" ? parseISO(date) : date
   const baseObj = typeof baseDate === "string" ? parseISO(baseDate) : baseDate
 
