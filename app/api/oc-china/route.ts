@@ -176,9 +176,6 @@ export async function POST(request: NextRequest) {
       throw Errors.badRequest("Debe agregar al menos un producto a la orden")
     }
 
-    // Generar ID automático secuencial (thread-safe)
-    const oc = await generateUniqueId("oCChina", "oc", "OC")
-
     // Validar y normalizar cada item (Problemas #1 y #2)
     const itemsValidados: OCItemValidado[] = []
     for (const item of items) {
@@ -247,23 +244,55 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Crear OC con items validados
-    const nuevaOC = await db.oCChina.create({
-      data: {
-        oc,
-        proveedor,
-        fechaOC: new Date(fechaOC),
-        descripcionLote,
-        categoriaPrincipal,
-        adjuntos: adjuntos || null,
-        items: {
-          create: itemsValidados,
-        },
-      },
-      include: {
-        items: true,
-      },
-    })
+    // Crear OC con items validados (con retry en caso de duplicado)
+    let nuevaOC
+    let retries = 0
+    const maxRetries = 3
+
+    while (retries < maxRetries) {
+      try {
+        // Generar ID dentro del loop para retry
+        const oc = await generateUniqueId("oCChina", "oc", "OC")
+
+        nuevaOC = await db.oCChina.create({
+          data: {
+            oc,
+            proveedor,
+            fechaOC: new Date(fechaOC),
+            descripcionLote,
+            categoriaPrincipal,
+            adjuntos: adjuntos || null,
+            items: {
+              create: itemsValidados,
+            },
+          },
+          include: {
+            items: true,
+          },
+        })
+
+        break // Éxito, salir del loop
+      } catch (error: any) {
+        // Si es error de duplicado, reintentar
+        if (error.code === "P2002" && error.meta?.target?.includes("oc")) {
+          retries++
+          if (retries >= maxRetries) {
+            throw Errors.conflict(
+              "No se pudo generar un número de OC único después de varios intentos"
+            )
+          }
+          // Esperar un poco antes de reintentar (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 100 * retries))
+          continue
+        }
+        // Si es otro error, lanzarlo
+        throw error
+      }
+    }
+
+    if (!nuevaOC) {
+      throw Errors.internalError("Error inesperado al crear la orden")
+    }
 
     // Audit log
     await auditCreate("OCChina", nuevaOC as any, request)
