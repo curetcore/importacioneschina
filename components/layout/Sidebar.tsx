@@ -3,15 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import {
-  LayoutDashboard,
-  Package,
-  DollarSign,
-  FileText,
-  Inbox,
-  Calculator,
-  Settings,
-} from "lucide-react"
+import { LayoutDashboard, Package, DollarSign, FileText, Inbox, Settings } from "lucide-react"
 
 const menuItems = [
   { href: "/panel", label: "Panel", icon: LayoutDashboard },
@@ -19,7 +11,6 @@ const menuItems = [
   { href: "/pagos-china", label: "Pagos", icon: DollarSign },
   { href: "/gastos-logisticos", label: "Gastos", icon: FileText },
   { href: "/inventario-recibido", label: "Inventario", icon: Inbox },
-  { href: "/analisis-costos", label: "Costos", icon: Calculator },
   { href: "/configuracion", label: "Ajustes", icon: Settings },
 ]
 

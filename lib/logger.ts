@@ -208,7 +208,7 @@ export const loggers = {
  * });
  * ```
  */
-export function withRequestLogging(handler: Function) {
+export function withRequestLogging(handler: (req: Request, ...args: any[]) => Promise<any>) {
   return async (req: Request, ...args: any[]) => {
     const start = Date.now()
     const method = req.method
