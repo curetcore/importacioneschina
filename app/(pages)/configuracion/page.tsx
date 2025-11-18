@@ -4,7 +4,8 @@ export const dynamic = "force-dynamic"
 
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient, useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,13 +15,13 @@ import { ProveedoresList } from "@/components/registros/ProveedoresList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Settings, Users, Calculator, UserCircle } from "lucide-react"
+import { Plus, Edit, Trash2, Settings, Users, Calculator, UserCircle, History } from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 import { useApiQuery } from "@/lib/hooks/useApiQuery"
 import { DistribucionCostosSettings } from "@/components/configuracion/DistribucionCostosSettings"
 import { UserProfileModal } from "@/components/user/UserProfileModal"
 import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
-import { UserHistoryModal } from "@/components/user/UserHistoryModal"
+import { formatTimeAgo } from "@/lib/utils"
 
 interface Configuracion {
   id: string
@@ -60,6 +61,189 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
   },
 }
 
+const SUPER_ADMIN_EMAIL = "info@curetshop.com"
+
+interface AuditLog {
+  id: string
+  entidad: string
+  entidadId: string
+  accion: string
+  descripcion: string | null
+  usuarioEmail: string | null
+  ipAddress: string | null
+  cambiosAntes: any
+  cambiosDespues: any
+  camposModificados: string[]
+  createdAt: string
+}
+
+const ACTION_COLORS: Record<string, string> = {
+  CREATE: "bg-green-100 text-green-700",
+  UPDATE: "bg-blue-100 text-blue-700",
+  DELETE: "bg-red-100 text-red-700",
+  LOGIN: "bg-purple-100 text-purple-700",
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  CREATE: "Creó",
+  UPDATE: "Actualizó",
+  DELETE: "Eliminó",
+  LOGIN: "Inició sesión",
+}
+
+function UserActivitySection() {
+  const { data: session } = useSession()
+  const [page, setPage] = useState(1)
+  const limit = 10
+
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["user-activity", session?.user?.email, page, isSuperAdmin],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        offset: ((page - 1) * limit).toString(),
+      })
+
+      // Si es super admin, no filtrar por usuario
+      if (!isSuperAdmin && session?.user?.email) {
+        params.append("usuarioEmail", session.user.email)
+      }
+
+      const res = await fetch(`/api/audit-logs?${params}`)
+      if (!res.ok) throw new Error("Error al cargar actividad")
+      return res.json()
+    },
+    enabled: !!session?.user?.email,
+  })
+
+  const logs: AuditLog[] = data?.data || []
+  const total = data?.total || 0
+  const totalPages = Math.ceil(total / limit)
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-500" />
+            <CardTitle>
+              {isSuperAdmin ? "Actividad de Todos los Usuarios" : "Mi Actividad Reciente"}
+            </CardTitle>
+          </div>
+          {isSuperAdmin && (
+            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
+              Super Admin
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 mt-2">
+          {isSuperAdmin
+            ? "Vista completa de todas las acciones del sistema"
+            : "Registro de tus acciones en el sistema"}
+        </p>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center py-8 text-sm text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            Cargando actividad...
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <History className="mx-auto h-12 w-12 text-gray-300 mb-2" />
+            <p className="text-sm">No hay actividad registrada</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    {isSuperAdmin && (
+                      <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                        Usuario
+                      </th>
+                    )}
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                      Acción
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                      Entidad
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                      Descripción
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                      Fecha
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map(log => (
+                    <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      {isSuperAdmin && (
+                        <td className="py-3 px-4 text-sm text-gray-900">
+                          {log.usuarioEmail || <span className="text-gray-400">Sistema</span>}
+                        </td>
+                      )}
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            ACTION_COLORS[log.accion] || "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {ACTION_LABELS[log.accion] || log.accion}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{log.entidad}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">
+                        {log.descripcion || (
+                          <span className="text-gray-400 italic">Sin descripción</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-500">
+                        {formatTimeAgo(log.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 mt-4 border-t">
+                <div className="text-sm text-gray-500">
+                  Página {page} de {totalPages} ({total} registros)
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="h-9 px-3"
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="h-9 px-3"
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 function ConfiguracionPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
@@ -80,7 +264,6 @@ function ConfiguracionPageContent() {
   // User account modals state (tab Mi Cuenta)
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
-  const [historyModalOpen, setHistoryModalOpen] = useState(false)
 
   // Handle URL tab parameter
   useEffect(() => {
@@ -317,13 +500,13 @@ function ConfiguracionPageContent() {
             />
           </TabsContent>
 
-          <TabsContent value="cuenta" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TabsContent value="cuenta" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Información Personal</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent>
                   <p className="text-sm text-gray-500 mb-4">
                     Administra tu información personal y preferencias de cuenta
                   </p>
@@ -342,7 +525,7 @@ function ConfiguracionPageContent() {
                 <CardHeader>
                   <CardTitle>Seguridad</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent>
                   <p className="text-sm text-gray-500 mb-4">
                     Cambia tu contraseña para mantener tu cuenta segura
                   </p>
@@ -355,25 +538,9 @@ function ConfiguracionPageContent() {
                   </Button>
                 </CardContent>
               </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Actividad Reciente</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-500 mb-4">
-                    Revisa tu historial de actividad y cambios realizados en el sistema
-                  </p>
-                  <Button
-                    onClick={() => setHistoryModalOpen(true)}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    Ver Mi Historial
-                  </Button>
-                </CardContent>
-              </Card>
             </div>
+
+            <UserActivitySection />
           </TabsContent>
         </Tabs>
       </div>
@@ -427,7 +594,6 @@ function ConfiguracionPageContent() {
 
       <UserProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
       <ChangePasswordModal open={passwordModalOpen} onOpenChange={setPasswordModalOpen} />
-      <UserHistoryModal open={historyModalOpen} onOpenChange={setHistoryModalOpen} />
     </MainLayout>
   )
 }
