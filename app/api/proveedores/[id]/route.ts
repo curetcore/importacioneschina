@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { updateProveedorSchema } from "@/lib/validations/proveedor"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // GET /api/proveedores/[id] - Obtener proveedor por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -97,6 +98,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Audit log
     await auditUpdate("Proveedor", existingProveedor as any, proveedor as any, request)
 
+    // Invalidar cache de proveedores
+    await CacheInvalidator.invalidateProveedores()
+
     return NextResponse.json({
       success: true,
       data: proveedor,
@@ -128,6 +132,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Audit log
     await auditDelete("Proveedor", proveedor as any, request)
+
+    // Invalidar cache de proveedores
+    await CacheInvalidator.invalidateProveedores()
 
     return NextResponse.json({
       success: true,

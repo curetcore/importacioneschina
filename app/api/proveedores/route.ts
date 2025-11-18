@@ -4,6 +4,8 @@ import { proveedorSchema } from "@/lib/validations/proveedor"
 import { handleApiError } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
+import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
+import { CacheKeys } from "@/lib/redis"
 
 // GET /api/proveedores - Obtener todos los proveedores
 export async function GET(request: NextRequest) {
@@ -12,17 +14,22 @@ export async function GET(request: NextRequest) {
     const rateLimitError = await withRateLimit(request, RateLimits.query)
     if (rateLimitError) return rateLimitError
 
-    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const activo = searchParams.get("activo")
 
-    const whereClause = activo !== null ? { activo: activo === "true" } : {}
+    // Cachear proveedores (datos relativamente estáticos)
+    const cacheKey = `${CacheKeys.proveedores.list()}:${activo || "all"}`
 
-    const proveedores = await db.proveedor.findMany({
-      where: whereClause,
-      orderBy: {
-        nombre: "asc",
-      },
+    const proveedores = await QueryCache.static(cacheKey, async () => {
+      const db = await getPrismaClient()
+      const whereClause = activo !== null ? { activo: activo === "true" } : {}
+
+      return await db.proveedor.findMany({
+        where: whereClause,
+        orderBy: {
+          nombre: "asc",
+        },
+      })
     })
 
     return NextResponse.json({
@@ -93,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("Proveedor", proveedor as any, request)
+
+    // Invalidar cache de proveedores
+    await CacheInvalidator.invalidateProveedores()
 
     return NextResponse.json(
       {
