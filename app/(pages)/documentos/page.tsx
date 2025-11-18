@@ -2,16 +2,7 @@
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import {
-  FileText,
-  Download,
-  Edit2,
-  Search,
-  Filter,
-  FileCheck,
-  Receipt,
-  Package,
-} from "lucide-react"
+import { FileText, Download, Edit2, Search } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
@@ -234,23 +225,11 @@ export default function DocumentosPage() {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="todos" className="gap-2">
-                  <FileText className="w-4 h-4" />
-                  Todos
-                </TabsTrigger>
-                <TabsTrigger value="facturas" className="gap-2">
-                  <FileCheck className="w-4 h-4" />
-                  Facturas Comerciales
-                </TabsTrigger>
-                <TabsTrigger value="comprobantes" className="gap-2">
-                  <Receipt className="w-4 h-4" />
-                  Comprobantes de Pago
-                </TabsTrigger>
-                <TabsTrigger value="logisticos" className="gap-2">
-                  <Package className="w-4 h-4" />
-                  Documentos Logísticos
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="todos">Todos</TabsTrigger>
+                <TabsTrigger value="facturas">Facturas Comerciales</TabsTrigger>
+                <TabsTrigger value="comprobantes">Comprobantes de Pago</TabsTrigger>
+                <TabsTrigger value="logisticos">Documentos Logísticos</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">

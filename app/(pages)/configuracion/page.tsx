@@ -584,23 +584,11 @@ function ConfiguracionPageContent() {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="configuracion" className="gap-2">
-              <Settings className="w-4 h-4" />
-              Configuración
-            </TabsTrigger>
-            <TabsTrigger value="distribucion" className="gap-2">
-              <Calculator className="w-4 h-4" />
-              Distribución de Costos
-            </TabsTrigger>
-            <TabsTrigger value="proveedores" className="gap-2">
-              <Users className="w-4 h-4" />
-              Proveedores CRM
-            </TabsTrigger>
-            <TabsTrigger value="cuenta" className="gap-2">
-              <UserCircle className="w-4 h-4" />
-              Mi Cuenta
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="configuracion">Configuración</TabsTrigger>
+            <TabsTrigger value="distribucion">Distribución de Costos</TabsTrigger>
+            <TabsTrigger value="proveedores">Proveedores CRM</TabsTrigger>
+            <TabsTrigger value="cuenta">Mi Cuenta</TabsTrigger>
           </TabsList>
 
           <TabsContent value="configuracion" className="space-y-6">

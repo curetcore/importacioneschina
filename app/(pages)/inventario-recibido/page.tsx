@@ -431,19 +431,10 @@ export default function InventarioRecibidoPage() {
   return (
     <MainLayout>
       <Tabs defaultValue="inventario" className="w-full space-y-6">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="inventario" className="gap-2">
-            <Inbox className="w-4 h-4" />
-            Inventario Recibido
-          </TabsTrigger>
-          <TabsTrigger value="costos" className="gap-2">
-            <Calculator className="w-4 h-4" />
-            Análisis de Costos
-          </TabsTrigger>
-          <TabsTrigger value="productos" className="gap-2">
-            <Tag className="w-4 h-4" />
-            Productos
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="inventario">Inventario Recibido</TabsTrigger>
+          <TabsTrigger value="costos">Análisis de Costos</TabsTrigger>
+          <TabsTrigger value="productos">Productos</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Inventario Recibido */}
