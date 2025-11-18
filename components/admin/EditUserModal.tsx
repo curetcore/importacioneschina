@@ -37,7 +37,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
   const [formData, setFormData] = useState({
     name: "",
     lastName: "",
-    role: "user",
+    role: "limitado",
     newPassword: "",
   })
 
@@ -47,7 +47,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       setFormData({
         name: user.name || "",
         lastName: user.lastName || "",
-        role: user.role || "user",
+        role: user.role || "limitado",
         newPassword: "",
       })
     }
@@ -94,13 +94,13 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
           <DialogTitle>Editar Usuario</DialogTitle>
           <DialogDescription>Actualiza la información del usuario {user.email}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={user.email} disabled className="bg-gray-50" />
@@ -134,16 +134,18 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
             <Label htmlFor="role">Rol *</Label>
             <Select
               options={[
-                { value: "user", label: "Usuario" },
+                { value: "limitado", label: "Limitado" },
                 { value: "admin", label: "Administrador" },
               ]}
               value={formData.role}
               onChange={value => setFormData({ ...formData, role: value })}
-              disabled={loading}
+              disabled={loading || user.role === "superadmin"}
               placeholder="Selecciona un rol"
             />
             <p className="text-xs text-gray-500">
-              Los administradores tienen acceso completo al sistema
+              {user.role === "superadmin"
+                ? "El rol de Super Admin no puede ser modificado"
+                : "Los administradores tienen acceso completo al sistema"}
             </p>
           </div>
 
@@ -163,7 +165,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
             </p>
           </div>
 
-          <div className="flex gap-2 justify-end pt-4 border-t">
+          <div className="flex gap-3 justify-end pt-6 border-t mt-6">
             <Button
               type="button"
               variant="outline"

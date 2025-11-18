@@ -219,7 +219,7 @@ function AdminUsersSection() {
               </thead>
               <tbody>
                 {users.map(user => {
-                  const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL
+                  const isSuperAdmin = user.role === "superadmin"
                   return (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4 text-sm text-gray-900">
@@ -238,12 +238,18 @@ function AdminUsersSection() {
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            user.role === "admin"
+                            user.role === "superadmin"
                               ? "bg-purple-100 text-purple-700"
-                              : "bg-gray-100 text-gray-700"
+                              : user.role === "admin"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-700"
                           }`}
                         >
-                          {user.role === "admin" ? "Administrador" : "Usuario"}
+                          {user.role === "superadmin"
+                            ? "Super Admin"
+                            : user.role === "admin"
+                              ? "Administrador"
+                              : "Limitado"}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-500">

@@ -110,8 +110,12 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
 
           <div className="space-y-2">
             <Label>Rol</Label>
-            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-700 capitalize">
-              {session?.user?.role === "admin" ? "Administrador" : "Usuario"}
+            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-700">
+              {session?.user?.role === "superadmin"
+                ? "Super Admin"
+                : session?.user?.role === "admin"
+                  ? "Administrador"
+                  : "Limitado"}
             </div>
           </div>
 
