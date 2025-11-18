@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Bell, Check, CheckCheck, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
+import { getPusherClient } from "@/lib/pusher-client"
 
 interface Notification {
   id: string
@@ -50,9 +51,7 @@ export default function NotificationDropdown() {
       })
 
       // Actualizar estado local
-      setNotificaciones(prev =>
-        prev.map(n => (n.id === id ? { ...n, leida: true } : n))
-      )
+      setNotificaciones(prev => prev.map(n => (n.id === id ? { ...n, leida: true } : n)))
       setUnreadCount(prev => Math.max(0, prev - 1))
 
       // Navegar si hay URL
@@ -98,13 +97,33 @@ export default function NotificationDropdown() {
     }
   }, [isOpen])
 
-  // Fetch inicial y polling cada 30 segundos
+  // Fetch inicial y suscripción a Pusher para notificaciones en tiempo real
   useEffect(() => {
     fetchNotificaciones()
 
-    const interval = setInterval(fetchNotificaciones, 30000) // 30 segundos
+    // Suscribirse a Pusher para notificaciones en tiempo real
+    const pusher = getPusherClient()
+    const channel = pusher.subscribe("notifications")
 
-    return () => clearInterval(interval)
+    // Escuchar nuevas notificaciones
+    channel.bind("new-notification", (data: { notification: Notification }) => {
+      console.log("Nueva notificación recibida:", data.notification)
+
+      // Agregar al inicio de la lista
+      setNotificaciones(prev => [data.notification, ...prev])
+
+      // Incrementar contador de no leídas
+      setUnreadCount(prev => prev + 1)
+    })
+
+    // Polling como fallback cada 2 minutos (por si falla Pusher)
+    const interval = setInterval(fetchNotificaciones, 120000) // 2 minutos
+
+    return () => {
+      clearInterval(interval)
+      channel.unbind_all()
+      channel.unsubscribe()
+    }
   }, [])
 
   // Toggle dropdown
@@ -137,9 +156,7 @@ export default function NotificationDropdown() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <div>
               <h3 className="font-semibold text-gray-900">Notificaciones</h3>
-              {unreadCount > 0 && (
-                <p className="text-xs text-gray-500">{unreadCount} sin leer</p>
-              )}
+              {unreadCount > 0 && <p className="text-xs text-gray-500">{unreadCount} sin leer</p>}
             </div>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
@@ -152,10 +169,7 @@ export default function NotificationDropdown() {
                   Marcar todas
                 </button>
               )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
+              <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-100 rounded">
                 <X size={16} className="text-gray-500" />
               </button>
             </div>

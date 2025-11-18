@@ -1,4 +1,5 @@
 import { getPrismaClient } from "./db-helpers"
+import { emitNewNotification } from "./pusher-server"
 
 /**
  * Tipos de notificación
@@ -71,7 +72,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
     // Usar ícono por defecto si no se proporciona
     const icono = input.icono || NOTIFICATION_ICONS[input.tipo]
 
-    await db.notificacion.create({
+    const notificacion = await db.notificacion.create({
       data: {
         tipo: input.tipo,
         titulo: input.titulo,
@@ -85,6 +86,18 @@ export async function createNotification(input: CreateNotificationInput): Promis
         prioridad: input.prioridad || "normal",
         expiresAt: input.expiresAt,
       },
+    })
+
+    // Emitir evento de Pusher en tiempo real
+    await emitNewNotification({
+      id: notificacion.id,
+      tipo: notificacion.tipo,
+      titulo: notificacion.titulo,
+      descripcion: notificacion.descripcion,
+      icono: notificacion.icono,
+      url: notificacion.url,
+      leida: notificacion.leida,
+      createdAt: notificacion.createdAt.toISOString(),
     })
   } catch (error) {
     console.error("Error creating notification:", error)
