@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useSession } from "next-auth/react"
 import NotificationDropdown from "./NotificationDropdown"
 import GlobalSearch from "./GlobalSearch"
@@ -12,9 +13,19 @@ export default function Navbar() {
     <nav className="bg-white border-b border-gray-200">
       <div className="px-6 py-3">
         <div className="flex items-center justify-between gap-6">
-          <div className="flex-shrink-0">
-            <h1 className="text-xl font-semibold text-gray-900">Sistema de Importación</h1>
-            <p className="text-xs text-gray-500">Control financiero automático</p>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Image
+              src="/logo-importacion.png"
+              alt="Logo Sistema de Importación"
+              width={48}
+              height={48}
+              className="object-contain"
+              priority
+            />
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Sistema de Importación</h1>
+              <p className="text-xs text-gray-500">Control financiero automático</p>
+            </div>
           </div>
 
           {/* Global Search */}
