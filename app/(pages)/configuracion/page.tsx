@@ -62,7 +62,8 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
   },
 }
 
-const SUPER_ADMIN_EMAIL = "info@curetshop.com"
+// SUPER_ADMIN_EMAIL ya no es necesario - ahora usamos roles
+// const SUPER_ADMIN_EMAIL = "info@curetshop.com"
 
 interface AuditLog {
   id: string
@@ -312,7 +313,7 @@ function UserActivitySection() {
   const [page, setPage] = useState(1)
   const limit = 10
 
-  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
+  const isSuperAdmin = session?.user?.role === "superadmin"
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-activity", session?.user?.email, page, isSuperAdmin],
@@ -483,7 +484,7 @@ function ConfiguracionPageContent() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
 
   // Check if user is super admin
-  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
+  const isSuperAdmin = session?.user?.role === "superadmin"
 
   // Handle URL tab parameter
   useEffect(() => {
