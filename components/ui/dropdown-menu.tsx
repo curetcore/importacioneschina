@@ -153,3 +153,7 @@ export function DropdownMenuItem({ onClick, className = "", children }: Dropdown
     </button>
   )
 }
+
+export function DropdownMenuSeparator() {
+  return <div className="my-1 h-px bg-gray-200" />
+}
