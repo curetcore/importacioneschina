@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import { Bell, Check, CheckCheck, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
-import { getPusherClient } from "@/lib/pusher-client"
-import { NotificationDetailModal } from "@/components/notifications/NotificationDetailModal"
 
 interface Notification {
   id: string
@@ -23,8 +21,6 @@ export default function NotificationDropdown() {
   const [notificaciones, setNotificaciones] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [detailModalOpen, setDetailModalOpen] = useState(false)
-  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -46,8 +42,8 @@ export default function NotificationDropdown() {
     }
   }
 
-  // Marcar notificación como leída y abrir modal de detalles
-  const markAsRead = async (id: string) => {
+  // Marcar notificación como leída
+  const markAsRead = async (id: string, url: string | null) => {
     try {
       await fetch(`/api/notificaciones/${id}`, {
         method: "PUT",
@@ -57,10 +53,11 @@ export default function NotificationDropdown() {
       setNotificaciones(prev => prev.map(n => (n.id === id ? { ...n, leida: true } : n)))
       setUnreadCount(prev => Math.max(0, prev - 1))
 
-      // Abrir modal de detalles
-      setSelectedNotificationId(id)
-      setDetailModalOpen(true)
-      setIsOpen(false)
+      // Navegar si hay URL
+      if (url) {
+        router.push(url)
+        setIsOpen(false)
+      }
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -99,33 +96,13 @@ export default function NotificationDropdown() {
     }
   }, [isOpen])
 
-  // Fetch inicial y suscripción a Pusher para notificaciones en tiempo real
+  // Fetch inicial y polling cada 30 segundos
   useEffect(() => {
     fetchNotificaciones()
 
-    // Suscribirse a Pusher para notificaciones en tiempo real
-    const pusher = getPusherClient()
-    const channel = pusher.subscribe("notifications")
+    const interval = setInterval(fetchNotificaciones, 30000) // 30 segundos
 
-    // Escuchar nuevas notificaciones
-    channel.bind("new-notification", (data: { notification: Notification }) => {
-      console.log("Nueva notificación recibida:", data.notification)
-
-      // Agregar al inicio de la lista
-      setNotificaciones(prev => [data.notification, ...prev])
-
-      // Incrementar contador de no leídas
-      setUnreadCount(prev => prev + 1)
-    })
-
-    // Polling como fallback cada 2 minutos (por si falla Pusher)
-    const interval = setInterval(fetchNotificaciones, 120000) // 2 minutos
-
-    return () => {
-      clearInterval(interval)
-      channel.unbind_all()
-      channel.unsubscribe()
-    }
+    return () => clearInterval(interval)
   }, [])
 
   // Toggle dropdown
@@ -193,7 +170,7 @@ export default function NotificationDropdown() {
               notificaciones.map(notif => (
                 <button
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id)}
+                  onClick={() => markAsRead(notif.id, notif.url)}
                   className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                     !notif.leida ? "bg-blue-50" : ""
                   }`}
@@ -242,13 +219,6 @@ export default function NotificationDropdown() {
           )}
         </div>
       )}
-
-      {/* Modal de detalles */}
-      <NotificationDetailModal
-        open={detailModalOpen}
-        onOpenChange={setDetailModalOpen}
-        notificationId={selectedNotificationId}
-      />
     </div>
   )
 }
