@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "./button"
 import { Input } from "./input"
 import { Plus, X } from "lucide-react"
@@ -42,13 +42,18 @@ export function SizeDistributionInput({
   const [sizes, setSizes] = useState<Record<string, number>>(value || {})
   const [customSize, setCustomSize] = useState("")
   const [showCustomInput, setShowCustomInput] = useState(false)
+  const isInitialMount = useRef(true)
 
-  // Sync with parent value only when value changes externally (not from our own updates)
+  // Only sync with parent value on initial mount or when the parent explicitly resets
   useEffect(() => {
-    // Only sync if the value is significantly different (not just cleaned version)
-    if (value !== null && Object.keys(value).length > 0) {
-      setSizes(value)
+    if (isInitialMount.current) {
+      // First render: initialize from parent value
+      setSizes(value || {})
+      isInitialMount.current = false
     }
+    // After initial mount, DON'T sync - maintain local state independence
+    // This prevents the bug where adding a size with qty=0 gets immediately removed
+    // when parent receives the cleaned value and passes it back
   }, [value])
 
   // Update parent when sizes change
