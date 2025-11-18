@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
@@ -60,7 +60,7 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
   },
 }
 
-export default function ConfiguracionPage() {
+function ConfiguracionPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   const searchParams = useSearchParams()
@@ -429,5 +429,19 @@ export default function ConfiguracionPage() {
       <ChangePasswordModal open={passwordModalOpen} onOpenChange={setPasswordModalOpen} />
       <UserHistoryModal open={historyModalOpen} onOpenChange={setHistoryModalOpen} />
     </MainLayout>
+  )
+}
+
+export default function ConfiguracionPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="text-center py-12 text-sm text-gray-500">Cargando configuración...</div>
+        </MainLayout>
+      }
+    >
+      <ConfiguracionPageContent />
+    </Suspense>
   )
 }
