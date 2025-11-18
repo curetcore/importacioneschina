@@ -57,8 +57,8 @@ CREATE OR REPLACE FUNCTION pagos_china_search_update() RETURNS trigger AS $$
 BEGIN
   NEW.search_vector :=
     setweight(to_tsvector('spanish', COALESCE(NEW.id_pago, '')), 'A') ||
-    setweight(to_tsvector('spanish', COALESCE(NEW.metodo_pago, '')), 'B') ||
-    setweight(to_tsvector('spanish', COALESCE(NEW.observaciones, '')), 'C') ||
+    setweight(to_tsvector('spanish', COALESCE(NEW.tipo_pago, '')), 'B') ||
+    setweight(to_tsvector('spanish', COALESCE(NEW.metodo_pago, '')), 'C') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.moneda, '')), 'D');
   RETURN NEW;
 END
@@ -73,8 +73,8 @@ CREATE TRIGGER pagos_china_search_update_trigger
 UPDATE "pagos_china"
 SET search_vector =
   setweight(to_tsvector('spanish', COALESCE(id_pago, '')), 'A') ||
-  setweight(to_tsvector('spanish', COALESCE(metodo_pago, '')), 'B') ||
-  setweight(to_tsvector('spanish', COALESCE(observaciones, '')), 'C') ||
+  setweight(to_tsvector('spanish', COALESCE(tipo_pago, '')), 'B') ||
+  setweight(to_tsvector('spanish', COALESCE(metodo_pago, '')), 'C') ||
   setweight(to_tsvector('spanish', COALESCE(moneda, '')), 'D');
 
 CREATE INDEX IF NOT EXISTS "pagos_china_search_idx" ON "pagos_china" USING GIN (search_vector);
@@ -93,7 +93,7 @@ BEGIN
     setweight(to_tsvector('spanish', COALESCE(NEW.id_gasto, '')), 'A') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.tipo_gasto, '')), 'B') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.proveedor_servicio, '')), 'B') ||
-    setweight(to_tsvector('spanish', COALESCE(NEW.concepto, '')), 'C');
+    setweight(to_tsvector('spanish', COALESCE(NEW.notas, '')), 'C');
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -109,7 +109,7 @@ SET search_vector =
   setweight(to_tsvector('spanish', COALESCE(id_gasto, '')), 'A') ||
   setweight(to_tsvector('spanish', COALESCE(tipo_gasto, '')), 'B') ||
   setweight(to_tsvector('spanish', COALESCE(proveedor_servicio, '')), 'B') ||
-  setweight(to_tsvector('spanish', COALESCE(concepto, '')), 'C');
+  setweight(to_tsvector('spanish', COALESCE(notas, '')), 'C');
 
 CREATE INDEX IF NOT EXISTS "gastos_logisticos_search_idx" ON "gastos_logisticos" USING GIN (search_vector);
 
@@ -126,8 +126,7 @@ BEGIN
   NEW.search_vector :=
     setweight(to_tsvector('spanish', COALESCE(NEW.id_recepcion, '')), 'A') ||
     setweight(to_tsvector('spanish', COALESCE(NEW.bodega_inicial, '')), 'B') ||
-    setweight(to_tsvector('spanish', COALESCE(NEW.estado_producto, '')), 'C') ||
-    setweight(to_tsvector('spanish', COALESCE(NEW.observaciones, '')), 'D');
+    setweight(to_tsvector('spanish', COALESCE(NEW.notas, '')), 'C');
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -142,8 +141,7 @@ UPDATE "inventario_recibido"
 SET search_vector =
   setweight(to_tsvector('spanish', COALESCE(id_recepcion, '')), 'A') ||
   setweight(to_tsvector('spanish', COALESCE(bodega_inicial, '')), 'B') ||
-  setweight(to_tsvector('spanish', COALESCE(estado_producto, '')), 'C') ||
-  setweight(to_tsvector('spanish', COALESCE(observaciones, '')), 'D');
+  setweight(to_tsvector('spanish', COALESCE(notas, '')), 'C');
 
 CREATE INDEX IF NOT EXISTS "inventario_recibido_search_idx" ON "inventario_recibido" USING GIN (search_vector);
 
