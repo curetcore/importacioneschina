@@ -7,6 +7,8 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
+export const fetchCache = "force-no-store"
+export const revalidate = 0
 
 const configuracionSchema = z.object({
   categoria: z.enum([
