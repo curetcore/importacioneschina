@@ -1,16 +1,12 @@
 "use client"
 
-import { User, LogOut } from "lucide-react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import NotificationDropdown from "./NotificationDropdown"
 import GlobalSearch from "./GlobalSearch"
+import UserDropdown from "./UserDropdown"
 
 export default function Navbar() {
   const { data: session } = useSession()
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" })
-  }
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -27,20 +23,8 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4 flex-shrink-0">
-            {session?.user && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg">
-                <User size={16} className="text-gray-600" />
-                <span className="text-sm text-gray-700">{session.user.name}</span>
-              </div>
-            )}
             <NotificationDropdown />
-            <button
-              onClick={handleLogout}
-              className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
-              title="Cerrar sesión"
-            >
-              <LogOut size={20} className="text-gray-600 group-hover:text-red-600" />
-            </button>
+            {session?.user && <UserDropdown />}
           </div>
         </div>
       </div>
