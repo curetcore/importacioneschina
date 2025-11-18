@@ -199,7 +199,12 @@ export default function ConfiguracionPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs
+          defaultValue="configuracion"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
           <TabsList className="w-full justify-start">
             <TabsTrigger value="configuracion" className="gap-2">
               <Settings className="w-4 h-4" />
