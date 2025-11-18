@@ -11,401 +11,401 @@ datasource db {
 
 // TABLA 1: OC CHINA
 model OCChina {
-  id                    String   @id @default(cuid())
-  oc                    String   @unique
-  proveedor             String
-  fechaOC               DateTime @map("fecha_oc")
-  descripcionLote       String?  @map("descripcion_lote") @db.Text
-  categoriaPrincipal    String   @map("categoria_principal")
+  id                 String   @id @default(cuid())
+  oc                 String   @unique
+  proveedor          String
+  fechaOC            DateTime @map("fecha_oc")
+  descripcionLote    String?  @map("descripcion_lote") @db.Text
+  categoriaPrincipal String   @map("categoria_principal")
 
   // Campos calculados (ahora derivados de items)
   // cantidadOrdenada = suma de items.cantidadTotal
   // costoFOBTotalUSD = suma de items.subtotalUSD
 
   // Adjuntos (fotos y PDFs)
-  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+  adjuntos Json? // [{nombre, url, tipo, size, uploadedAt}]
 
   // Relaciones
-  items                 OCChinaItem[]
-  pagosChina            PagosChina[]
-  gastosLogisticos      GastoLogisticoOC[]
-  inventarioRecibido    InventarioRecibido[]
+  items              OCChinaItem[]
+  pagosChina         PagosChina[]
+  gastosLogisticos   GastoLogisticoOC[]
+  inventarioRecibido InventarioRecibido[]
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("oc_china")
   @@index([proveedor])
   @@index([fechaOC])
   @@index([categoriaPrincipal])
   @@index([deletedAt])
-  @@index([deletedAt, fechaOC])  // Índice compuesto para queries comunes: filtrar activos y ordenar por fecha
-  @@index([proveedor, deletedAt])  // Índice compuesto para buscar por proveedor excluyendo eliminados
+  @@index([deletedAt, fechaOC]) // Índice compuesto para queries comunes: filtrar activos y ordenar por fecha
+  @@index([proveedor, deletedAt]) // Índice compuesto para buscar por proveedor excluyendo eliminados
+  @@map("oc_china")
 }
 
 // TABLA 1.5: ITEMS DE OC CHINA (productos individuales)
 model OCChinaItem {
-  id                    String   @id @default(cuid())
-  ocId                  String   @map("oc_id")
+  id   String @id @default(cuid())
+  ocId String @map("oc_id")
 
   // Información del producto
-  sku                   String
-  nombre                String               // "men leather shoes", "backpack"
-  material              String?  @db.Text    // "COW LEATHER + EVA SOLE..."
-  color                 String?  @db.Text    // "brown leather + brown lace"
-  especificaciones      String?  @db.Text    // Notas adicionales
+  sku              String
+  nombre           String // "men leather shoes", "backpack"
+  material         String? @db.Text // "COW LEATHER + EVA SOLE..."
+  color            String? @db.Text // "brown leather + brown lace"
+  especificaciones String? @db.Text // Notas adicionales
 
   // Tallas y cantidades
-  tallaDistribucion     Json?                // {"38": 10, "39": 20, "40": 20}
-  cantidadTotal         Int                  // Suma de todas las tallas
+  tallaDistribucion Json? // {"38": 10, "39": 20, "40": 20}
+  cantidadTotal     Int // Suma de todas las tallas
 
   // Precios
-  precioUnitarioUSD     Decimal  @db.Decimal(10, 4)
-  subtotalUSD           Decimal  @db.Decimal(12, 2)
+  precioUnitarioUSD Decimal @db.Decimal(10, 4)
+  subtotalUSD       Decimal @db.Decimal(12, 2)
 
   // Medidas físicas (para distribución de costos)
-  pesoUnitarioKg        Decimal? @map("peso_unitario_kg") @db.Decimal(10, 4)     // Peso por unidad en kg
-  volumenUnitarioCBM    Decimal? @map("volumen_unitario_cbm") @db.Decimal(10, 6) // Volumen por unidad en m³
-  pesoTotalKg           Decimal? @map("peso_total_kg") @db.Decimal(12, 4)        // pesoUnitarioKg * cantidadTotal
-  volumenTotalCBM       Decimal? @map("volumen_total_cbm") @db.Decimal(12, 6)    // volumenUnitarioCBM * cantidadTotal
+  pesoUnitarioKg     Decimal? @map("peso_unitario_kg") @db.Decimal(10, 4) // Peso por unidad en kg
+  volumenUnitarioCBM Decimal? @map("volumen_unitario_cbm") @db.Decimal(10, 6) // Volumen por unidad en m³
+  pesoTotalKg        Decimal? @map("peso_total_kg") @db.Decimal(12, 4) // pesoUnitarioKg * cantidadTotal
+  volumenTotalCBM    Decimal? @map("volumen_total_cbm") @db.Decimal(12, 6) // volumenUnitarioCBM * cantidadTotal
 
   // Relaciones
-  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
-  inventarioRecibido    InventarioRecibido[]
+  ocChina            OCChina              @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  inventarioRecibido InventarioRecibido[]
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("oc_china_items")
   @@index([ocId])
   @@index([sku])
   @@index([deletedAt])
+  @@map("oc_china_items")
 }
 
 // TABLA 2: PAGOS CHINA
 model PagosChina {
-  id                    String   @id @default(cuid())
-  idPago                String   @unique @map("id_pago")
-  ocId                  String   @map("oc_id")
-  fechaPago             DateTime @map("fecha_pago")
-  tipoPago              String   @map("tipo_pago")
-  metodoPago            String   @map("metodo_pago")
-  moneda                String
-  montoOriginal         Decimal  @map("monto_original") @db.Decimal(12, 2)
-  tasaCambio            Decimal  @default(1) @map("tasa_cambio") @db.Decimal(8, 4)
-  comisionBancoRD       Decimal  @default(0) @map("comision_banco_rd") @db.Decimal(10, 2)
-  montoRD               Decimal? @map("monto_rd") @db.Decimal(12, 2)
-  montoRDNeto           Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
+  id              String   @id @default(cuid())
+  idPago          String   @unique @map("id_pago")
+  ocId            String   @map("oc_id")
+  fechaPago       DateTime @map("fecha_pago")
+  tipoPago        String   @map("tipo_pago")
+  metodoPago      String   @map("metodo_pago")
+  moneda          String
+  montoOriginal   Decimal  @map("monto_original") @db.Decimal(12, 2)
+  tasaCambio      Decimal  @default(1) @map("tasa_cambio") @db.Decimal(8, 4)
+  comisionBancoRD Decimal  @default(0) @map("comision_banco_rd") @db.Decimal(10, 2)
+  montoRD         Decimal? @map("monto_rd") @db.Decimal(12, 2)
+  montoRDNeto     Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
 
   // Adjuntos (recibos de pago)
-  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+  adjuntos Json? // [{nombre, url, tipo, size, uploadedAt}]
 
   // Relaciones
-  ocChina               OCChina  @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  ocChina OCChina @relation(fields: [ocId], references: [id], onDelete: Cascade)
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("pagos_china")
   @@index([ocId])
   @@index([tipoPago])
   @@index([metodoPago])
   @@index([fechaPago])
   @@index([moneda])
   @@index([deletedAt])
+  @@map("pagos_china")
 }
 
 // TABLA 3: GASTOS LOGÍSTICOS
 model GastosLogisticos {
-  id                    String   @id @default(cuid())
-  idGasto               String   @unique @map("id_gasto")
-  fechaGasto            DateTime @map("fecha_gasto")
-  tipoGasto             String   @map("tipo_gasto")
-  proveedorServicio     String?  @map("proveedor_servicio")
-  metodoPago            String   @map("metodo_pago") // Efectivo, Transferencia, Tarjeta, Cheque
-  montoRD               Decimal  @map("monto_rd") @db.Decimal(12, 2)
-  notas                 String?  @db.Text
+  id                String   @id @default(cuid())
+  idGasto           String   @unique @map("id_gasto")
+  fechaGasto        DateTime @map("fecha_gasto")
+  tipoGasto         String   @map("tipo_gasto")
+  proveedorServicio String?  @map("proveedor_servicio")
+  metodoPago        String   @map("metodo_pago") // Efectivo, Transferencia, Tarjeta, Cheque
+  montoRD           Decimal  @map("monto_rd") @db.Decimal(12, 2)
+  notas             String?  @db.Text
 
   // Adjuntos (facturas, recibos, documentos)
-  adjuntos              Json?    // [{nombre, url, tipo, size, uploadedAt}]
+  adjuntos Json? // [{nombre, url, tipo, size, uploadedAt}]
 
   // Relaciones many-to-many con OCs
-  ordenesCompra         GastoLogisticoOC[]
+  ordenesCompra GastoLogisticoOC[]
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("gastos_logisticos")
   @@index([tipoGasto])
   @@index([metodoPago])
   @@index([fechaGasto])
   @@index([deletedAt])
+  @@map("gastos_logisticos")
 }
 
 // TABLA 3.5: RELACIÓN MANY-TO-MANY ENTRE GASTOS Y OCS
 // Un gasto puede estar asociado a múltiples órdenes de compra
 // (Ej: un contenedor con productos de varias OCs)
 model GastoLogisticoOC {
-  id                    String            @id @default(cuid())
-  gastoId               String            @map("gasto_id")
-  ocId                  String            @map("oc_id")
+  id      String @id @default(cuid())
+  gastoId String @map("gasto_id")
+  ocId    String @map("oc_id")
 
   // Relaciones
-  gasto                 GastosLogisticos  @relation(fields: [gastoId], references: [id], onDelete: Cascade)
-  ocChina               OCChina           @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  gasto   GastosLogisticos @relation(fields: [gastoId], references: [id], onDelete: Cascade)
+  ocChina OCChina          @relation(fields: [ocId], references: [id], onDelete: Cascade)
 
   // Timestamps
-  createdAt             DateTime          @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([gastoId, ocId])
-  @@map("gastos_logisticos_oc")
   @@index([gastoId])
   @@index([ocId])
+  @@map("gastos_logisticos_oc")
 }
 
 // TABLA 4: INVENTARIO RECIBIDO
 model InventarioRecibido {
-  id                        String   @id @default(cuid())
-  idRecepcion               String   @unique @map("id_recepcion")
-  ocId                      String   @map("oc_id")
-  itemId                    String?  @map("item_id")  // Nuevo: vincular a producto específico
-  fechaLlegada              DateTime @map("fecha_llegada")
-  bodegaInicial             String   @map("bodega_inicial")
-  cantidadRecibida          Int      @map("cantidad_recibida")
-  costoUnitarioFinalRD      Decimal? @map("costo_unitario_final_rd") @db.Decimal(12, 2)
-  costoTotalRecepcionRD     Decimal? @map("costo_total_recepcion_rd") @db.Decimal(12, 2)
-  notas                     String?  @db.Text
+  id                    String   @id @default(cuid())
+  idRecepcion           String   @unique @map("id_recepcion")
+  ocId                  String   @map("oc_id")
+  itemId                String?  @map("item_id") // Nuevo: vincular a producto específico
+  fechaLlegada          DateTime @map("fecha_llegada")
+  bodegaInicial         String   @map("bodega_inicial")
+  cantidadRecibida      Int      @map("cantidad_recibida")
+  costoUnitarioFinalRD  Decimal? @map("costo_unitario_final_rd") @db.Decimal(12, 2)
+  costoTotalRecepcionRD Decimal? @map("costo_total_recepcion_rd") @db.Decimal(12, 2)
+  notas                 String?  @db.Text
 
   // Relaciones
-  ocChina                   OCChina      @relation(fields: [ocId], references: [id], onDelete: Cascade)
-  item                      OCChinaItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  ocChina OCChina      @relation(fields: [ocId], references: [id], onDelete: Cascade)
+  item    OCChinaItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
 
   // Timestamps
-  createdAt                 DateTime @default(now()) @map("created_at")
-  updatedAt                 DateTime @updatedAt @map("updated_at")
-  deletedAt                 DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("inventario_recibido")
   @@index([ocId])
   @@index([itemId])
   @@index([bodegaInicial])
   @@index([fechaLlegada])
   @@index([deletedAt])
+  @@map("inventario_recibido")
 }
 
 // TABLA 4.5: PRODUCTOS - Catálogo consolidado con pricing
 model Producto {
-  id                    String   @id @default(cuid())
-  sku                   String   @unique
-  nombre                String
+  id     String @id @default(cuid())
+  sku    String @unique
+  nombre String
 
   // Pricing
-  precioVenta           Decimal? @map("precio_venta") @db.Decimal(10, 2)
+  precioVenta Decimal? @map("precio_venta") @db.Decimal(10, 2)
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@map("productos")
   @@index([sku])
   @@index([nombre])
   @@index([deletedAt])
+  @@map("productos")
 }
 
 // TABLA 5: CONFIGURACIONES DEL SISTEMA
 model Configuracion {
-  id                    String   @id @default(cuid())
-  categoria             String   // "categorias", "tiposPago", "metodosPago", "bodegas", "tiposGasto"
-  valor                 String
-  orden                 Int      @default(0)
-  activo                Boolean  @default(true)
+  id        String  @id @default(cuid())
+  categoria String // "categorias", "tiposPago", "metodosPago", "bodegas", "tiposGasto"
+  valor     String
+  orden     Int     @default(0)
+  activo    Boolean @default(true)
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("configuracion")
   @@unique([categoria, valor])
   @@index([categoria])
   @@index([activo])
+  @@map("configuracion")
 }
 
 // TABLA 6: USUARIOS DEL SISTEMA
 model User {
-  id                    String   @id @default(cuid())
-  email                 String   @unique
-  name                  String
-  lastName              String?  @map("last_name")
-  password              String   // Hashed con bcrypt
-  role                  String   @default("limitado") // "limitado" | "admin" | "superadmin"
-  activo                Boolean  @default(true)
+  id       String  @id @default(cuid())
+  email    String  @unique
+  name     String
+  lastName String? @map("last_name")
+  password String // Hashed con bcrypt
+  role     String  @default("limitado") // "limitado" | "admin" | "superadmin"
+  activo   Boolean @default(true)
 
   // Relaciones
-  auditLogs             AuditLog[]
+  auditLogs AuditLog[]
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-  lastLogin             DateTime? @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  lastLogin DateTime? @map("last_login")
 
-  @@map("users")
   @@index([email])
   @@index([activo])
+  @@map("users")
 }
 
 // TABLA 7: PROVEEDORES (CRM)
 model Proveedor {
-  id                    String   @id @default(cuid())
-  codigo                String   @unique  // "PROV-001"
-  nombre                String
+  id     String @id @default(cuid())
+  codigo String @unique // "PROV-001"
+  nombre String
 
   // Información de contacto
-  contactoPrincipal     String?  @map("contacto_principal")
-  email                 String?
-  telefono              String?
-  whatsapp              String?
-  wechat                String?
+  contactoPrincipal String? @map("contacto_principal")
+  email             String?
+  telefono          String?
+  whatsapp          String?
+  wechat            String?
 
   // Ubicación
-  pais                  String   @default("China")
-  ciudad                String?
-  direccion             String?  @db.Text
+  pais      String  @default("China")
+  ciudad    String?
+  direccion String? @db.Text
 
   // Información comercial
-  sitioWeb              String?  @map("sitio_web")
-  categoriaProductos    String?  @map("categoria_productos")  // Zapatos, Carteras, etc.
-  tiempoEntregaDias     Int?     @default(30) @map("tiempo_entrega_dias")
-  monedaPreferida       String?  @default("USD") @map("moneda_preferida")
+  sitioWeb           String? @map("sitio_web")
+  categoriaProductos String? @map("categoria_productos") // Zapatos, Carteras, etc.
+  tiempoEntregaDias  Int?    @default(30) @map("tiempo_entrega_dias")
+  monedaPreferida    String? @default("USD") @map("moneda_preferida")
 
   // Términos comerciales
-  terminosPago          String?  @db.Text @map("terminos_pago")  // "50% anticipo, 50% antes de envío"
-  minimoOrden           Decimal? @db.Decimal(12, 2) @map("minimo_orden")
+  terminosPago String?  @map("terminos_pago") @db.Text // "50% anticipo, 50% antes de envío"
+  minimoOrden  Decimal? @map("minimo_orden") @db.Decimal(12, 2)
 
   // Notas y calificación
-  notas                 String?  @db.Text
-  calificacion          Int?     @default(0)  // 0-5 estrellas
+  notas        String? @db.Text
+  calificacion Int?    @default(0) // 0-5 estrellas
 
   // Estado
-  activo                Boolean  @default(true)
+  activo Boolean @default(true)
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("proveedores")
   @@index([nombre])
   @@index([activo])
   @@index([pais])
+  @@map("proveedores")
 }
 
 // TABLA 8: CONFIGURACIÓN DE DISTRIBUCIÓN DE COSTOS
 model ConfiguracionDistribucionCostos {
-  id                    String   @id @default(cuid())
-  tipoCosto             String   @map("tipo_costo")  // "pagos", "gastos_flete", "gastos_aduana", "gastos_transporte_local", "comisiones"
-  metodoDistribucion    String   @map("metodo_distribucion")  // "peso", "volumen", "valor_fob", "unidades"
-  activo                Boolean  @default(true)
+  id                 String  @id @default(cuid())
+  tipoCosto          String  @map("tipo_costo") // "pagos", "gastos_flete", "gastos_aduana", "gastos_transporte_local", "comisiones"
+  metodoDistribucion String  @map("metodo_distribucion") // "peso", "volumen", "valor_fob", "unidades"
+  activo             Boolean @default(true)
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("config_distribucion_costos")
   @@unique([tipoCosto])
   @@index([tipoCosto])
   @@index([activo])
+  @@map("config_distribucion_costos")
 }
 
 // TABLA 9: AUDIT LOG - Registro de cambios y acciones
 model AuditLog {
-  id                    String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Qué cambió
-  entidad               String   // "OCChina", "PagosChina", "GastosLogisticos", etc.
-  entidadId             String   @map("entidad_id")  // ID del registro afectado
-  accion                String   // "CREATE", "UPDATE", "DELETE", "RESTORE"
+  entidad   String // "OCChina", "PagosChina", "GastosLogisticos", etc.
+  entidadId String @map("entidad_id") // ID del registro afectado
+  accion    String // "CREATE", "UPDATE", "DELETE", "RESTORE"
 
   // Quién y cuándo
-  usuarioId             String?  @map("usuario_id")  // ID del usuario (futuro)
-  usuarioEmail          String?  @map("usuario_email")  // Email del usuario
-  usuario               User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
-  ipAddress             String?  @map("ip_address")  // IP del cliente
-  userAgent             String?  @map("user_agent")  // Navegador/cliente
+  usuarioId    String? @map("usuario_id") // ID del usuario (futuro)
+  usuarioEmail String? @map("usuario_email") // Email del usuario
+  usuario      User?   @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  ipAddress    String? @map("ip_address") // IP del cliente
+  userAgent    String? @map("user_agent") // Navegador/cliente
 
   // Qué datos cambiaron
-  cambiosAntes          Json?    @map("cambios_antes")  // Estado anterior (para UPDATE/DELETE)
-  cambiosDespues        Json?    @map("cambios_despues")  // Estado nuevo (para CREATE/UPDATE)
-  camposModificados     String[] @map("campos_modificados")  // ["proveedor", "fechaOC"]
+  cambiosAntes      Json?    @map("cambios_antes") // Estado anterior (para UPDATE/DELETE)
+  cambiosDespues    Json?    @map("cambios_despues") // Estado nuevo (para CREATE/UPDATE)
+  camposModificados String[] @map("campos_modificados") // ["proveedor", "fechaOC"]
 
   // Contexto adicional
-  descripcion           String?  @db.Text  // Descripción legible del cambio
-  metadata              Json?    // Metadata adicional
+  descripcion String? @db.Text // Descripción legible del cambio
+  metadata    Json? // Metadata adicional
 
   // Timestamp
-  createdAt             DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("audit_logs")
   @@index([entidad])
   @@index([entidadId])
   @@index([accion])
   @@index([usuarioId])
-  @@index([usuarioEmail])  // Índice para buscar logs por email de usuario
+  @@index([usuarioEmail]) // Índice para buscar logs por email de usuario
   @@index([createdAt])
-  @@index([entidad, entidadId])  // Índice compuesto para buscar logs de un registro específico
-  @@index([entidad, createdAt])  // Índice compuesto para buscar logs por entidad ordenados por fecha
+  @@index([entidad, entidadId]) // Índice compuesto para buscar logs de un registro específico
+  @@index([entidad, createdAt]) // Índice compuesto para buscar logs por entidad ordenados por fecha
+  @@map("audit_logs")
 }
 
 // TABLA 10: NOTIFICACIONES - Sistema de notificaciones en tiempo real
 model Notificacion {
-  id                    String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Tipo y contenido
-  tipo                  String   // "audit", "alert", "error", "success", "warning"
-  titulo                String   // Título corto de la notificación
-  descripcion           String?  @db.Text  // Descripción detallada
-  icono                 String?  // Emoji o ícono a mostrar
+  tipo        String // "audit", "alert", "error", "success", "warning"
+  titulo      String // Título corto de la notificación
+  descripcion String? @db.Text // Descripción detallada
+  icono       String? // Emoji o ícono a mostrar
 
   // Relación con entidad (opcional)
-  entidad               String?  // "OCChina", "PagosChina", etc.
-  entidadId             String?  @map("entidad_id")  // ID del registro relacionado
-  url                   String?  // URL a la que navegar al hacer click
+  entidad   String? // "OCChina", "PagosChina", etc.
+  entidadId String? @map("entidad_id") // ID del registro relacionado
+  url       String? // URL a la que navegar al hacer click
 
   // Relación con audit log (opcional)
-  auditLogId            String?  @map("audit_log_id")  // ID del audit log relacionado
+  auditLogId String? @map("audit_log_id") // ID del audit log relacionado
 
   // Estado
-  leida                 Boolean  @default(false)  // Si fue leída por el usuario
-  leidaAt               DateTime? @map("leida_at")  // Cuándo fue leída
+  leida   Boolean   @default(false) // Si fue leída por el usuario
+  leidaAt DateTime? @map("leida_at") // Cuándo fue leída
 
   // Usuario destinatario (futuro: multi-usuario)
-  usuarioId             String?  @map("usuario_id")  // null = todos los usuarios
+  usuarioId String? @map("usuario_id") // null = todos los usuarios
 
   // Prioridad (futuro)
-  prioridad             String   @default("normal")  // "low", "normal", "high", "urgent"
+  prioridad String @default("normal") // "low", "normal", "high", "urgent"
 
   // Expiración (futuro)
-  expiresAt             DateTime? @map("expires_at")  // Cuando debe dejar de mostrarse
+  expiresAt DateTime? @map("expires_at") // Cuando debe dejar de mostrarse
 
   // Timestamps
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("notificaciones")
   @@index([tipo])
   @@index([leida])
   @@index([usuarioId])
   @@index([createdAt])
-  @@index([expiresAt])  // Índice para limpiar notificaciones expiradas
+  @@index([expiresAt]) // Índice para limpiar notificaciones expiradas
   @@index([entidad, entidadId])
   @@index([auditLogId])
-  @@index([leida, createdAt])  // Índice compuesto para queries comunes
-  @@index([usuarioId, leida, createdAt])  // Índice compuesto para notificaciones de usuario
+  @@index([leida, createdAt]) // Índice compuesto para queries comunes
+  @@index([usuarioId, leida, createdAt]) // Índice compuesto para notificaciones de usuario
+  @@map("notificaciones")
 }
