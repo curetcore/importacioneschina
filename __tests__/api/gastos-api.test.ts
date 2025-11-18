@@ -17,15 +17,13 @@ describe('Lógica de Gastos Logísticos', () => {
   let testGastoId: string
 
   beforeAll(async () => {
-    // Crear OCs de prueba
+    // Crear OCs de prueba (cantidadOrdenada y costoFOBTotalUSD se calculan desde items)
     testOC1 = await prisma.oCChina.create({
       data: {
         oc: `TEST-OC-API-1-${Date.now()}`,
         proveedor: 'Test Provider 1',
         fechaOC: new Date(),
         categoriaPrincipal: 'Test',
-        cantidadOrdenada: 100,
-        costoFOBTotalUSD: 1000,
       },
     })
 
@@ -35,8 +33,6 @@ describe('Lógica de Gastos Logísticos', () => {
         proveedor: 'Test Provider 2',
         fechaOC: new Date(),
         categoriaPrincipal: 'Test',
-        cantidadOrdenada: 100,
-        costoFOBTotalUSD: 1000,
       },
     })
 
@@ -46,8 +42,6 @@ describe('Lógica de Gastos Logísticos', () => {
         proveedor: 'Test Provider 3',
         fechaOC: new Date(),
         categoriaPrincipal: 'Test',
-        cantidadOrdenada: 100,
-        costoFOBTotalUSD: 1000,
       },
     })
   })
