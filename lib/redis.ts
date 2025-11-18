@@ -47,7 +47,7 @@ class RedisClient {
         ),
       ])
 
-      this.client.on("error", (error) => {
+      this.client.on("error", error => {
         logger.error("Redis connection error:", { error: error.message })
       })
 
@@ -148,7 +148,7 @@ class RedisClient {
       if (this.useMemoryFallback) {
         let count = 0
         const regex = new RegExp(pattern.replace("*", ".*"))
-        for (const key of this.memoryCache.keys()) {
+        for (const key of Array.from(this.memoryCache.keys())) {
           if (regex.test(key)) {
             this.memoryCache.delete(key)
             count++
@@ -295,7 +295,7 @@ class RedisClient {
 
   private cleanupMemoryCache() {
     const now = Date.now()
-    for (const [key, { expiry }] of this.memoryCache.entries()) {
+    for (const [key, { expiry }] of Array.from(this.memoryCache.entries())) {
       if (now > expiry) {
         this.memoryCache.delete(key)
       }
