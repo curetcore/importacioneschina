@@ -179,13 +179,6 @@ export default function DocumentosPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Documentos</h1>
-          <p className="text-gray-500 mt-1">
-            Vista consolidada de todos los documentos del sistema
-          </p>
-        </div>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
