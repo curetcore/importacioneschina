@@ -6,7 +6,7 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 // Configuración
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads")
 
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
     const module = formData.get("module") as string | null
+    const customName = formData.get("customName") as string | null
 
     // Validaciones
     if (!file) {
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Validar tamaño
     if (file.size > MAX_FILE_SIZE) {
-      throw Errors.badRequest("El archivo excede el tamaño máximo de 10MB")
+      throw Errors.badRequest("El archivo excede el tamaño máximo de 20MB")
     }
 
     // SEGURIDAD: Validar extensión del archivo (evitar double extensions como .php.jpg)
@@ -60,6 +61,20 @@ export async function POST(request: NextRequest) {
     const originalName = file.name
     if (originalName.includes("..") || originalName.includes("/") || originalName.includes("\\")) {
       throw Errors.badRequest("Nombre de archivo no válido")
+    }
+
+    // SEGURIDAD: Validar customName si se proporciona
+    let displayName = originalName
+    if (customName) {
+      const trimmedCustomName = customName.trim()
+      if (
+        trimmedCustomName.includes("..") ||
+        trimmedCustomName.includes("/") ||
+        trimmedCustomName.includes("\\")
+      ) {
+        throw Errors.badRequest("Nombre personalizado no válido")
+      }
+      displayName = trimmedCustomName
     }
 
     // Crear directorio si no existe
@@ -82,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // Retornar información del archivo
     const fileInfo = {
-      nombre: file.name,
+      nombre: displayName,
       url: `/api/uploads/${MODULE_FOLDERS[module]}/${filename}`,
       tipo: file.type,
       size: file.size,

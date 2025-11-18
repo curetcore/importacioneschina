@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeOff } from "lucide-react"
-import { toast } from "@/lib/toast"
+import { showToast } from "@/lib/toast"
 
 interface ChangePasswordModalProps {
   open: boolean
@@ -37,12 +37,16 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
 
     // Validaciones
     if (formData.newPassword.length < 8) {
-      toast.error("La nueva contraseña debe tener al menos 8 caracteres")
+      showToast.error("Error de validación", {
+        description: "La nueva contraseña debe tener al menos 8 caracteres",
+      })
       return
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      toast.error("Las contraseñas no coinciden")
+      showToast.error("Error de validación", {
+        description: "Las contraseñas no coinciden",
+      })
       return
     }
 
@@ -63,12 +67,16 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
         throw new Error(error.error || "Error al cambiar contraseña")
       }
 
-      toast.success("Contraseña actualizada exitosamente")
+      showToast.success("Contraseña actualizada", {
+        description: "Tu contraseña ha sido cambiada exitosamente",
+      })
       setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" })
       onOpenChange(false)
     } catch (error: any) {
       console.error("Error changing password:", error)
-      toast.error(error.message || "Error al cambiar contraseña")
+      showToast.error("Error al cambiar contraseña", {
+        description: error.message || "No se pudo cambiar la contraseña",
+      })
     } finally {
       setLoading(false)
     }

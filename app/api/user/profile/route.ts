@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { getPrismaClient } from "@/lib/db-helpers"
-import { logAudit } from "@/lib/audit-logger"
+import { logAudit, AuditAction } from "@/lib/audit-logger"
 
 /**
  * PATCH /api/user/profile
@@ -54,7 +54,7 @@ export async function PATCH(request: Request) {
     await logAudit({
       entidad: "User",
       entidadId: updatedUser.id,
-      accion: "UPDATE",
+      accion: AuditAction.UPDATE,
       descripcion: "Actualizó su perfil",
       usuarioEmail: session.user.email,
       cambiosAntes: {

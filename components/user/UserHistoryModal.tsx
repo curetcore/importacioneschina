@@ -128,9 +128,8 @@ export function UserHistoryModal({ open, onOpenChange }: UserHistoryModalProps) 
                   {(log.cambiosAntes || log.cambiosDespues) && (
                     <Button
                       variant="ghost"
-                      size="sm"
                       onClick={() => setSelectedLog(log)}
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 h-8 px-2 py-1"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -149,17 +148,17 @@ export function UserHistoryModal({ open, onOpenChange }: UserHistoryModalProps) 
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
+                className="h-9 px-3 py-2"
               >
                 Anterior
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => setPage(p => p + 1)}
                 disabled={page * limit >= total}
+                className="h-9 px-3 py-2"
               >
                 Siguiente
               </Button>

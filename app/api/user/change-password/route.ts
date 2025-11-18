@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { getPrismaClient } from "@/lib/db-helpers"
-import { logAudit } from "@/lib/audit-logger"
+import { logAudit, AuditAction } from "@/lib/audit-logger"
 import bcrypt from "bcryptjs"
 
 /**
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     await logAudit({
       entidad: "User",
       entidadId: user.id,
-      accion: "UPDATE",
+      accion: AuditAction.UPDATE,
       descripcion: "Cambió su contraseña",
       usuarioEmail: session.user.email,
     })
