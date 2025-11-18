@@ -25,7 +25,7 @@ const InventarioRecibidoForm = dynamicImport(
   }
 )
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { DataTable } from "@/components/ui/data-table"
+import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
@@ -399,13 +399,15 @@ export default function InventarioRecibidoPage() {
                 </Button>
               </div>
             ) : (
-              <DataTable
+              <VirtualizedDataTable
                 columns={columns}
                 data={filteredInventarios}
-                pageSize={20}
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                maxHeight="70vh"
+                estimatedRowHeight={53}
+                overscan={10}
               />
             )}
           </CardContent>

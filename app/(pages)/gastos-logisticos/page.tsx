@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { DataTable } from "@/components/ui/data-table"
+import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { getGastosColumns, GastoLogistico } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
@@ -144,8 +144,8 @@ export default function GastosLogisticosPage() {
 
       return {
         "ID Gasto": gasto.idGasto,
-        "OCs": ocs,
-        "Proveedores": proveedores,
+        OCs: ocs,
+        Proveedores: proveedores,
         Fecha: new Date(gasto.fechaGasto).toLocaleDateString(),
         "Tipo de Gasto": gasto.tipoGasto,
         "Proveedor Servicio": gasto.proveedorServicio || "",
@@ -408,13 +408,15 @@ export default function GastosLogisticosPage() {
                 </Button>
               </div>
             ) : (
-              <DataTable
+              <VirtualizedDataTable
                 columns={columns}
                 data={filteredGastos}
-                pageSize={20}
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                maxHeight="70vh"
+                estimatedRowHeight={53}
+                overscan={10}
               />
             )}
           </CardContent>

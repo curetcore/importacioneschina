@@ -26,7 +26,7 @@ import { CascadeDeleteDialog } from "@/components/ui/cascade-delete-dialog"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
-import { DataTable } from "@/components/ui/data-table"
+import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { getOrdenesColumns, OCChina, OCChinaItem } from "./columns"
 import {
   Plus,
@@ -383,13 +383,15 @@ export default function OrdenesPage() {
                 </Button>
               </div>
             ) : (
-              <DataTable
+              <VirtualizedDataTable
                 columns={columns}
                 data={filteredOcs}
-                pageSize={20}
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                maxHeight="70vh"
+                estimatedRowHeight={53}
+                overscan={10}
               />
             )}
           </CardContent>

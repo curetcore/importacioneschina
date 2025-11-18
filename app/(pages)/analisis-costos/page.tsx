@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
-import { DataTable } from "@/components/ui/data-table"
+import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { columns, ProductoCosto } from "./columns"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
@@ -214,12 +214,14 @@ export default function AnalisisCostosPage() {
                   </div>
                 </div>
 
-                <DataTable
+                <VirtualizedDataTable
                   columns={columns}
                   data={productos}
                   searchKey="sku"
                   searchPlaceholder="Buscar por SKU o producto..."
-                  pageSize={20}
+                  maxHeight="70vh"
+                  estimatedRowHeight={53}
+                  overscan={10}
                 />
               </div>
             )}
