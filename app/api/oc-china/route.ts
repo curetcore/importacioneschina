@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
-import { generateUniqueId } from "@/lib/id-generator"
+import { generateTimestampId } from "@/lib/id-generator"
 import { TallaDistribucion } from "@/lib/calculations"
 import type { InputJsonValue } from "@prisma/client/runtime/library"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
@@ -244,15 +244,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Crear OC con items validados (con retry en caso de duplicado)
+    // Crear OC con items validados (con ID único basado en timestamp)
     let nuevaOC
     let retries = 0
     const maxRetries = 3
 
     while (retries < maxRetries) {
       try {
-        // Generar ID dentro del loop para retry
-        const oc = await generateUniqueId("oCChina", "oc", "OC")
+        // Generar ID único con timestamp (previene duplicados en concurrencia)
+        const oc = generateTimestampId("OC")
 
         nuevaOC = await db.oCChina.create({
           data: {
