@@ -90,7 +90,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
           <DialogDescription>Actualiza tu contraseña de acceso al sistema</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Contraseña Actual *</Label>
             <div className="relative">

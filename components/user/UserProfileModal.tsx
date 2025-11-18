@@ -80,7 +80,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
           <DialogDescription>Actualiza tu información personal</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={session?.user?.email || ""} disabled className="bg-gray-50" />
