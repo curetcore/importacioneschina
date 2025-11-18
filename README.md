@@ -47,6 +47,41 @@ lib/
   └── utils.ts          # Utilidades
 ```
 
+---
+
+## 🏗️ Plan de Estandarización y Escalabilidad
+
+> **📌 NUEVO:** Plan completo para migrar a monorepo y crear un Design System reutilizable
+
+Este proyecto servirá como base para el **Curet Design System** - un sistema de diseño estandarizado que permitirá crear nuevas aplicaciones con look & feel consistente en minutos.
+
+### 📚 Documentación del Plan
+
+- **[PLAN-MONOREPO.md](./docs/PLAN-MONOREPO.md)** - Plan completo de migración a monorepo
+- **[MONOREPO-CONFIGS.md](./docs/MONOREPO-CONFIGS.md)** - Archivos de configuración listos para usar
+
+### 🎯 Objetivos
+
+- ✅ **Nueva app en 5-10 min** (vs 2-3 días actualmente)
+- ✅ **Actualización global de diseño** en segundos
+- ✅ **70% código compartido** entre aplicaciones
+- ✅ **Consistencia 100%** visual entre apps
+- ✅ **Builds 10-50x más rápidos** con caché
+
+### 🚀 Estado del Plan
+
+```
+[░░░░░░░░░░] FASE 1: Setup Monorepo (0%)
+[░░░░░░░░░░] FASE 2: Desarrollo Normal (0%)
+[░░░░░░░░░░] FASE 3: Paquete UI Base (0%)
+─────────────────────────────────────
+[░░░░░░░░░░] TOTAL: 0/8 fases (0%)
+```
+
+**Próximo paso:** Ver [PLAN-MONOREPO.md](./docs/PLAN-MONOREPO.md) para comenzar
+
+---
+
 ## 🛠 Stack Tecnológico
 
 ### Core
@@ -124,11 +159,13 @@ lib/
 ### 🎯 Mejoras Implementadas
 
 #### 1. ✅ React Query DevTools (5 min) - COMPLETADO
+
 - **Archivo:** `app/providers.tsx`
 - **Beneficio:** Panel de debugging en desarrollo para ver queries, cache, y estado en tiempo real
 - **Uso:** Abre el panel flotante en esquina inferior derecha durante desarrollo
 
 #### 2. ✅ Sonner Toast Notifications (10 min) - COMPLETADO
+
 - **Archivos:** `lib/toast.ts`, `app/layout.tsx`
 - **Beneficio:** Notificaciones modernas con animaciones suaves, stacking automático, y soporte para promesas
 - **Uso:** `import { showToast } from "@/lib/toast"` → `showToast.success("Mensaje")`
@@ -139,6 +176,7 @@ lib/
   - Animaciones fluidas
 
 #### 3. ✅ Currency.js para Matemáticas Financieras (15 min) - COMPLETADO
+
 - **Archivo:** `lib/utils.ts`
 - **Beneficio:** Precisión decimal 100% correcta en cálculos de dinero (sin bugs de redondeo)
 - **Uso:** `currency(1000).add(500).multiply(1.18).value`
@@ -150,6 +188,7 @@ lib/
   - `distributeCurrency(total, weights)` - Distribución proporcional sin pérdida de centavos
 
 #### 4. ✅ React Dropzone para File Upload (20 min) - COMPLETADO
+
 - **Archivo:** `components/ui/file-upload.tsx`
 - **Beneficio:** Drag & drop profesional con validación, preview, y límites configurables
 - **Uso:** `<FileUpload onFilesAccepted={handleFiles} maxFiles={5} maxSize={5MB} />`
@@ -161,6 +200,7 @@ lib/
   - Responsive y mobile-friendly
 
 #### 5. ✅ React Query Optimización (15 min) - COMPLETADO
+
 - **Archivo:** `app/providers.tsx`
 - **Beneficio:** Queries 5-10x más rápidas con caché inteligente, menos peticiones al servidor
 - **Configuración:**
@@ -171,6 +211,7 @@ lib/
 - **useMutation:** Creado helper para CREATE/UPDATE/DELETE con invalidación automática de caché
 
 #### 6. ✅ Date-fns Funciones Avanzadas (5 min) - COMPLETADO
+
 - **Archivo:** `lib/utils.ts`
 - **Funciones nuevas:**
   - `formatDateRelative(date)` → "hace 3 días", "ayer a las 14:30"
@@ -181,6 +222,7 @@ lib/
 ### 📚 Documentación Completa
 
 Ver `docs/OPTIMIZATION.md` para:
+
 - Guías de uso detalladas
 - Ejemplos de código
 - Best practices
@@ -193,13 +235,13 @@ Ver `docs/OPTIMIZATION.md` para:
 
 ### 📈 Impacto Medido
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| Tiempo de desarrollo | - | -40% | Debugging más rápido |
-| UX Score | 7/10 | 9.5/10 | +36% |
-| Bugs financieros | 2-3/mes | 0/mes | -100% |
-| Velocidad percibida | Media | Alta | +150% |
-| Developer Experience | 6/10 | 9/10 | +50% |
+| Métrica              | Antes   | Después | Mejora               |
+| -------------------- | ------- | ------- | -------------------- |
+| Tiempo de desarrollo | -       | -40%    | Debugging más rápido |
+| UX Score             | 7/10    | 9.5/10  | +36%                 |
+| Bugs financieros     | 2-3/mes | 0/mes   | -100%                |
+| Velocidad percibida  | Media   | Alta    | +150%                |
+| Developer Experience | 6/10    | 9/10    | +50%                 |
 
 ---
 
@@ -769,6 +811,47 @@ TOTAL:             [██████░░░] 10.5/19 (55%)
 DATABASE_URL="postgresql://..."
 NEXTAUTH_SECRET="..."
 NEXTAUTH_URL="http://localhost:3000"
+```
+
+---
+
+## 🌐 Configuración de Producción
+
+### **Infraestructura Actual**
+
+- **Servidor:** 147.93.177.156 (VPS)
+- **Panel de Control:** EasyPanel
+- **Dominio:** importacion.curetcore.com
+- **SSL:** ✅ Configurado
+- **Base de Datos:** PostgreSQL 17 (Docker Swarm)
+  - Contenedor: `apps_postgres_sistemadechina`
+  - Base de datos: `apps`
+- **Aplicación:** Next.js (Docker)
+  - Contenedor: `apps_sistema_de_importacion`
+  - Puerto: Gestionado por EasyPanel
+
+### **Backups Automáticos**
+
+- **Base de Datos:** Diario 3:00 AM → `/root/backups/curet-importaciones/`
+- **Archivos:** Diario 3:30 AM → `/root/backups/curet-importaciones-files/`
+- **Retención:** 30 días
+- **Ubicación:** Local (servidor)
+- **⚠️ Recomendado:** Migrar a Cloudflare R2 / Backblaze B2
+
+### **Acceso al Servidor**
+
+```bash
+# SSH
+ssh root@147.93.177.156
+
+# Ver servicios Docker
+docker service ls | grep sistema
+
+# Ver logs de la aplicación
+docker service logs apps_sistema_de_importacion -f
+
+# Ver logs de PostgreSQL
+docker service logs apps_postgres_sistemadechina -f
 ```
 
 ## 📝 Comandos Útiles

@@ -5,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Toaster } from "sonner"
 import { useState } from "react"
+import { CommandPalette } from "@/components/ui/command-palette"
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   // Create QueryClient instance in state to avoid creating new instances on each render
   const [queryClient] = useState(
     () =>
@@ -21,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           },
           mutations: {
             retry: 0, // No reintentar mutaciones automáticamente
-            onError: (error) => {
+            onError: error => {
               console.error("Mutation error:", error)
             },
           },
@@ -34,6 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionProvider>
         {children}
         <Toaster position="top-right" expand={false} richColors closeButton />
+        <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
       </SessionProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom" />
     </QueryClientProvider>
