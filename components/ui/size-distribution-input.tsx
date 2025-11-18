@@ -91,7 +91,8 @@ export function SizeDistributionInput({
 
   const quickAddSize = (size: string) => {
     if (!sizes[size]) {
-      handleQuantityChange(size, 0)
+      const newSizes = { ...sizes, [size]: 0 }
+      handleSizeChange(newSizes)
     }
   }
 
