@@ -228,22 +228,22 @@ export default function PagosChinaPage() {
       .filter((p: Pago) => p.moneda === "USD")
       .reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
 
-    const totalCNY = pagos
-      .filter((p: Pago) => p.moneda === "CNY")
+    const totalRDPesos = pagos
+      .filter((p: Pago) => p.moneda === "RD$")
       .reduce((sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()), 0)
 
-    // Calcular tasa promedio ponderada (weighted average)
-    const pagosConMoneda = pagos.filter((p: Pago) => p.moneda === "USD" || p.moneda === "CNY")
-    const totalWeighted = pagosConMoneda.reduce((sum: number, p: Pago) => {
+    // Calcular tasa promedio ponderada (weighted average) solo para pagos en USD
+    const pagosUSD = pagos.filter((p: Pago) => p.moneda === "USD")
+    const totalWeighted = pagosUSD.reduce((sum: number, p: Pago) => {
       return sum + parseFloat(p.montoOriginal.toString()) * parseFloat(p.tasaCambio.toString())
     }, 0)
-    const totalAmount = pagosConMoneda.reduce(
+    const totalAmount = pagosUSD.reduce(
       (sum: number, p: Pago) => sum + parseFloat(p.montoOriginal.toString()),
       0
     )
     const tasaPromedio = totalAmount > 0 ? totalWeighted / totalAmount : 0
 
-    return { totalRD, totalUSD, totalCNY, tasaPromedio }
+    return { totalRD, totalUSD, totalRDPesos, tasaPromedio }
   }, [pagos])
 
   if (isLoading) {
@@ -275,9 +275,9 @@ export default function PagosChinaPage() {
 
           <StatCard
             icon={<Coins className="w-4 h-4" />}
-            label="Total CNY"
-            value={formatCurrency(stats.totalCNY, "CNY")}
-            subtitle={`${pagos.filter((p: Pago) => p.moneda === "CNY").length} pagos`}
+            label="Total RD$"
+            value={formatCurrency(stats.totalRDPesos)}
+            subtitle={`${pagos.filter((p: Pago) => p.moneda === "RD$").length} pagos`}
           />
 
           <StatCard

@@ -144,7 +144,8 @@ async function generateDashboardData() {
 
   // Total de comisiones bancarias
   const totalComisiones = todosPagos.reduce(
-    (sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()),
+    (sum, pago) =>
+      sum + parseFloat(pago.comisionBancoUSD.toString()) * parseFloat(pago.tasaCambio.toString()),
     0
   )
 

@@ -124,9 +124,9 @@ async function seedDemoDatabase() {
         moneda: "USD",
         montoOriginal: 3000,
         tasaCambio: 58.5,
-        comisionBancoRD: 850,
+        comisionBancoUSD: 15, // ~850 RD$ / 58.5
         montoRD: 175500,
-        montoRDNeto: 174650,
+        montoRDNeto: 176377.5, // 175500 + (15 * 58.5)
       },
     })
     console.log("✅ Pago creado:", pago1.idPago)
@@ -141,9 +141,9 @@ async function seedDemoDatabase() {
         moneda: "USD",
         montoOriginal: 5180,
         tasaCambio: 59.0,
-        comisionBancoRD: 1200,
+        comisionBancoUSD: 20, // ~1200 RD$ / 59
         montoRD: 305620,
-        montoRDNeto: 304420,
+        montoRDNeto: 306800, // 305620 + (20 * 59)
       },
     })
     console.log("✅ Pago creado:", pago2.idPago)
@@ -302,7 +302,9 @@ async function seedDemoDatabase() {
     console.log("  - 2 Gastos logísticos")
     console.log("  - 1 Recepción de inventario")
     console.log("  - 4 Configuraciones de distribución")
-    console.log(`  - ${createdConfigs} Configuraciones generales (categorías, pagos, bodegas, etc.)`)
+    console.log(
+      `  - ${createdConfigs} Configuraciones generales (categorías, pagos, bodegas, etc.)`
+    )
     console.log("\n🔐 Credenciales demo:")
     console.log("  Email: demo@sistema.com")
     console.log("  Password: Demo123!")

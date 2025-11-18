@@ -164,7 +164,10 @@ export async function GET(request: NextRequest) {
             // Get the proportionally distributed gasto total for this OC
             const totalGastosOC = gastosPorOC.get(inv.ocId) || 0
             const totalComisionesOC = inv.ocChina.pagosChina.reduce(
-              (sum, pago) => sum + parseFloat(pago.comisionBancoRD.toString()),
+              (sum, pago) =>
+                sum +
+                parseFloat(pago.comisionBancoUSD.toString()) *
+                  parseFloat(pago.tasaCambio.toString()),
               0
             )
 

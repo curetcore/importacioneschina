@@ -192,17 +192,21 @@ async function main() {
         moneda: "USD",
         montoOriginal: montoAnticipo,
         tasaCambio: tasaUSD,
-        comisionBancoRD: comision1,
+        comisionBancoUSD: comision1,
         montoRD: montoRD1,
-        montoRDNeto: new Prisma.Decimal(parseFloat(montoRD1.toString()) + 500),
+        montoRDNeto: new Prisma.Decimal(
+          parseFloat(montoRD1.toString()) +
+            parseFloat(comision1.toString()) * parseFloat(tasaUSD.toString())
+        ),
       },
     })
     pagoCount++
 
-    // Pago 2: Pago final 50% en CNY
-    const montoCNY = new Prisma.Decimal(costoFOBTotal * 0.5 * 7.3) // USD a CNY
-    const tasaCNY = new Prisma.Decimal(8.2)
-    const montoRD2 = new Prisma.Decimal(parseFloat(montoCNY.toString()) * 8.2)
+    // Pago 2: Pago final 50% en USD
+    const montoFinal = new Prisma.Decimal(costoFOBTotal * 0.5)
+    const montoRD2 = new Prisma.Decimal(
+      parseFloat(montoFinal.toString()) * parseFloat(tasaUSD.toString())
+    )
     const comision2 = new Prisma.Decimal(250)
 
     await prisma.pagosChina.create({
@@ -212,12 +216,15 @@ async function main() {
         fechaPago: new Date(oc.fechaOC.getTime() + 10 * 24 * 60 * 60 * 1000), // +10 días
         tipoPago: "Pago final",
         metodoPago: "Tarjeta de crédito",
-        moneda: "CNY",
-        montoOriginal: montoCNY,
-        tasaCambio: tasaCNY,
-        comisionBancoRD: comision2,
+        moneda: "USD",
+        montoOriginal: montoFinal,
+        tasaCambio: tasaUSD,
+        comisionBancoUSD: comision2,
         montoRD: montoRD2,
-        montoRDNeto: new Prisma.Decimal(parseFloat(montoRD2.toString()) + 250),
+        montoRDNeto: new Prisma.Decimal(
+          parseFloat(montoRD2.toString()) +
+            parseFloat(comision2.toString()) * parseFloat(tasaUSD.toString())
+        ),
       },
     })
     pagoCount++
