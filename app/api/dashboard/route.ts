@@ -111,7 +111,10 @@ async function generateDashboardData() {
   })
 
   // KPIs principales
-  const inversionTotal = ocsCalculadas.reduce((sum, oc) => sum + oc.totalInversionRD, 0)
+  const inversionTotal = ocsCalculadas.reduce(
+    (sum, oc) => sum + Number(oc.totalInversionRD || 0),
+    0
+  )
   const unidadesOrdenadas = ocsCalculadas.reduce((sum, oc) => sum + oc.cantidadOrdenada, 0)
   const unidadesRecibidas = ocsCalculadas.reduce((sum, oc) => sum + oc.cantidadRecibida, 0)
   const diferenciaUnidades = unidadesOrdenadas - unidadesRecibidas
