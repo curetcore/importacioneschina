@@ -13,11 +13,10 @@ import { getPrismaClient } from "./db-helpers"
 import { Prisma } from "@prisma/client"
 
 /**
- * Genera el siguiente ID en secuencia de manera thread-safe usando transacciones
+ * Genera un ID alfanumérico único de 6 caracteres
  *
- * Esta función es completamente segura para uso concurrente. Usa transacciones
- * de Prisma para garantizar que no habrá IDs duplicados incluso cuando múltiples
- * peticiones lleguen simultáneamente.
+ * Genera códigos cortos y únicos combinando letras y números.
+ * Verifica en la base de datos que no exista antes de retornar.
  *
  * @param modelName - Nombre del modelo Prisma ("oCChina", "pagosChina", etc.)
  * @param fieldName - Nombre del campo que contiene el ID ("oc", "idPago", etc.)
@@ -26,38 +25,53 @@ import { Prisma } from "@prisma/client"
  *
  * @example
  * const id = await generateUniqueId("pagosChina", "idPago", "PAG")
- * // Retorna: "PAG-00001", "PAG-00002", etc.
+ * // Retorna: "PAG-A1B2C3", "PAG-X7Y9Z2", etc.
  */
 export async function generateUniqueId(
   modelName: string,
   fieldName: string,
   prefix: string
 ): Promise<string> {
-  // Obtener el cliente Prisma correcto (producción o demo según el usuario)
   const db = await getPrismaClient()
 
-  // Usamos una transacción para garantizar atomicidad
-  return await db.$transaction(
-    async tx => {
-      // 1. Obtener el último ID usando orderBy DESC y lock de lectura
-      const lastRecord = await (tx as any)[modelName].findFirst({
-        orderBy: { [fieldName]: "desc" },
-        select: { [fieldName]: true },
-      })
+  // Intentar hasta 5 veces (muy raro que haya colisión)
+  const maxAttempts = 5
 
-      // 2. Generar el siguiente ID
-      const nextId = generateNextIdFromLast(prefix, lastRecord?.[fieldName])
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Generar código alfanumérico de 6 caracteres
+    const code = generateAlphanumericCode(6)
+    const id = `${prefix}-${code}`
 
-      // 3. Retornar el ID (la transacción garantiza que es único)
-      return nextId
-    },
-    {
-      // Configuración de la transacción
-      maxWait: 5000, // Espera máxima de 5 segundos para adquirir lock
-      timeout: 10000, // Timeout de 10 segundos para toda la transacción
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // Nivel más alto de aislamiento
+    // Verificar que no exista en la base de datos
+    const existing = await (db as any)[modelName].findUnique({
+      where: { [fieldName]: id },
+      select: { [fieldName]: true },
+    })
+
+    if (!existing) {
+      return id
     }
-  )
+  }
+
+  // Si después de 5 intentos no encontramos uno único, usar timestamp como fallback
+  return generateTimestampId(prefix)
+}
+
+/**
+ * Genera un código alfanumérico random de N caracteres
+ * Usa solo caracteres fáciles de leer (sin 0, O, I, 1, etc.)
+ */
+function generateAlphanumericCode(length: number): string {
+  // Caracteres permitidos (sin confusos: 0, O, I, 1, l)
+  const chars = "234567892ABCDEFGHJKLMNPQRSTUVWXYZ3456789"
+  let code = ""
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length)
+    code += chars[randomIndex]
+  }
+
+  return code
 }
 
 /**
