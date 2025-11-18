@@ -5,6 +5,7 @@ import { Bell, Check, CheckCheck, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
 import { getPusherClient } from "@/lib/pusher-client"
+import { NotificationDetailModal } from "@/components/notifications/NotificationDetailModal"
 
 interface Notification {
   id: string
@@ -22,6 +23,8 @@ export default function NotificationDropdown() {
   const [notificaciones, setNotificaciones] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -43,8 +46,8 @@ export default function NotificationDropdown() {
     }
   }
 
-  // Marcar notificación como leída
-  const markAsRead = async (id: string, url: string | null) => {
+  // Marcar notificación como leída y abrir modal de detalles
+  const markAsRead = async (id: string) => {
     try {
       await fetch(`/api/notificaciones/${id}`, {
         method: "PUT",
@@ -54,11 +57,10 @@ export default function NotificationDropdown() {
       setNotificaciones(prev => prev.map(n => (n.id === id ? { ...n, leida: true } : n)))
       setUnreadCount(prev => Math.max(0, prev - 1))
 
-      // Navegar si hay URL
-      if (url) {
-        router.push(url)
-        setIsOpen(false)
-      }
+      // Abrir modal de detalles
+      setSelectedNotificationId(id)
+      setDetailModalOpen(true)
+      setIsOpen(false)
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -191,7 +193,7 @@ export default function NotificationDropdown() {
               notificaciones.map(notif => (
                 <button
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id, notif.url)}
+                  onClick={() => markAsRead(notif.id)}
                   className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                     !notif.leida ? "bg-blue-50" : ""
                   }`}
@@ -240,6 +242,13 @@ export default function NotificationDropdown() {
           )}
         </div>
       )}
+
+      {/* Modal de detalles */}
+      <NotificationDetailModal
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        notificationId={selectedNotificationId}
+      />
     </div>
   )
 }
