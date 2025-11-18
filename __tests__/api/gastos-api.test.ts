@@ -193,7 +193,7 @@ describe('Lógica de Gastos Logísticos', () => {
       await prisma.gastoLogisticoOC.createMany({
         data: [
           { gastoId: testGastoId, ocId: testOC1.id },
-          { gastoId: testOC2.id, ocId: testOC2.id },
+          { gastoId: testGastoId, ocId: testOC2.id },
         ],
       })
 

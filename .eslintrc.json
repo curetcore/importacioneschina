@@ -11,6 +11,7 @@
     ],
     "react-hooks/exhaustive-deps": "warn",
     "react/no-unescaped-entities": "warn",
-    "@next/next/no-assign-module-variable": "off"
+    "@next/next/no-assign-module-variable": "off",
+    "@typescript-eslint/no-require-imports": "off"
   }
 }
