@@ -291,7 +291,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!nuevaOC) {
-      throw Errors.internalError("Error inesperado al crear la orden")
+      throw Errors.internal("Error inesperado al crear la orden")
     }
 
     // Audit log
