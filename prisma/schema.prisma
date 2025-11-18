@@ -349,6 +349,9 @@ model AuditLog {
   descripcion String? @db.Text // Descripción legible del cambio
   metadata    Json? // Metadata adicional
 
+  // Relaciones
+  notificaciones Notificacion[]
+
   // Timestamp
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -379,7 +382,8 @@ model Notificacion {
   url       String? // URL a la que navegar al hacer click
 
   // Relación con audit log (opcional)
-  auditLogId String? @map("audit_log_id") // ID del audit log relacionado
+  auditLogId String?   @map("audit_log_id") // ID del audit log relacionado
+  auditLog   AuditLog? @relation(fields: [auditLogId], references: [id])
 
   // Estado
   leida   Boolean   @default(false) // Si fue leída por el usuario
