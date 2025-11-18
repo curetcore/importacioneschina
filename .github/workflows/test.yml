@@ -64,18 +64,6 @@ jobs:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NODE_ENV: test
 
-      # 7. Generar reporte de cobertura
-      - name: 📊 Generar cobertura
-        run: npm test -- --coverage
-
-      # 8. Subir reporte de cobertura (opcional)
-      - name: 📤 Upload coverage
-        uses: codecov/codecov-action@v3
-        if: always()  # Siempre sube, aunque fallen tests
-        with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false
-
   # Job adicional: Verificar build
   build:
     name: Verificar Build
