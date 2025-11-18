@@ -71,6 +71,7 @@ interface AuditLog {
   accion: string
   descripcion: string | null
   usuarioEmail: string | null
+  usuarioNombre?: string
   ipAddress: string | null
   cambiosAntes: any
   cambiosDespues: any
@@ -123,9 +124,6 @@ function AdminUsersSection() {
 
   const users: User[] = data?.data || []
   const userToDelete = users.find(u => u.id === deleteUserId)
-
-  // Debug logging
-  console.log("Admin Users Query:", { data, isLoading, error, users })
 
   const handleDelete = async () => {
     if (!deleteUserId) return
@@ -397,7 +395,7 @@ function UserActivitySection() {
                     <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
                       {isSuperAdmin && (
                         <td className="py-3 px-4 text-sm text-gray-900">
-                          {log.usuarioEmail || <span className="text-gray-400">Sistema</span>}
+                          {log.usuarioNombre || <span className="text-gray-400">Sistema</span>}
                         </td>
                       )}
                       <td className="py-3 px-4">
