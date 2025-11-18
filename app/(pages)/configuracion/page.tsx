@@ -578,176 +578,178 @@ function ConfiguracionPageContent() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <Tabs
-          defaultValue="configuracion"
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="configuracion" className="gap-2">
-              <Settings className="w-4 h-4" />
-              Configuración
-            </TabsTrigger>
-            <TabsTrigger value="distribucion" className="gap-2">
-              <Calculator className="w-4 h-4" />
-              Distribución de Costos
-            </TabsTrigger>
-            <TabsTrigger value="proveedores" className="gap-2">
-              <Users className="w-4 h-4" />
-              Proveedores CRM
-            </TabsTrigger>
-            <TabsTrigger value="cuenta" className="gap-2">
-              <UserCircle className="w-4 h-4" />
-              Mi Cuenta
-            </TabsTrigger>
-          </TabsList>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <Tabs
+            defaultValue="configuracion"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="configuracion" className="gap-2">
+                <Settings className="w-4 h-4" />
+                Configuración
+              </TabsTrigger>
+              <TabsTrigger value="distribucion" className="gap-2">
+                <Calculator className="w-4 h-4" />
+                Distribución de Costos
+              </TabsTrigger>
+              <TabsTrigger value="proveedores" className="gap-2">
+                <Users className="w-4 h-4" />
+                Proveedores CRM
+              </TabsTrigger>
+              <TabsTrigger value="cuenta" className="gap-2">
+                <UserCircle className="w-4 h-4" />
+                Mi Cuenta
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="configuracion" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {configuraciones.map(config => (
-                <Card key={config.categoria}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle>{config.titulo}</CardTitle>
-                        <p className="text-xs text-gray-500 mt-1">{config.descripcion}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        className="h-8 text-sm"
-                        onClick={() => handleAdd(config.categoria)}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Agregar
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {config.items.length === 0 ? (
-                        <div className="text-center py-4 text-sm text-gray-400">
-                          No hay items configurados
+            <TabsContent value="configuracion" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {configuraciones.map(config => (
+                  <Card key={config.categoria}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle>{config.titulo}</CardTitle>
+                          <p className="text-xs text-gray-500 mt-1">{config.descripcion}</p>
                         </div>
-                      ) : (
-                        config.items.map(item => (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            <span>{item.valor}</span>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleEdit(item)}
-                                className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                title="Editar"
-                              >
-                                <Edit className="w-3.5 h-3.5 text-gray-600" />
-                              </button>
-                              <button
-                                onClick={() => setConfigToDelete(item)}
-                                className="p-1 hover:bg-red-100 rounded transition-colors"
-                                title="Eliminar"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 text-red-600" />
-                              </button>
-                            </div>
+                        <Button
+                          variant="ghost"
+                          className="h-8 text-sm"
+                          onClick={() => handleAdd(config.categoria)}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Agregar
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {config.items.length === 0 ? (
+                          <div className="text-center py-4 text-sm text-gray-400">
+                            No hay items configurados
                           </div>
-                        ))
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        ) : (
+                          config.items.map(item => (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            >
+                              <span>{item.valor}</span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEdit(item)}
+                                  className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit className="w-3.5 h-3.5 text-gray-600" />
+                                </button>
+                                <button
+                                  onClick={() => setConfigToDelete(item)}
+                                  className="p-1 hover:bg-red-100 rounded transition-colors"
+                                  title="Eliminar"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-green-900">
-                    ✓ Configuración Dinámica Activa
-                  </h3>
-                  <p className="text-xs text-green-700 mt-1">
-                    Ahora puedes gestionar las configuraciones directamente desde esta interfaz. Los
-                    cambios se aplicarán inmediatamente en todos los formularios del sistema.
-                  </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-green-900">
+                      ✓ Configuración Dinámica Activa
+                    </h3>
+                    <p className="text-xs text-green-700 mt-1">
+                      Ahora puedes gestionar las configuraciones directamente desde esta interfaz.
+                      Los cambios se aplicarán inmediatamente en todos los formularios del sistema.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="distribucion">
-            <DistribucionCostosSettings />
-          </TabsContent>
+            <TabsContent value="distribucion">
+              <DistribucionCostosSettings />
+            </TabsContent>
 
-          <TabsContent value="proveedores">
-            <ProveedoresList
-              onAdd={() => {
-                setProveedorToEdit(null)
-                setProveedorFormOpen(true)
-              }}
-              onEdit={proveedor => {
-                setProveedorToEdit(proveedor)
-                setProveedorFormOpen(true)
-              }}
-              onDelete={proveedor => {
-                setProveedorToDelete(proveedor)
-              }}
-            />
-          </TabsContent>
+            <TabsContent value="proveedores">
+              <ProveedoresList
+                onAdd={() => {
+                  setProveedorToEdit(null)
+                  setProveedorFormOpen(true)
+                }}
+                onEdit={proveedor => {
+                  setProveedorToEdit(proveedor)
+                  setProveedorFormOpen(true)
+                }}
+                onDelete={proveedor => {
+                  setProveedorToDelete(proveedor)
+                }}
+              />
+            </TabsContent>
 
-          <TabsContent value="cuenta" className="space-y-6 mt-6">
-            {isSuperAdmin ? (
-              <>
-                <AdminUsersSection />
-                <UserActivitySection />
-              </>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Información Personal</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Administra tu información personal y preferencias de cuenta
-                      </p>
-                      <Button
-                        onClick={() => setProfileModalOpen(true)}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        Editar Perfil
-                      </Button>
-                    </CardContent>
-                  </Card>
+            <TabsContent value="cuenta" className="space-y-6 mt-6">
+              {isSuperAdmin ? (
+                <>
+                  <AdminUsersSection />
+                  <UserActivitySection />
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Información Personal</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Administra tu información personal y preferencias de cuenta
+                        </p>
+                        <Button
+                          onClick={() => setProfileModalOpen(true)}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          <UserCircle className="w-4 h-4 mr-2" />
+                          Editar Perfil
+                        </Button>
+                      </CardContent>
+                    </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Seguridad</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Cambia tu contraseña para mantener tu cuenta segura
-                      </p>
-                      <Button
-                        onClick={() => setPasswordModalOpen(true)}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        Cambiar Contraseña
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Seguridad</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Cambia tu contraseña para mantener tu cuenta segura
+                        </p>
+                        <Button
+                          onClick={() => setPasswordModalOpen(true)}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          Cambiar Contraseña
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                <UserActivitySection />
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
+                  <UserActivitySection />
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       <ConfiguracionForm

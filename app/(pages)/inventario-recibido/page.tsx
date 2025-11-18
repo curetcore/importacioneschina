@@ -430,384 +430,387 @@ export default function InventarioRecibidoPage() {
 
   return (
     <MainLayout>
-      <Tabs defaultValue="inventario" className="w-full space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="inventario" className="gap-2">
-            <Inbox className="w-4 h-4" />
-            Inventario Recibido
-          </TabsTrigger>
-          <TabsTrigger value="costos" className="gap-2">
-            <Calculator className="w-4 h-4" />
-            Análisis de Costos
-          </TabsTrigger>
-          <TabsTrigger value="productos" className="gap-2">
-            <Tag className="w-4 h-4" />
-            Productos
-          </TabsTrigger>
-        </TabsList>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <Tabs defaultValue="inventario" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="inventario" className="gap-2">
+              <Inbox className="w-4 h-4" />
+              Inventario Recibido
+            </TabsTrigger>
+            <TabsTrigger value="costos" className="gap-2">
+              <Calculator className="w-4 h-4" />
+              Análisis de Costos
+            </TabsTrigger>
+            <TabsTrigger value="productos" className="gap-2">
+              <Tag className="w-4 h-4" />
+              Productos
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Tab 1: Inventario Recibido */}
-        <TabsContent value="inventario" className="space-y-6 mt-0">
-          {/* KPIs Section */}
-          <StatsGrid cols={4}>
-            <StatCard
-              icon={<Inbox className="w-4 h-4" />}
-              label="Total Recepciones"
-              value={stats.totalRecepciones}
-              subtitle="Registradas"
-            />
+          {/* Tab 1: Inventario Recibido */}
+          <TabsContent value="inventario" className="space-y-6 mt-0">
+            {/* KPIs Section */}
+            <StatsGrid cols={4}>
+              <StatCard
+                icon={<Inbox className="w-4 h-4" />}
+                label="Total Recepciones"
+                value={stats.totalRecepciones}
+                subtitle="Registradas"
+              />
 
-            <StatCard
-              icon={<Package className="w-4 h-4" />}
-              label="Total Unidades"
-              value={stats.totalUnidades.toLocaleString()}
-              subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? "es" : ""}`}
-            />
+              <StatCard
+                icon={<Package className="w-4 h-4" />}
+                label="Total Unidades"
+                value={stats.totalUnidades.toLocaleString()}
+                subtitle={`En ${stats.totalRecepciones} recepción${stats.totalRecepciones !== 1 ? "es" : ""}`}
+              />
 
-            <StatCard
-              icon={<DollarSign className="w-4 h-4" />}
-              label="Costo Total RD$"
-              value={formatCurrency(stats.totalCostoRD)}
-              subtitle={`Promedio: ${formatCurrency(stats.totalRecepciones > 0 ? stats.totalCostoRD / stats.totalRecepciones : 0)}`}
-            />
+              <StatCard
+                icon={<DollarSign className="w-4 h-4" />}
+                label="Costo Total RD$"
+                value={formatCurrency(stats.totalCostoRD)}
+                subtitle={`Promedio: ${formatCurrency(stats.totalRecepciones > 0 ? stats.totalCostoRD / stats.totalRecepciones : 0)}`}
+              />
 
-            <StatCard
-              icon={<Warehouse className="w-4 h-4" />}
-              label="Bodega Principal"
-              value={stats.bodegaMasUsadaCantidad}
-              subtitle={stats.bodegaMasUsadaNombre}
-            />
-          </StatsGrid>
+              <StatCard
+                icon={<Warehouse className="w-4 h-4" />}
+                label="Bodega Principal"
+                value={stats.bodegaMasUsadaCantidad}
+                subtitle={stats.bodegaMasUsadaNombre}
+              />
+            </StatsGrid>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
-                <Inbox size={18} />
-                Inventario ({filteredInventarios.length}
-                {searchQuery ? ` de ${inventarios.length}` : ""})
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar ID, OC, SKU, producto..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-8 h-8 w-64 text-xs"
-                  />
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-8 px-3 text-xs">
-                      <Settings2 className="mr-2 h-4 w-4" />
-                      Columnas
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[200px]">
-                    {columns
-                      .filter(
-                        column => "accessorKey" in column && typeof column.accessorKey === "string"
-                      )
-                      .map(column => {
-                        const id = (column as any).accessorKey as string
-                        return (
-                          <DropdownMenuCheckboxItem
-                            key={id}
-                            className="capitalize"
-                            checked={columnVisibility[id] !== false}
-                            onCheckedChange={value =>
-                              setColumnVisibility(prev => ({
-                                ...prev,
-                                [id]: value,
-                              }))
-                            }
-                          >
-                            {id}
-                          </DropdownMenuCheckboxItem>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-medium">
+                  <Inbox size={18} />
+                  Inventario ({filteredInventarios.length}
+                  {searchQuery ? ` de ${inventarios.length}` : ""})
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar ID, OC, SKU, producto..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="pl-8 h-8 w-64 text-xs"
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="h-8 px-3 text-xs">
+                        <Settings2 className="mr-2 h-4 w-4" />
+                        Columnas
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px]">
+                      {columns
+                        .filter(
+                          column =>
+                            "accessorKey" in column && typeof column.accessorKey === "string"
                         )
-                      })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="gap-1.5 h-8 px-3 text-xs"
-                      disabled={inventarios.length === 0}
-                    >
-                      <Download size={14} />
-                      Exportar
+                        .map(column => {
+                          const id = (column as any).accessorKey as string
+                          return (
+                            <DropdownMenuCheckboxItem
+                              key={id}
+                              className="capitalize"
+                              checked={columnVisibility[id] !== false}
+                              onCheckedChange={value =>
+                                setColumnVisibility(prev => ({
+                                  ...prev,
+                                  [id]: value,
+                                }))
+                              }
+                            >
+                              {id}
+                            </DropdownMenuCheckboxItem>
+                          )
+                        })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="gap-1.5 h-8 px-3 text-xs"
+                        disabled={inventarios.length === 0}
+                      >
+                        <Download size={14} />
+                        Exportar
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                        <FileSpreadsheet size={16} />
+                        Exportar a Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                        <FileText size={16} />
+                        Exportar a PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    onClick={() => setFormOpen(true)}
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                  >
+                    <Plus size={14} />
+                    Crear Recepción
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {inventarios.length === 0 ? (
+                  <div className="text-center py-12">
+                    <PackageCheck size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No hay recepciones registradas
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Comienza registrando tu primera recepción de mercancía
+                    </p>
+                    <Button onClick={() => setFormOpen(true)} className="gap-2">
+                      <Plus size={18} />
+                      Nueva Recepción
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
-                      <FileSpreadsheet size={16} />
-                      Exportar a Excel
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
-                      <FileText size={16} />
-                      Exportar a PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button
-                  onClick={() => setFormOpen(true)}
-                  variant="outline"
-                  className="gap-1.5 h-8 px-3 text-xs"
-                >
-                  <Plus size={14} />
-                  Crear Recepción
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {inventarios.length === 0 ? (
-                <div className="text-center py-12">
-                  <PackageCheck size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay recepciones registradas
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Comienza registrando tu primera recepción de mercancía
-                  </p>
-                  <Button onClick={() => setFormOpen(true)} className="gap-2">
-                    <Plus size={18} />
-                    Nueva Recepción
-                  </Button>
-                </div>
-              ) : filteredInventarios.length === 0 ? (
-                <div className="text-center py-12">
-                  <Search size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No se encontraron resultados
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    No hay recepciones que coincidan con "{searchQuery}"
-                  </p>
-                  <Button onClick={() => setSearchQuery("")} variant="outline">
-                    Limpiar búsqueda
-                  </Button>
-                </div>
-              ) : (
-                <VirtualizedDataTable
-                  columns={columns}
-                  data={filteredInventarios}
-                  showToolbar={false}
-                  columnVisibility={columnVisibility}
-                  onColumnVisibilityChange={setColumnVisibility}
-                  maxHeight="70vh"
-                  estimatedRowHeight={53}
-                  overscan={10}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab 2: Análisis de Costos */}
-        <TabsContent value="costos" className="space-y-6 mt-0">
-          {/* KPIs Section */}
-          <StatsGrid cols={4}>
-            <StatCard
-              icon={<Package className="w-4 h-4" />}
-              label="Total Productos"
-              value={totales.totalProductos}
-              subtitle={`${totales.totalUnidades.toLocaleString()} unidades`}
-            />
-
-            <StatCard
-              icon={<DollarSign className="w-4 h-4" />}
-              label="Inversión Total"
-              value={formatCurrency(totales.inversionTotal)}
-              subtitle="En inventario recibido"
-            />
-
-            <StatCard
-              icon={<TrendingUp className="w-4 h-4" />}
-              label="Costo Promedio/u"
-              value={formatCurrency(totales.costoPromedioUnitario)}
-              subtitle="Costo unitario promedio"
-            />
-
-            <StatCard
-              icon={<Calculator className="w-4 h-4" />}
-              label="Costo Total/u"
-              value={formatCurrency(
-                totales.totalUnidades > 0 ? totales.inversionTotal / totales.totalUnidades : 0
-              )}
-              subtitle="Incluyendo todos los costos"
-            />
-          </StatsGrid>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
-                <Calculator size={18} />
-                Desglose de Costos ({productos.length})
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleExportAnalisis}
-                  variant="outline"
-                  className="gap-1.5 h-8 px-3 text-xs"
-                  disabled={productos.length === 0}
-                >
-                  <Download size={14} />
-                  Exportar
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {productos.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calculator size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay productos en inventario
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Los productos aparecerán aquí una vez que recibas inventario
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-sm font-medium text-blue-900">
-                          💡 Leyenda de Columnas y Métodos de Distribución
-                        </h3>
-                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
-                          <div>
-                            <strong>FOB (USD):</strong> Costo del producto en China
-                          </div>
-                          <div>
-                            <strong>FOB (RD$):</strong> Convertido a pesos dominicanos
-                          </div>
-                          <div className="text-blue-600">
-                            <strong>Pagos:</strong> Distribución de pagos a proveedor
-                            {productos.length > 0 && productos[0]?.desglose?.metodoPagos && (
-                              <span className="ml-1 text-xs bg-blue-100 px-1.5 py-0.5 rounded">
-                                {getMethodLabel(productos[0].desglose.metodoPagos)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-orange-600">
-                            <strong>Gastos:</strong> Flete, aduana, transporte
-                            {productos.length > 0 && productos[0]?.desglose?.metodoGastos && (
-                              <span className="ml-1 text-xs bg-orange-100 px-1.5 py-0.5 rounded">
-                                {getMethodLabel(productos[0].desglose.metodoGastos)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-purple-600">
-                            <strong>Comisiones:</strong> Comisiones bancarias
-                            {productos.length > 0 && productos[0]?.desglose?.metodoComisiones && (
-                              <span className="ml-1 text-xs bg-purple-100 px-1.5 py-0.5 rounded">
-                                {getMethodLabel(productos[0].desglose.metodoComisiones)}
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <strong>Costo Final:</strong> Suma de todos los costos
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-blue-200">
-                          <p className="text-xs text-blue-600">
-                            <strong>Métodos de distribución:</strong> Los costos se distribuyen
-                            profesionalmente según peso, volumen, o valor FOB del producto.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
-
+                ) : filteredInventarios.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Search size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No se encontraron resultados
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      No hay recepciones que coincidan con "{searchQuery}"
+                    </p>
+                    <Button onClick={() => setSearchQuery("")} variant="outline">
+                      Limpiar búsqueda
+                    </Button>
+                  </div>
+                ) : (
                   <VirtualizedDataTable
-                    columns={analisisColumns}
-                    data={productos}
-                    searchKey="sku"
-                    searchPlaceholder="Buscar por SKU o producto..."
+                    columns={columns}
+                    data={filteredInventarios}
+                    showToolbar={false}
+                    columnVisibility={columnVisibility}
+                    onColumnVisibilityChange={setColumnVisibility}
                     maxHeight="70vh"
                     estimatedRowHeight={53}
                     overscan={10}
                   />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Tab 3: Productos */}
-        <TabsContent value="productos" className="space-y-6 mt-0">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
-                <Tag size={18} />
-                Catálogo de Productos ({productosData.length})
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleExportProductos}
-                  variant="outline"
-                  className="gap-1.5 h-8 px-3 text-xs"
-                  disabled={productosData.length === 0}
-                >
-                  <Download size={14} />
-                  Exportar
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {productosData.length === 0 ? (
-                <div className="text-center py-12">
-                  <Tag size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay productos en catálogo
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Los productos aparecerán automáticamente cuando recibas inventario
-                  </p>
+          {/* Tab 2: Análisis de Costos */}
+          <TabsContent value="costos" className="space-y-6 mt-0">
+            {/* KPIs Section */}
+            <StatsGrid cols={4}>
+              <StatCard
+                icon={<Package className="w-4 h-4" />}
+                label="Total Productos"
+                value={totales.totalProductos}
+                subtitle={`${totales.totalUnidades.toLocaleString()} unidades`}
+              />
+
+              <StatCard
+                icon={<DollarSign className="w-4 h-4" />}
+                label="Inversión Total"
+                value={formatCurrency(totales.inversionTotal)}
+                subtitle="En inventario recibido"
+              />
+
+              <StatCard
+                icon={<TrendingUp className="w-4 h-4" />}
+                label="Costo Promedio/u"
+                value={formatCurrency(totales.costoPromedioUnitario)}
+                subtitle="Costo unitario promedio"
+              />
+
+              <StatCard
+                icon={<Calculator className="w-4 h-4" />}
+                label="Costo Total/u"
+                value={formatCurrency(
+                  totales.totalUnidades > 0 ? totales.inversionTotal / totales.totalUnidades : 0
+                )}
+                subtitle="Incluyendo todos los costos"
+              />
+            </StatsGrid>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-medium">
+                  <Calculator size={18} />
+                  Desglose de Costos ({productos.length})
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleExportAnalisis}
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={productos.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-sm font-medium text-blue-900">
-                          💰 Gestión de Precios y Márgenes
-                        </h3>
-                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
-                          <div>
-                            <strong>Precio Compra:</strong> Costo unitario promedio ponderado
+              </CardHeader>
+              <CardContent>
+                {productos.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calculator size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No hay productos en inventario
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Los productos aparecerán aquí una vez que recibas inventario
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-blue-900">
+                            💡 Leyenda de Columnas y Métodos de Distribución
+                          </h3>
+                          <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
+                            <div>
+                              <strong>FOB (USD):</strong> Costo del producto en China
+                            </div>
+                            <div>
+                              <strong>FOB (RD$):</strong> Convertido a pesos dominicanos
+                            </div>
+                            <div className="text-blue-600">
+                              <strong>Pagos:</strong> Distribución de pagos a proveedor
+                              {productos.length > 0 && productos[0]?.desglose?.metodoPagos && (
+                                <span className="ml-1 text-xs bg-blue-100 px-1.5 py-0.5 rounded">
+                                  {getMethodLabel(productos[0].desglose.metodoPagos)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-orange-600">
+                              <strong>Gastos:</strong> Flete, aduana, transporte
+                              {productos.length > 0 && productos[0]?.desglose?.metodoGastos && (
+                                <span className="ml-1 text-xs bg-orange-100 px-1.5 py-0.5 rounded">
+                                  {getMethodLabel(productos[0].desglose.metodoGastos)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-purple-600">
+                              <strong>Comisiones:</strong> Comisiones bancarias
+                              {productos.length > 0 && productos[0]?.desglose?.metodoComisiones && (
+                                <span className="ml-1 text-xs bg-purple-100 px-1.5 py-0.5 rounded">
+                                  {getMethodLabel(productos[0].desglose.metodoComisiones)}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <strong>Costo Final:</strong> Suma de todos los costos
+                            </div>
                           </div>
-                          <div>
-                            <strong>Precio Venta:</strong> Haz clic para editar (✏️)
-                          </div>
-                          <div>
-                            <strong>Ganancia:</strong> Calculada automáticamente al asignar precio
-                          </div>
-                          <div>
-                            <strong>Tallas:</strong> Haz clic para ver distribución detallada
+                          <div className="mt-3 pt-3 border-t border-blue-200">
+                            <p className="text-xs text-blue-600">
+                              <strong>Métodos de distribución:</strong> Los costos se distribuyen
+                              profesionalmente según peso, volumen, o valor FOB del producto.
+                            </p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <VirtualizedDataTable
-                    columns={productosColumns}
-                    data={productosData}
-                    searchKey="sku"
-                    searchPlaceholder="Buscar por SKU o producto..."
-                    maxHeight="70vh"
-                    estimatedRowHeight={53}
-                    overscan={10}
-                  />
+                    <VirtualizedDataTable
+                      columns={analisisColumns}
+                      data={productos}
+                      searchKey="sku"
+                      searchPlaceholder="Buscar por SKU o producto..."
+                      maxHeight="70vh"
+                      estimatedRowHeight={53}
+                      overscan={10}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 3: Productos */}
+          <TabsContent value="productos" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-medium">
+                  <Tag size={18} />
+                  Catálogo de Productos ({productosData.length})
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleExportProductos}
+                    variant="outline"
+                    className="gap-1.5 h-8 px-3 text-xs"
+                    disabled={productosData.length === 0}
+                  >
+                    <Download size={14} />
+                    Exportar
+                  </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardHeader>
+              <CardContent>
+                {productosData.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Tag size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No hay productos en catálogo
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Los productos aparecerán automáticamente cuando recibas inventario
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-blue-900">
+                            💰 Gestión de Precios y Márgenes
+                          </h3>
+                          <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
+                            <div>
+                              <strong>Precio Compra:</strong> Costo unitario promedio ponderado
+                            </div>
+                            <div>
+                              <strong>Precio Venta:</strong> Haz clic para editar (✏️)
+                            </div>
+                            <div>
+                              <strong>Ganancia:</strong> Calculada automáticamente al asignar precio
+                            </div>
+                            <div>
+                              <strong>Tallas:</strong> Haz clic para ver distribución detallada
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <VirtualizedDataTable
+                      columns={productosColumns}
+                      data={productosData}
+                      searchKey="sku"
+                      searchPlaceholder="Buscar por SKU o producto..."
+                      maxHeight="70vh"
+                      estimatedRowHeight={53}
+                      overscan={10}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <InventarioRecibidoForm
         open={formOpen}
