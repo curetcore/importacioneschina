@@ -84,13 +84,13 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
           <DialogTitle>Cambiar Contraseña</DialogTitle>
           <DialogDescription>Actualiza tu contraseña de acceso al sistema</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Contraseña Actual *</Label>
             <div className="relative">
@@ -164,7 +164,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
             </div>
           </div>
 
-          <div className="flex gap-2 justify-end pt-4">
+          <div className="flex gap-3 justify-end pt-6 border-t mt-6">
             <Button
               type="button"
               variant="outline"

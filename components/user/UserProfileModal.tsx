@@ -74,13 +74,13 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
           <DialogTitle>Mi Perfil</DialogTitle>
           <DialogDescription>Actualiza tu información personal</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={session?.user?.email || ""} disabled className="bg-gray-50" />
@@ -115,7 +115,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
             </div>
           </div>
 
-          <div className="flex gap-2 justify-end pt-4">
+          <div className="flex gap-3 justify-end pt-6 border-t mt-6">
             <Button
               type="button"
               variant="outline"
