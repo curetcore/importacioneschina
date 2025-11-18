@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Obtener documentos de Ordenes (OC China)
     const ordenes = await prisma.oCChina.findMany({
-      where: oc ? { oc } : undefined,
+      where: oc ? { oc, deletedAt: null } : { deletedAt: null },
       select: {
         id: true,
         oc: true,
@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
 
     // 2. Obtener documentos de Pagos China
     const pagos = await prisma.pagosChina.findMany({
-      where: oc ? { ocChina: { oc } } : undefined,
+      where: oc
+        ? { ocChina: { oc, deletedAt: null }, deletedAt: null }
+        : { deletedAt: null, ocChina: { deletedAt: null } },
       select: {
         id: true,
         idPago: true,
@@ -98,13 +100,14 @@ export async function GET(request: NextRequest) {
     const gastos = await prisma.gastosLogisticos.findMany({
       where: oc
         ? {
+            deletedAt: null,
             ordenesCompra: {
               some: {
-                ocChina: { oc },
+                ocChina: { oc, deletedAt: null },
               },
             },
           }
-        : undefined,
+        : { deletedAt: null },
       select: {
         id: true,
         idGasto: true,
