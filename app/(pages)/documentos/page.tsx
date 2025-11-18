@@ -11,6 +11,7 @@ import { showToast } from "@/lib/toast"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import MainLayout from "@/components/layout/MainLayout"
+import { RenameDocumentModal } from "@/components/documentos/RenameDocumentModal"
 
 interface DocumentWithSource {
   id: string
@@ -29,6 +30,8 @@ export default function DocumentosPage() {
   const [activeTab, setActiveTab] = useState("todos")
   const [searchTerm, setSearchTerm] = useState("")
   const [ocFilter, setOcFilter] = useState("")
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [documentToRename, setDocumentToRename] = useState<DocumentWithSource | null>(null)
 
   // Fetch documentos con filtros
   const { data, isLoading, refetch } = useQuery({
@@ -95,10 +98,8 @@ export default function DocumentosPage() {
   }
 
   const handleRename = (doc: DocumentWithSource) => {
-    // TODO: Implementar modal de renombrar
-    showToast.info("Función en desarrollo", {
-      description: "La función de renombrar estará disponible pronto",
-    })
+    setDocumentToRename(doc)
+    setRenameModalOpen(true)
   }
 
   const columns: ColumnDef<DocumentWithSource>[] = [
@@ -266,6 +267,17 @@ export default function DocumentosPage() {
           </CardContent>
         </Card>
       </div>
+
+      <RenameDocumentModal
+        open={renameModalOpen}
+        onOpenChange={setRenameModalOpen}
+        documentId={documentToRename?.id || null}
+        currentName={documentToRename?.nombre || ""}
+        onSuccess={() => {
+          refetch()
+          setDocumentToRename(null)
+        }}
+      />
     </MainLayout>
   )
 }
