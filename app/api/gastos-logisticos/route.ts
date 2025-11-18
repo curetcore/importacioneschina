@@ -7,6 +7,8 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 import { notDeletedFilter } from "@/lib/db-helpers"
 import { auditCreate } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
+import { CacheTTL } from "@/lib/redis"
 
 // GET /api/gastos-logisticos - Obtener todos los gastos
 export async function GET(request: NextRequest) {
@@ -27,59 +29,75 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where: Prisma.GastosLogisticosWhereInput = {
-      ...notDeletedFilter,
-      ...(search && {
-        idGasto: {
-          contains: search,
-          mode: "insensitive",
-        },
-      }),
-      ...(ocId && {
-        ordenesCompra: {
-          some: {
-            ocId: ocId,
-          },
-        },
-      }),
-      ...(tipoGasto && {
-        tipoGasto: tipoGasto,
-      }),
-    }
+    // Cache key incluye parámetros de búsqueda para diferentes caches
+    const cacheKey = `gastos-logisticos:list:${page}:${limit}:${search}:${ocId}:${tipoGasto}`
 
-    const [gastos, total] = await Promise.all([
-      db.gastosLogisticos.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          fechaGasto: "desc",
-        },
-        include: {
-          ordenesCompra: {
+    const result = await QueryCache.list(
+      cacheKey,
+      async () => {
+        const db = await getPrismaClient()
+
+        const where: Prisma.GastosLogisticosWhereInput = {
+          ...notDeletedFilter,
+          ...(search && {
+            idGasto: {
+              contains: search,
+              mode: "insensitive",
+            },
+          }),
+          ...(ocId && {
+            ordenesCompra: {
+              some: {
+                ocId: ocId,
+              },
+            },
+          }),
+          ...(tipoGasto && {
+            tipoGasto: tipoGasto,
+          }),
+        }
+
+        const [gastos, total] = await Promise.all([
+          db.gastosLogisticos.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+              fechaGasto: "desc",
+            },
             include: {
-              ocChina: {
-                select: {
-                  oc: true,
-                  proveedor: true,
+              ordenesCompra: {
+                include: {
+                  ocChina: {
+                    select: {
+                      oc: true,
+                      proveedor: true,
+                    },
+                  },
                 },
               },
             },
+          }),
+          db.gastosLogisticos.count({ where }),
+        ])
+
+        return {
+          gastos,
+          pagination: {
+            total,
+            page,
+            pages: Math.ceil(total / limit),
+            limit,
           },
-        },
-      }),
-      db.gastosLogisticos.count({ where }),
-    ])
+        }
+      },
+      CacheTTL.LISTINGS
+    )
 
     return NextResponse.json({
       success: true,
-      data: gastos,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-        limit,
-      },
+      data: result.gastos,
+      pagination: result.pagination,
     })
   } catch (error) {
     return handleApiError(error)
@@ -128,7 +146,7 @@ export async function POST(request: NextRequest) {
         notas: validatedData.notas,
         adjuntos: adjuntos || null,
         ordenesCompra: {
-          create: validatedData.ocIds.map((ocId) => ({
+          create: validatedData.ocIds.map(ocId => ({
             ocId,
           })),
         },
@@ -149,6 +167,9 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("GastosLogisticos", nuevoGasto as any, request)
+
+    // Invalidar cache - ocIds es un array de IDs en gastos
+    await CacheInvalidator.invalidateGastosLogisticos(validatedData.ocIds)
 
     return NextResponse.json(
       {

@@ -8,6 +8,8 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 import { notDeletedFilter } from "@/lib/db-helpers"
 import { auditCreate } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
+import { CacheTTL } from "@/lib/redis"
 
 // GET /api/inventario-recibido - Obtener todos los inventarios
 export async function GET(request: NextRequest) {
@@ -16,7 +18,6 @@ export async function GET(request: NextRequest) {
   if (rateLimitError) return rateLimitError
 
   try {
-    const db = await getPrismaClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get("page") || "1")
     const requestedLimit = parseInt(searchParams.get("limit") || "20")
@@ -28,52 +29,68 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where: Prisma.InventarioRecibidoWhereInput = {
-      ...notDeletedFilter,
-      ...(search && {
-        idRecepcion: {
-          contains: search,
-          mode: "insensitive",
-        },
-      }),
-      ...(ocId && {
-        ocId: ocId,
-      }),
-      ...(bodega && {
-        bodegaInicial: bodega,
-      }),
-    }
+    // Cache key incluye parámetros de búsqueda para diferentes caches
+    const cacheKey = `inventario:list:${page}:${limit}:${search}:${ocId}:${bodega}`
 
-    const [inventarios, total] = await Promise.all([
-      db.inventarioRecibido.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          fechaLlegada: "desc",
-        },
-        include: {
-          ocChina: {
-            select: {
-              oc: true,
-              proveedor: true,
+    const result = await QueryCache.list(
+      cacheKey,
+      async () => {
+        const db = await getPrismaClient()
+
+        const where: Prisma.InventarioRecibidoWhereInput = {
+          ...notDeletedFilter,
+          ...(search && {
+            idRecepcion: {
+              contains: search,
+              mode: "insensitive",
             },
+          }),
+          ...(ocId && {
+            ocId: ocId,
+          }),
+          ...(bodega && {
+            bodegaInicial: bodega,
+          }),
+        }
+
+        const [inventarios, total] = await Promise.all([
+          db.inventarioRecibido.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+              fechaLlegada: "desc",
+            },
+            include: {
+              ocChina: {
+                select: {
+                  oc: true,
+                  proveedor: true,
+                },
+              },
+              item: true,
+            },
+          }),
+          db.inventarioRecibido.count({ where }),
+        ])
+
+        return {
+          inventarios,
+          pagination: {
+            total,
+            page,
+            pages: Math.ceil(total / limit),
+            limit,
           },
-          item: true,
-        },
-      }),
-      db.inventarioRecibido.count({ where }),
-    ])
+        }
+      },
+      CacheTTL.LISTINGS
+    )
 
     return NextResponse.json({
       success: true,
-      data: inventarios,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-        limit,
-      },
+      data: result.inventarios,
+      pagination: result.pagination,
     })
   } catch (error) {
     return handleApiError(error)
@@ -160,7 +177,8 @@ export async function POST(request: NextRequest) {
     // NUEVO: Calcular costos COMPLETOS usando el sistema profesional de distribución
     // que incluye FOB + pagos + gastos + comisiones (consistente con análisis-costos)
     // Transform gastosLogisticos from junction table to flat gasto objects
-    const gastosTransformed = oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+    const gastosTransformed =
+      oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
     const itemsConCostos = calcularCostosCompletos(oc.items, oc.pagosChina, gastosTransformed)
 
     let costoUnitarioFinalRD: number
@@ -229,6 +247,9 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("InventarioRecibido", nuevaRecepcion as any, request)
+
+    // Invalidar cache
+    await CacheInvalidator.invalidateInventario(validatedData.ocId)
 
     return NextResponse.json(
       {

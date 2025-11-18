@@ -8,6 +8,8 @@ import { notDeletedFilter, getPrismaClient } from "@/lib/db-helpers"
 import { auditCreate } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { loggers, logWarning } from "@/lib/logger"
+import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
+import { CacheTTL } from "@/lib/redis"
 
 interface OCItemInput {
   sku: string
@@ -80,51 +82,67 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where = {
-      ...notDeletedFilter,
-      ...(search && {
-        oc: {
-          contains: search,
-          mode: "insensitive" as const,
-        },
-      }),
-      ...(proveedor && {
-        proveedor: proveedor,
-      }),
-    }
+    // Cache key incluye parámetros de búsqueda para diferentes caches
+    const cacheKey = `oc-china:list:${page}:${limit}:${search}:${proveedor}`
 
-    const [ocs, total] = await Promise.all([
-      db.oCChina.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          fechaOC: "desc",
-        },
-        include: {
-          items: true,
-          _count: {
-            select: {
-              items: true,
-              pagosChina: true,
-              gastosLogisticos: true,
-              inventarioRecibido: true,
+    const result = await QueryCache.list(
+      cacheKey,
+      async () => {
+        const db = await getPrismaClient()
+
+        const where = {
+          ...notDeletedFilter,
+          ...(search && {
+            oc: {
+              contains: search,
+              mode: "insensitive" as const,
             },
+          }),
+          ...(proveedor && {
+            proveedor: proveedor,
+          }),
+        }
+
+        const [ocs, total] = await Promise.all([
+          db.oCChina.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+              fechaOC: "desc",
+            },
+            include: {
+              items: true,
+              _count: {
+                select: {
+                  items: true,
+                  pagosChina: true,
+                  gastosLogisticos: true,
+                  inventarioRecibido: true,
+                },
+              },
+            },
+          }),
+          db.oCChina.count({ where }),
+        ])
+
+        return {
+          ocs,
+          pagination: {
+            total,
+            page,
+            pages: Math.ceil(total / limit),
+            limit,
           },
-        },
-      }),
-      db.oCChina.count({ where }),
-    ])
+        }
+      },
+      CacheTTL.LISTINGS
+    )
 
     return NextResponse.json({
       success: true,
-      data: ocs,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-        limit,
-      },
+      data: result.ocs,
+      pagination: result.pagination,
     })
   } catch (error) {
     return handleApiError(error)
@@ -246,6 +264,9 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("OCChina", nuevaOC as any, request)
+
+    // Invalidar cache
+    await CacheInvalidator.invalidateOCChina(nuevaOC.id)
 
     return NextResponse.json(
       {
