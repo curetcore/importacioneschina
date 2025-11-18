@@ -91,6 +91,146 @@ const ACTION_LABELS: Record<string, string> = {
   LOGIN: "Inició sesión",
 }
 
+interface User {
+  id: string
+  email: string
+  name: string
+  lastName: string | null
+  role: string
+  createdAt: string
+  updatedAt: string
+}
+
+function AdminUsersSection() {
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users")
+      if (!res.ok) throw new Error("Error al cargar usuarios")
+      return res.json()
+    },
+  })
+
+  const users: User[] = data?.data || []
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Gestión de Usuarios</CardTitle>
+          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
+            Super Admin
+          </span>
+        </div>
+        <p className="text-sm text-gray-500 mt-2">
+          Vista y administración de todos los usuarios del sistema
+        </p>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center py-8 text-sm text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            Cargando usuarios...
+          </div>
+        ) : users.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Users className="mx-auto h-12 w-12 text-gray-300 mb-2" />
+            <p className="text-sm">No hay usuarios registrados</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                    Email
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                    Nombre
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                    Rol
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                    Registrado
+                  </th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => {
+                  const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL
+                  return (
+                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm text-gray-900">
+                        <div className="flex items-center gap-2">
+                          {user.email}
+                          {isSuperAdmin && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
+                              Super Admin
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-900">
+                        {user.name} {user.lastName || ""}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {user.role === "admin" ? "Administrador" : "Usuario"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-500">
+                        {formatTimeAgo(user.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            onClick={() => setEditingUser(user)}
+                            className="h-8 px-2 py-1"
+                            title="Editar usuario"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          {!isSuperAdmin && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => setDeleteUserId(user.id)}
+                              className="h-8 px-2 py-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Eliminar usuario"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Aquí irían los modales de editar/eliminar que agregaremos después */}
+    </Card>
+  )
+}
+
 function UserActivitySection() {
   const { data: session } = useSession()
   const [page, setPage] = useState(1)
@@ -246,6 +386,7 @@ function UserActivitySection() {
 
 function ConfiguracionPageContent() {
   const { addToast } = useToast()
+  const { data: session } = useSession()
   const queryClient = useQueryClient()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState("configuracion")
@@ -264,6 +405,9 @@ function ConfiguracionPageContent() {
   // User account modals state (tab Mi Cuenta)
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
+
+  // Check if user is super admin
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
 
   // Handle URL tab parameter
   useEffect(() => {
@@ -501,46 +645,55 @@ function ConfiguracionPageContent() {
           </TabsContent>
 
           <TabsContent value="cuenta" className="space-y-6 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información Personal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Administra tu información personal y preferencias de cuenta
-                  </p>
-                  <Button
-                    onClick={() => setProfileModalOpen(true)}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <UserCircle className="w-4 h-4 mr-2" />
-                    Editar Perfil
-                  </Button>
-                </CardContent>
-              </Card>
+            {isSuperAdmin ? (
+              <>
+                <AdminUsersSection />
+                <UserActivitySection />
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Información Personal</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Administra tu información personal y preferencias de cuenta
+                      </p>
+                      <Button
+                        onClick={() => setProfileModalOpen(true)}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        Editar Perfil
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Seguridad</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Cambia tu contraseña para mantener tu cuenta segura
-                  </p>
-                  <Button
-                    onClick={() => setPasswordModalOpen(true)}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    Cambiar Contraseña
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Seguridad</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Cambia tu contraseña para mantener tu cuenta segura
+                      </p>
+                      <Button
+                        onClick={() => setPasswordModalOpen(true)}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        Cambiar Contraseña
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
 
-            <UserActivitySection />
+                <UserActivitySection />
+              </>
+            )}
           </TabsContent>
         </Tabs>
       </div>
