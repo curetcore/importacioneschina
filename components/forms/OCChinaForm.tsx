@@ -460,8 +460,11 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                           </div>
                           {!expandedItems.has(index) && (
                             <div className="ml-7 text-sm text-gray-500">
-                              {item.cantidadTotal} unidades × ${item.precioUnitarioUSD.toFixed(2)} =
-                              ${(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)}
+                              {item.cantidadTotal} unidades × $
+                              {Number(item.precioUnitarioUSD).toFixed(2)} = $
+                              {(
+                                Number(item.cantidadTotal) * Number(item.precioUnitarioUSD)
+                              ).toFixed(2)}
                             </div>
                           )}
                         </div>
@@ -667,7 +670,10 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                           {/* Subtotal calculado */}
                           <div className="bg-blue-50 p-2 rounded text-sm">
                             <strong>Subtotal:</strong> $
-                            {(item.cantidadTotal * item.precioUnitarioUSD).toFixed(2)} USD
+                            {(Number(item.cantidadTotal) * Number(item.precioUnitarioUSD)).toFixed(
+                              2
+                            )}{" "}
+                            USD
                           </div>
                         </div>
                       )}
