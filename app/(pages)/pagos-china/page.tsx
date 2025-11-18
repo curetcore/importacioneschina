@@ -144,7 +144,8 @@ export default function PagosChinaPage() {
       Moneda: pago.moneda,
       "Monto Original": parseFloat(pago.montoOriginal.toString()),
       "Tasa Cambio": parseFloat(pago.tasaCambio.toString()),
-      "Comisión Banco (RD$)": parseFloat(pago.comisionBancoRD.toString()),
+      "Comisión Banco (USD)": parseFloat(pago.comisionBancoUSD.toString()),
+      "Comisión Banco (RD$)": parseFloat((pago.comisionBancoUSD * pago.tasaCambio).toString()),
       "Monto RD$": parseFloat(pago.montoRD.toString()),
       "Monto RD$ Neto": parseFloat(pago.montoRDNeto.toString()),
     }))
