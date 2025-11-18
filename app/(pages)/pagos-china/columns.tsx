@@ -24,7 +24,7 @@ export interface Pago {
   moneda: "USD" | "CNY" | "RD$"
   montoOriginal: number
   tasaCambio: number
-  comisionBancoRD: number
+  comisionBancoUSD: number
   montoRD: number
   montoRDNeto: number
   adjuntos?: FileAttachment[]
@@ -116,9 +116,9 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
         <div className="font-medium text-gray-900 whitespace-nowrap">
           {formatCurrency(row.original.montoRDNeto)}
         </div>
-        {row.original.comisionBancoRD > 0 && (
+        {row.original.comisionBancoUSD > 0 && (
           <div className="text-gray-600 text-xs whitespace-nowrap">
-            + {formatCurrency(row.original.comisionBancoRD)} com.
+            + {formatCurrency(row.original.comisionBancoUSD * row.original.tasaCambio)} com.
           </div>
         )}
       </div>
