@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { User, ChevronDown, UserCircle, Key, History, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { User, ChevronDown, UserCircle, LogOut } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,15 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { UserProfileModal } from "@/components/user/UserProfileModal"
-import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
-import { UserHistoryModal } from "@/components/user/UserHistoryModal"
 
 export default function UserDropdown() {
   const { data: session } = useSession()
-  const [profileModalOpen, setProfileModalOpen] = useState(false)
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false)
-  const [historyModalOpen, setHistoryModalOpen] = useState(false)
+  const router = useRouter()
 
   if (!session?.user) return null
 
@@ -28,50 +23,36 @@ export default function UserDropdown() {
     await signOut({ callbackUrl: "/login" })
   }
 
+  const handleProfile = () => {
+    router.push("/configuracion?tab=cuenta")
+  }
+
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
-            <User size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-700 font-medium">
-              {fullName || session.user.name}
-            </span>
-            <ChevronDown
-              size={14}
-              className="text-gray-400 transition-transform group-data-[state=open]:rotate-180"
-            />
-          </button>
-        </DropdownMenuTrigger>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+          <User size={16} className="text-gray-600" />
+          <span className="text-sm text-gray-700 font-medium">{fullName || session.user.name}</span>
+          <ChevronDown
+            size={14}
+            className="text-gray-400 transition-transform group-data-[state=open]:rotate-180"
+          />
+        </button>
+      </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem onClick={() => setProfileModalOpen(true)}>
-            <UserCircle className="mr-2 h-4 w-4" />
-            <span>Mi Perfil</span>
-          </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={handleProfile}>
+          <UserCircle className="mr-2 h-4 w-4" />
+          <span>Mi Perfil</span>
+        </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => setPasswordModalOpen(true)}>
-            <Key className="mr-2 h-4 w-4" />
-            <span>Cambiar Contraseña</span>
-          </DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={() => setHistoryModalOpen(true)}>
-            <History className="mr-2 h-4 w-4" />
-            <span>Mi Historial</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Cerrar Sesión</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <UserProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
-      <ChangePasswordModal open={passwordModalOpen} onOpenChange={setPasswordModalOpen} />
-      <UserHistoryModal open={historyModalOpen} onOpenChange={setHistoryModalOpen} />
-    </>
+        <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Cerrar Sesión</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -2,7 +2,8 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,10 +14,13 @@ import { ProveedoresList } from "@/components/registros/ProveedoresList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Settings, Users, Calculator } from "lucide-react"
+import { Plus, Edit, Trash2, Settings, Users, Calculator, UserCircle } from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 import { useApiQuery } from "@/lib/hooks/useApiQuery"
 import { DistribucionCostosSettings } from "@/components/configuracion/DistribucionCostosSettings"
+import { UserProfileModal } from "@/components/user/UserProfileModal"
+import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
+import { UserHistoryModal } from "@/components/user/UserHistoryModal"
 
 interface Configuracion {
   id: string
@@ -59,6 +63,8 @@ const categoriaLabels: Record<string, { titulo: string; descripcion: string }> =
 export default function ConfiguracionPage() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState("configuracion")
   const [formOpen, setFormOpen] = useState(false)
   const [configToEdit, setConfigToEdit] = useState<Configuracion | null>(null)
   const [configToDelete, setConfigToDelete] = useState<Configuracion | null>(null)
@@ -70,6 +76,19 @@ export default function ConfiguracionPage() {
   const [proveedorToEdit, setProveedorToEdit] = useState<any>(null)
   const [proveedorToDelete, setProveedorToDelete] = useState<any>(null)
   const [deleteProveedorLoading, setDeleteProveedorLoading] = useState(false)
+
+  // User account modals state (tab Mi Cuenta)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false)
+  const [historyModalOpen, setHistoryModalOpen] = useState(false)
+
+  // Handle URL tab parameter
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (tab && ["configuracion", "distribucion", "proveedores", "cuenta"].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Use React Query for data fetching
   const { data: rawData, isLoading } = useApiQuery<Record<string, Configuracion[]>>(
@@ -180,7 +199,7 @@ export default function ConfiguracionPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <Tabs defaultValue="configuracion" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="configuracion" className="gap-2">
               <Settings className="w-4 h-4" />
@@ -193,6 +212,10 @@ export default function ConfiguracionPage() {
             <TabsTrigger value="proveedores" className="gap-2">
               <Users className="w-4 h-4" />
               Proveedores CRM
+            </TabsTrigger>
+            <TabsTrigger value="cuenta" className="gap-2">
+              <UserCircle className="w-4 h-4" />
+              Mi Cuenta
             </TabsTrigger>
           </TabsList>
 
@@ -288,6 +311,65 @@ export default function ConfiguracionPage() {
               }}
             />
           </TabsContent>
+
+          <TabsContent value="cuenta" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Información Personal</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Administra tu información personal y preferencias de cuenta
+                  </p>
+                  <Button
+                    onClick={() => setProfileModalOpen(true)}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <UserCircle className="w-4 h-4 mr-2" />
+                    Editar Perfil
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Seguridad</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Cambia tu contraseña para mantener tu cuenta segura
+                  </p>
+                  <Button
+                    onClick={() => setPasswordModalOpen(true)}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Cambiar Contraseña
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Actividad Reciente</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Revisa tu historial de actividad y cambios realizados en el sistema
+                  </p>
+                  <Button
+                    onClick={() => setHistoryModalOpen(true)}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Ver Mi Historial
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -337,6 +419,10 @@ export default function ConfiguracionPage() {
         variant="danger"
         loading={deleteProveedorLoading}
       />
+
+      <UserProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
+      <ChangePasswordModal open={passwordModalOpen} onOpenChange={setPasswordModalOpen} />
+      <UserHistoryModal open={historyModalOpen} onOpenChange={setHistoryModalOpen} />
     </MainLayout>
   )
 }
