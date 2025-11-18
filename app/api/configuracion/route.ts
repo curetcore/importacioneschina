@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth-options"
 import { z } from "zod"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
@@ -33,8 +35,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get("categoria")
 
-    // Get Prisma client OUTSIDE of cache (because it uses headers())
-    const db = await getPrismaClient()
+    // Get session at route level to avoid headers() call inside cached functions
+    const session = await getServerSession(authOptions)
+
+    // Get Prisma client with user email to avoid internal headers() call
+    const db = await getPrismaClient(session?.user?.email)
 
     // Fetch configurations (no cache needed for config - changes rarely and is small)
     const whereClause = categoria ? { categoria, activo: true } : { activo: true }
@@ -74,7 +79,11 @@ export async function POST(request: NextRequest) {
     const rateLimitError = await withRateLimit(request, RateLimits.mutation)
     if (rateLimitError) return rateLimitError
 
-    const db = await getPrismaClient()
+    // Get session at route level to avoid headers() call inside cached functions
+    const session = await getServerSession(authOptions)
+
+    // Get Prisma client with user email to avoid internal headers() call
+    const db = await getPrismaClient(session?.user?.email)
     const body = await request.json()
     const validatedData = configuracionSchema.parse(body)
 

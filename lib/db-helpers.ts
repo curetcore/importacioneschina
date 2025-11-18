@@ -88,9 +88,16 @@ export const DEMO_USER_EMAIL = "demo@sistema.com"
  * Obtener el cliente Prisma correcto según el usuario actual
  * - Si es usuario demo: retorna prismaDemo (base de datos demo)
  * - Si es usuario normal: retorna prisma (base de datos producción)
+ * @param userEmail - Optional email from session to avoid calling getServerSession inside cached functions
  * @returns PrismaClient apropiado según el contexto
  */
-export async function getPrismaClient() {
+export async function getPrismaClient(userEmail?: string | null) {
+  // Si se proporciona el email directamente, usarlo
+  if (userEmail !== undefined) {
+    return userEmail === DEMO_USER_EMAIL ? prismaDemo : prisma
+  }
+
+  // Fallback: intentar obtener sesión (solo para casos donde no se pasa el email)
   try {
     const session = await getServerSession(authOptions)
 
