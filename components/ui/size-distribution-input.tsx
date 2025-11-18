@@ -43,15 +43,18 @@ export function SizeDistributionInput({
   const [customSize, setCustomSize] = useState("")
   const [showCustomInput, setShowCustomInput] = useState(false)
 
-  // Sync with parent value
+  // Sync with parent value only when value changes externally (not from our own updates)
   useEffect(() => {
-    setSizes(value || {})
+    // Only sync if the value is significantly different (not just cleaned version)
+    if (value !== null && Object.keys(value).length > 0) {
+      setSizes(value)
+    }
   }, [value])
 
   // Update parent when sizes change
   const handleSizeChange = (newSizes: Record<string, number>) => {
     setSizes(newSizes)
-    // Remove sizes with 0 or empty quantities
+    // Remove sizes with 0 or empty quantities for parent, but keep them locally
     const cleaned = Object.entries(newSizes).reduce(
       (acc, [size, qty]) => {
         if (qty > 0) {
@@ -66,11 +69,8 @@ export function SizeDistributionInput({
 
   const handleQuantityChange = (size: string, quantity: number) => {
     const newSizes = { ...sizes }
-    if (quantity > 0) {
-      newSizes[size] = quantity
-    } else {
-      delete newSizes[size]
-    }
+    // Keep the size in local state even if quantity is 0, just update the number
+    newSizes[size] = quantity > 0 ? quantity : 0
     handleSizeChange(newSizes)
   }
 
@@ -244,30 +244,23 @@ export function SizeDistributionInput({
         </div>
       )}
 
-      {/* Warning when totals don't match */}
+      {/* Subtle info message when totals don't match */}
       {hasExpectedTotal && hasSizes && !isValid && (
-        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 text-sm">
-          <div className="flex items-start gap-2">
-            <span className="text-yellow-600 font-bold text-lg">⚠</span>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+          <div className="flex items-center gap-2 text-blue-700">
+            <span className="text-xs">ℹ️</span>
             <div className="flex-1">
-              <div className="font-semibold text-yellow-900 mb-1">
-                Distribución de tallas incompleta
-              </div>
-              <div className="text-yellow-700">
-                <span className="font-medium">Cantidad total del pedido:</span> {expectedTotal}{" "}
-                unidades
-              </div>
-              <div className="text-yellow-700">
-                <span className="font-medium">Suma de tallas:</span> {total} unidades
-              </div>
-              <div className="text-yellow-600 font-medium mt-2">
-                {total < expectedTotal
-                  ? `Faltan ${expectedTotal - total} unidades por distribuir`
-                  : `Hay ${total - expectedTotal} unidades de más`}
-              </div>
-              <div className="text-yellow-700 text-xs mt-2 italic">
-                Puedes seguir agregando tallas. La validación se aplicará al guardar la orden.
-              </div>
+              {total < expectedTotal ? (
+                <span>
+                  Faltan <strong>{expectedTotal - total}</strong> unidades por distribuir (Total:{" "}
+                  {total}/{expectedTotal})
+                </span>
+              ) : (
+                <span>
+                  Hay <strong>{total - expectedTotal}</strong> unidades de más (Total: {total}/
+                  {expectedTotal})
+                </span>
+              )}
             </div>
           </div>
         </div>
