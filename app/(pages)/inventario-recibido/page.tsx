@@ -29,6 +29,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { columns as analisisColumns, ProductoCosto } from "../analisis-costos/columns"
+import { getProductosColumns, ProductoRow } from "../productos/columns"
+import { TallasModal } from "@/components/productos/TallasModal"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
@@ -46,6 +48,7 @@ import {
   FileText,
   Calculator,
   TrendingUp,
+  Tag,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -76,6 +79,8 @@ export default function InventarioRecibidoPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
+  const [tallasModalOpen, setTallasModalOpen] = useState(false)
+  const [selectedProducto, setSelectedProducto] = useState<ProductoRow | null>(null)
 
   // Fetch all inventarios
   const { data: inventarios = [], isLoading } = useQuery({
@@ -114,6 +119,23 @@ export default function InventarioRecibidoPage() {
     inversionTotal: 0,
     costoPromedioUnitario: 0,
   }
+
+  // Fetch productos con pricing
+  const { data: productosResponse, isLoading: productosLoading } = useQuery({
+    queryKey: ["productos"],
+    queryFn: async () => {
+      const res = await fetch("/api/productos")
+      const result = await res.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al cargar productos")
+      }
+
+      return result
+    },
+  })
+
+  const productosData = (productosResponse?.data || []) as ProductoRow[]
 
   const handleEdit = (inventario: InventarioRecibido) => {
     setInventarioToEdit(inventario)
@@ -257,12 +279,90 @@ export default function InventarioRecibidoPage() {
     })
   }
 
+  const handlePrecioVentaChange = async (sku: string, precioVenta: number | null) => {
+    try {
+      const response = await fetch(`/api/productos/${encodeURIComponent(sku)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ precioVenta }),
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al actualizar precio")
+      }
+
+      addToast({
+        type: "success",
+        title: "Precio actualizado",
+        description: `Precio de venta actualizado para ${sku}`,
+      })
+
+      queryClient.invalidateQueries({ queryKey: ["productos"] })
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error al actualizar precio de venta",
+      })
+      throw error
+    }
+  }
+
+  const handleTallasClick = (producto: ProductoRow) => {
+    setSelectedProducto(producto)
+    setTallasModalOpen(true)
+  }
+
+  const handleExportProductos = () => {
+    if (productosData.length === 0) {
+      addToast({
+        type: "warning",
+        title: "Sin datos",
+        description: "No hay productos para exportar",
+      })
+      return
+    }
+
+    const dataToExport = productosData.map(producto => ({
+      SKU: producto.sku,
+      Producto: producto.nombre,
+      "Cantidad Total": producto.cantidadTotal,
+      "Número de Tallas": producto.numeroTallas,
+      "Precio Compra": producto.costoPromedioCompra,
+      "Costo Total": producto.costoTotalCompra,
+      "Precio Venta": producto.precioVenta || "",
+      "Ganancia por Unidad": producto.gananciaPorUnidad || "",
+      "Ganancia %": producto.gananciaPorcentaje ? `${producto.gananciaPorcentaje.toFixed(1)}%` : "",
+      "Ganancia Total Estimada": producto.gananciaTotalEstimada || "",
+    }))
+
+    exportToExcel(dataToExport, "productos_pricing", "Catálogo de Productos")
+    addToast({
+      type: "success",
+      title: "Exportación exitosa",
+      description: `${productosData.length} productos exportados a Excel`,
+    })
+  }
+
   // Create columns with callbacks
   const columns = useMemo(
     () =>
       getInventarioColumns({
         onEdit: handleEdit,
         onDelete: setInventarioToDelete,
+      }),
+    []
+  )
+
+  const productosColumns = useMemo(
+    () =>
+      getProductosColumns({
+        onPrecioVentaChange: handlePrecioVentaChange,
+        onTallasClick: handleTallasClick,
       }),
     []
   )
@@ -320,7 +420,7 @@ export default function InventarioRecibidoPage() {
     }
   }, [inventarios])
 
-  if (isLoading || analisisLoading) {
+  if (isLoading || analisisLoading || productosLoading) {
     return (
       <MainLayout>
         <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
@@ -339,6 +439,10 @@ export default function InventarioRecibidoPage() {
           <TabsTrigger value="costos" className="gap-2">
             <Calculator className="w-4 h-4" />
             Análisis de Costos
+          </TabsTrigger>
+          <TabsTrigger value="productos" className="gap-2">
+            <Tag className="w-4 h-4" />
+            Productos
           </TabsTrigger>
         </TabsList>
 
@@ -631,6 +735,78 @@ export default function InventarioRecibidoPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Tab 3: Productos */}
+        <TabsContent value="productos" className="space-y-6 mt-0">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <Tag size={18} />
+                Catálogo de Productos ({productosData.length})
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleExportProductos}
+                  variant="outline"
+                  className="gap-1.5 h-8 px-3 text-xs"
+                  disabled={productosData.length === 0}
+                >
+                  <Download size={14} />
+                  Exportar
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {productosData.length === 0 ? (
+                <div className="text-center py-12">
+                  <Tag size={48} className="mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No hay productos en catálogo
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Los productos aparecerán automáticamente cuando recibas inventario
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-blue-900">
+                          💰 Gestión de Precios y Márgenes
+                        </h3>
+                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-blue-700">
+                          <div>
+                            <strong>Precio Compra:</strong> Costo unitario promedio ponderado
+                          </div>
+                          <div>
+                            <strong>Precio Venta:</strong> Haz clic para editar (✏️)
+                          </div>
+                          <div>
+                            <strong>Ganancia:</strong> Calculada automáticamente al asignar precio
+                          </div>
+                          <div>
+                            <strong>Tallas:</strong> Haz clic para ver distribución detallada
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <VirtualizedDataTable
+                    columns={productosColumns}
+                    data={productosData}
+                    searchKey="sku"
+                    searchPlaceholder="Buscar por SKU o producto..."
+                    maxHeight="70vh"
+                    estimatedRowHeight={53}
+                    overscan={10}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <InventarioRecibidoForm
@@ -653,6 +829,12 @@ export default function InventarioRecibidoPage() {
         cancelText="Cancelar"
         variant="danger"
         loading={deleteLoading}
+      />
+
+      <TallasModal
+        open={tallasModalOpen}
+        onOpenChange={setTallasModalOpen}
+        producto={selectedProducto}
       />
     </MainLayout>
   )

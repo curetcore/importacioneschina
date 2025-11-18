@@ -201,6 +201,26 @@ model InventarioRecibido {
   @@index([deletedAt])
 }
 
+// TABLA 4.5: PRODUCTOS - Catálogo consolidado con pricing
+model Producto {
+  id                    String   @id @default(cuid())
+  sku                   String   @unique
+  nombre                String
+
+  // Pricing
+  precioVenta           Decimal? @map("precio_venta") @db.Decimal(10, 2)
+
+  // Timestamps
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  @@map("productos")
+  @@index([sku])
+  @@index([nombre])
+  @@index([deletedAt])
+}
+
 // TABLA 5: CONFIGURACIONES DEL SISTEMA
 model Configuracion {
   id                    String   @id @default(cuid())
