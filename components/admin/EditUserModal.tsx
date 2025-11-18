@@ -13,13 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/toast"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 
 interface User {
   id: string
@@ -139,18 +133,15 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
           <div className="space-y-2">
             <Label htmlFor="role">Rol *</Label>
             <Select
+              options={[
+                { value: "user", label: "Usuario" },
+                { value: "admin", label: "Administrador" },
+              ]}
               value={formData.role}
-              onValueChange={value => setFormData({ ...formData, role: value })}
+              onChange={value => setFormData({ ...formData, role: value })}
               disabled={loading}
-            >
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Selecciona un rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Usuario</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-              </SelectContent>
-            </Select>
+              placeholder="Selecciona un rol"
+            />
             <p className="text-xs text-gray-500">
               Los administradores tienen acceso completo al sistema
             </p>
