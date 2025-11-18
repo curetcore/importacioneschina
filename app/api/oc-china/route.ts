@@ -7,6 +7,7 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 import { notDeletedFilter, getPrismaClient } from "@/lib/db-helpers"
 import { auditCreate } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { loggers, logWarning } from "@/lib/logger"
 
 interface OCItemInput {
   sku: string
@@ -37,7 +38,7 @@ function validarTallaDistribucion(tallas: unknown): InputJsonValue | undefined {
 
   // Validar que sea un objeto
   if (typeof tallas !== "object" || Array.isArray(tallas)) {
-    console.warn("⚠️ tallaDistribucion inválida: no es un objeto")
+    logWarning("tallaDistribucion inválida: no es un objeto", { tallas })
     return undefined
   }
 
@@ -49,7 +50,7 @@ function validarTallaDistribucion(tallas: unknown): InputJsonValue | undefined {
     const cantidadNum = typeof cantidad === "number" ? cantidad : parseInt(String(cantidad))
 
     if (isNaN(cantidadNum) || cantidadNum < 0) {
-      console.warn(`⚠️ tallaDistribucion[${talla}] inválida: ${cantidad}`)
+      logWarning(`tallaDistribucion[${talla}] inválida`, { talla, cantidad })
       continue // Saltar tallas inválidas
     }
 

@@ -2,9 +2,30 @@ import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { calcularOC } from "@/lib/calculations"
 import { handleApiError } from "@/lib/api-error-handler"
+import { QueryCache } from "@/lib/cache-helpers"
+import { CacheKeys, CacheTTL } from "@/lib/redis"
 
 export async function GET() {
   try {
+    // Cachear dashboard completo por 5 minutos
+    const cachedData = await QueryCache.stats(
+      CacheKeys.dashboard(),
+      async () => {
+        return await generateDashboardData()
+      },
+      CacheTTL.DASHBOARD
+    )
+
+    return NextResponse.json({
+      success: true,
+      data: cachedData,
+    })
+  } catch (error) {
+    return handleApiError(error)
+  }
+}
+
+async function generateDashboardData() {
     const db = await getPrismaClient()
     // PERFORMANCE: Limitar carga de OCs para prevenir problemas de memoria
     // Dashboard solo necesita datos agregados, no todas las OCs
