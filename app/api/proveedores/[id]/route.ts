@@ -5,6 +5,9 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { CacheInvalidator } from "@/lib/cache-helpers"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // GET /api/proveedores/[id] - Obtener proveedor por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

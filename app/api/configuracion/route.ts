@@ -5,6 +5,9 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 const configuracionSchema = z.object({
   categoria: z.enum([
     "categorias",

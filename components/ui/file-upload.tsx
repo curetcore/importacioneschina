@@ -30,8 +30,10 @@ export function FileUpload({
   disabled = false,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [editedFileName, setEditedFileName] = useState("")
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+  const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
   const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]
 
   const validateFile = (file: File): string | null => {
@@ -39,7 +41,7 @@ export function FileUpload({
       return "Solo se permiten archivos JPG, PNG y PDF"
     }
     if (file.size > MAX_FILE_SIZE) {
-      return "El archivo no debe exceder 10MB"
+      return "El archivo no debe exceder 20MB"
     }
     if (attachments.length >= maxFiles) {
       return `Solo se permiten máximo ${maxFiles} archivos`
@@ -47,7 +49,7 @@ export function FileUpload({
     return null
   }
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, customName?: string) => {
     const error = validateFile(file)
     if (error) {
       showToast.error("Error de validación", {
@@ -61,6 +63,9 @@ export function FileUpload({
       const formData = new FormData()
       formData.append("file", file)
       formData.append("module", module)
+      if (customName) {
+        formData.append("customName", customName)
+      }
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -76,7 +81,7 @@ export function FileUpload({
       onChange([...attachments, result.data])
 
       showToast.success("Archivo subido", {
-        description: `${file.name} subido exitosamente`,
+        description: `${customName || file.name} subido exitosamente`,
       })
     } catch (error: any) {
       showToast.error("Error al subir archivo", {
@@ -84,13 +89,40 @@ export function FileUpload({
       })
     } finally {
       setUploading(false)
+      setPendingFile(null)
+      setEditedFileName("")
     }
+  }
+
+  const handleFileSelect = (file: File) => {
+    const error = validateFile(file)
+    if (error) {
+      showToast.error("Error de validación", {
+        description: error,
+      })
+      return
+    }
+    setPendingFile(file)
+    setEditedFileName(file.name)
+  }
+
+  const confirmUpload = () => {
+    if (pendingFile) {
+      uploadFile(pendingFile, editedFileName)
+    }
+  }
+
+  const cancelUpload = () => {
+    setPendingFile(null)
+    setEditedFileName("")
   }
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (disabled || uploading) return
-      acceptedFiles.forEach(uploadFile)
+      if (acceptedFiles.length > 0) {
+        handleFileSelect(acceptedFiles[0])
+      }
     },
     [disabled, uploading, attachments]
   )
@@ -184,7 +216,7 @@ export function FileUpload({
             )}
           </div>
           <div className="text-xs text-gray-500">
-            JPG, PNG o PDF (máx. 10MB) • Máximo {maxFiles} archivos
+            JPG, PNG o PDF (máx. 20MB) • Máximo {maxFiles} archivos
             {attachments.length > 0 && ` • ${maxFiles - attachments.length} restantes`}
           </div>
         </div>
@@ -228,6 +260,51 @@ export function FileUpload({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de confirmación de subida */}
+      {pendingFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirmar subida de archivo</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre del archivo:
+                </label>
+                <input
+                  type="text"
+                  value={editedFileName}
+                  onChange={e => setEditedFileName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="nombre-archivo.pdf"
+                />
+              </div>
+
+              <div className="text-sm text-gray-500">
+                <p>Tamaño: {formatFileSize(pendingFile.size)}</p>
+                <p>Tipo: {pendingFile.type}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={cancelUpload}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmUpload}
+                disabled={!editedFileName.trim()}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Subir Archivo
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

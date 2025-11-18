@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 interface FileAttachment {
   nombre: string
   url: string

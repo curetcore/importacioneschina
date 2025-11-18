@@ -11,6 +11,9 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
 import { CacheTTL } from "@/lib/redis"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // GET /api/pagos-china - Obtener todos los pagos
 export async function GET(request: NextRequest) {
   // Rate limiting para queries (60 req/min)

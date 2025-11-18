@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/lib/toast"
+import { showToast } from "@/lib/toast"
 
 interface UserProfileModalProps {
   open: boolean
@@ -57,12 +57,16 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         },
       })
 
-      toast.success("Perfil actualizado exitosamente")
+      showToast.success("Perfil actualizado", {
+        description: "Tu información ha sido actualizada exitosamente",
+      })
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
       onOpenChange(false)
     } catch (error: any) {
       console.error("Error updating profile:", error)
-      toast.error(error.message || "Error al actualizar perfil")
+      showToast.error("Error al actualizar perfil", {
+        description: error.message || "No se pudo actualizar la información",
+      })
     } finally {
       setLoading(false)
     }

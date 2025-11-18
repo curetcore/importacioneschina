@@ -5,6 +5,9 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { logAudit, AuditAction } from "@/lib/audit-logger"
 import bcrypt from "bcryptjs"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 /**
  * POST /api/user/change-password
  * Cambiar contraseña del usuario actual

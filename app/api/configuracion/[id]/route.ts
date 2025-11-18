@@ -5,6 +5,9 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { CacheTags, invalidateCache } from "@/lib/cache"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 const updateSchema = z.object({
   valor: z.string().min(1, "El valor es requerido").optional(),
   orden: z.number().int().optional(),

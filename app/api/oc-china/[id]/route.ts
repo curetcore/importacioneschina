@@ -6,6 +6,9 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 interface OCItemInput {
   sku: string
   nombre: string

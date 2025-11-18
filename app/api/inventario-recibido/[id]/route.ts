@@ -6,6 +6,9 @@ import { distribuirGastosLogisticos } from "@/lib/calculations"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const db = await getPrismaClient()
@@ -124,7 +127,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Recalcular costos distribuidos por producto
     // Transform gastosLogisticos from junction table to flat gasto objects
-    const gastosTransformed = oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+    const gastosTransformed =
+      oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
     const itemsConCostos = distribuirGastosLogisticos(oc.items, gastosTransformed, oc.pagosChina)
 
     let costoUnitarioFinalRD: number

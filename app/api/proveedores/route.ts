@@ -7,6 +7,9 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
 import { CacheKeys } from "@/lib/redis"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // GET /api/proveedores - Obtener todos los proveedores
 export async function GET(request: NextRequest) {
   try {
