@@ -19,8 +19,8 @@ const menuItems = [
   { href: "/pagos-china", label: "Pagos", icon: DollarSign },
   { href: "/gastos-logisticos", label: "Gastos", icon: FileText },
   { href: "/inventario-recibido", label: "Inventario", icon: Inbox },
-  { href: "/analisis-costos", label: "Análisis de Costos", icon: Calculator },
-  { href: "/configuracion", label: "Configuración", icon: Settings },
+  { href: "/analisis-costos", label: "Costos", icon: Calculator },
+  { href: "/configuracion", label: "Ajustes", icon: Settings },
 ]
 
 export default function Sidebar() {
