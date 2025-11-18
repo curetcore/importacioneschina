@@ -109,17 +109,23 @@ function AdminUsersSection() {
   const queryClient = useQueryClient()
   const { addToast } = useToast()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const res = await fetch("/api/admin/users")
-      if (!res.ok) throw new Error("Error al cargar usuarios")
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Error al cargar usuarios")
+      }
       return res.json()
     },
   })
 
   const users: User[] = data?.data || []
   const userToDelete = users.find(u => u.id === deleteUserId)
+
+  // Debug logging
+  console.log("Admin Users Query:", { data, isLoading, error, users })
 
   const handleDelete = async () => {
     if (!deleteUserId) return
@@ -171,6 +177,20 @@ function AdminUsersSection() {
           <div className="text-center py-8 text-sm text-gray-500">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
             Cargando usuarios...
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-left">
+              <h3 className="text-sm font-medium text-red-900 mb-2">Error al cargar usuarios</h3>
+              <p className="text-sm text-red-700">{(error as Error).message}</p>
+              <Button
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-users"] })}
+                className="mt-4"
+                variant="outline"
+              >
+                Reintentar
+              </Button>
+            </div>
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
