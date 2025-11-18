@@ -312,7 +312,7 @@ function UserActivitySection() {
   const [page, setPage] = useState(1)
   const limit = 10
 
-  const isSuperAdmin = session?.user?.role === "superadmin"
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-activity", session?.user?.email, page, isSuperAdmin],
@@ -483,7 +483,7 @@ function ConfiguracionPageContent() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
 
   // Check if user is super admin
-  const isSuperAdmin = session?.user?.role === "superadmin"
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL
 
   // Handle URL tab parameter
   useEffect(() => {
