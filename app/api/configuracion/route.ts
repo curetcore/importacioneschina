@@ -4,7 +4,6 @@ import { z } from "zod"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditCreate } from "@/lib/audit-logger"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
-import { CacheTags, CacheDurations, createCachedFn, invalidateCache } from "@/lib/cache"
 
 const configuracionSchema = z.object({
   categoria: z.enum([
@@ -19,40 +18,6 @@ const configuracionSchema = z.object({
   orden: z.number().int().default(0),
 })
 
-// Cached function to fetch configurations
-const getCachedConfiguraciones = createCachedFn(
-  async (categoria: string | null) => {
-    const db = await getPrismaClient()
-    const whereClause = categoria ? { categoria, activo: true } : { activo: true }
-
-    const configuraciones = await db.configuracion.findMany({
-      where: whereClause,
-      orderBy: [{ categoria: "asc" }, { orden: "asc" }, { valor: "asc" }],
-    })
-
-    // Agrupar por categoría si no hay filtro específico
-    if (!categoria) {
-      const grouped = configuraciones.reduce(
-        (acc, config) => {
-          if (!acc[config.categoria]) {
-            acc[config.categoria] = []
-          }
-          acc[config.categoria].push(config)
-          return acc
-        },
-        {} as Record<string, typeof configuraciones>
-      )
-      return grouped
-    }
-
-    return configuraciones
-  },
-  {
-    tags: [CacheTags.CONFIGURACION],
-    revalidate: CacheDurations.CONFIGURACION, // 1 hour cache
-  }
-)
-
 // GET /api/configuracion - Obtener todas las configuraciones o filtrar por categoría
 export async function GET(request: NextRequest) {
   try {
@@ -63,8 +28,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const categoria = searchParams.get("categoria")
 
-    // Use cached function
-    const data = await getCachedConfiguraciones(categoria)
+    // Get Prisma client OUTSIDE of cache (because it uses headers())
+    const db = await getPrismaClient()
+
+    // Fetch configurations (no cache needed for config - changes rarely and is small)
+    const whereClause = categoria ? { categoria, activo: true } : { activo: true }
+
+    const configuraciones = await db.configuracion.findMany({
+      where: whereClause,
+      orderBy: [{ categoria: "asc" }, { orden: "asc" }, { valor: "asc" }],
+    })
+
+    // Agrupar por categoría si no hay filtro específico
+    const data = categoria
+      ? configuraciones
+      : configuraciones.reduce(
+          (acc, config) => {
+            if (!acc[config.categoria]) {
+              acc[config.categoria] = []
+            }
+            acc[config.categoria].push(config)
+            return acc
+          },
+          {} as Record<string, typeof configuraciones>
+        )
 
     return NextResponse.json({
       success: true,
@@ -110,9 +97,6 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     await auditCreate("Configuracion", configuracion as any, request)
-
-    // Invalidate cache after creating new config
-    invalidateCache(CacheTags.CONFIGURACION)
 
     return NextResponse.json(
       {

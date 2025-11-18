@@ -39,11 +39,12 @@ export const logger = winston.createLogger({
       ),
     }),
 
-    // Archivo de errores (solo en desarrollo donde hay permisos de escritura)
-    ...(process.env.NODE_ENV !== "production"
+    // Archivo de errores - usar /tmp/logs en producción (siempre tiene permisos)
+    // En desarrollo local usa ./logs, en producción usa /tmp/logs
+    ...(process.env.DISABLE_FILE_LOGGING !== "true"
       ? [
           new DailyRotateFile({
-            filename: "logs/error-%DATE%.log",
+            filename: `${process.env.NODE_ENV === "production" ? "/tmp/logs" : "logs"}/error-%DATE%.log`,
             datePattern: "YYYY-MM-DD",
             level: "error",
             maxSize: "20m",
@@ -51,7 +52,7 @@ export const logger = winston.createLogger({
             format: combine(timestamp(), errors({ stack: true }), winston.format.json()),
           }),
           new DailyRotateFile({
-            filename: "logs/combined-%DATE%.log",
+            filename: `${process.env.NODE_ENV === "production" ? "/tmp/logs" : "logs"}/combined-%DATE%.log`,
             datePattern: "YYYY-MM-DD",
             maxSize: "20m",
             maxFiles: "14d",
