@@ -41,14 +41,16 @@ export const pagosChinaSchema = z.object({
   }),
   montoOriginal: z.coerce.number().positive("El monto debe ser mayor a 0"),
   tasaCambio: z.coerce.number().positive("La tasa de cambio debe ser mayor a 0").default(1),
-  comisionBancoRD: z.coerce.number().nonnegative("La comision no puede ser negativa").default(0),
+  comisionBancoUSD: z.coerce.number().nonnegative("La comision no puede ser negativa").default(0),
 })
 
 export type PagosChinaInput = z.infer<typeof pagosChinaSchema>
 
 export const gastosLogisticosSchema = z.object({
   idGasto: z.string().min(1, "El ID de gasto es requerido").optional(), // Opcional en CREATE (autogenerado)
-  ocIds: z.array(z.string().min(1, "El ID de OC no puede estar vacio")).min(1, "Debe seleccionar al menos una OC"),
+  ocIds: z
+    .array(z.string().min(1, "El ID de OC no puede estar vacio"))
+    .min(1, "Debe seleccionar al menos una OC"),
   fechaGasto: z.coerce
     .date({
       required_error: "La fecha del gasto es requerida",

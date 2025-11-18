@@ -88,18 +88,18 @@ model OCChinaItem {
 
 // TABLA 2: PAGOS CHINA
 model PagosChina {
-  id              String   @id @default(cuid())
-  idPago          String   @unique @map("id_pago")
-  ocId            String   @map("oc_id")
-  fechaPago       DateTime @map("fecha_pago")
-  tipoPago        String   @map("tipo_pago")
-  metodoPago      String   @map("metodo_pago")
-  moneda          String
-  montoOriginal   Decimal  @map("monto_original") @db.Decimal(12, 2)
-  tasaCambio      Decimal  @default(1) @map("tasa_cambio") @db.Decimal(8, 4)
-  comisionBancoRD Decimal  @default(0) @map("comision_banco_rd") @db.Decimal(10, 2)
-  montoRD         Decimal? @map("monto_rd") @db.Decimal(12, 2)
-  montoRDNeto     Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
+  id               String   @id @default(cuid())
+  idPago           String   @unique @map("id_pago")
+  ocId             String   @map("oc_id")
+  fechaPago        DateTime @map("fecha_pago")
+  tipoPago         String   @map("tipo_pago")
+  metodoPago       String   @map("metodo_pago")
+  moneda           String
+  montoOriginal    Decimal  @map("monto_original") @db.Decimal(12, 2)
+  tasaCambio       Decimal  @default(1) @map("tasa_cambio") @db.Decimal(8, 4)
+  comisionBancoUSD Decimal  @default(0) @map("comision_banco_usd") @db.Decimal(10, 2)
+  montoRD          Decimal? @map("monto_rd") @db.Decimal(12, 2)
+  montoRDNeto      Decimal? @map("monto_rd_neto") @db.Decimal(12, 2)
 
   // Adjuntos (recibos de pago)
   adjuntos Json? // [{nombre, url, tipo, size, uploadedAt}]

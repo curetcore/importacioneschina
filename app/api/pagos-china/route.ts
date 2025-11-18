@@ -134,7 +134,10 @@ export async function POST(request: NextRequest) {
       validatedData.tasaCambio
     )
 
-    const montoRDNeto = calcularMontoRDNeto(montoRD, validatedData.comisionBancoRD)
+    // Convertir comisión USD a RD$ usando la tasa de cambio
+    const comisionRD = validatedData.comisionBancoUSD * validatedData.tasaCambio
+
+    const montoRDNeto = calcularMontoRDNeto(montoRD, comisionRD)
 
     // Crear el pago
     const nuevoPago = await db.pagosChina.create({
@@ -147,7 +150,7 @@ export async function POST(request: NextRequest) {
         moneda: validatedData.moneda,
         montoOriginal: new Prisma.Decimal(validatedData.montoOriginal),
         tasaCambio: new Prisma.Decimal(validatedData.tasaCambio),
-        comisionBancoRD: new Prisma.Decimal(validatedData.comisionBancoRD),
+        comisionBancoUSD: new Prisma.Decimal(validatedData.comisionBancoUSD),
         montoRD: new Prisma.Decimal(montoRD),
         montoRDNeto: new Prisma.Decimal(montoRDNeto),
         adjuntos: adjuntos || null,

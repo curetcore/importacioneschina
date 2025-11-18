@@ -84,7 +84,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       validatedData.tasaCambio
     )
 
-    const montoRDNeto = calcularMontoRDNeto(montoRD, validatedData.comisionBancoRD)
+    // Convertir comisión USD a RD$ usando la tasa de cambio
+    const comisionRD = validatedData.comisionBancoUSD * validatedData.tasaCambio
+
+    const montoRDNeto = calcularMontoRDNeto(montoRD, comisionRD)
 
     // Actualizar el pago con campos recalculados
     // NOTA: idPago NO se puede modificar (es autogenerado e inmutable)
@@ -99,7 +102,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         moneda: validatedData.moneda,
         montoOriginal: validatedData.montoOriginal,
         tasaCambio: validatedData.tasaCambio,
-        comisionBancoRD: validatedData.comisionBancoRD,
+        comisionBancoUSD: validatedData.comisionBancoUSD,
         montoRD: new Prisma.Decimal(montoRD),
         montoRDNeto: new Prisma.Decimal(montoRDNeto),
         adjuntos: adjuntos || null,

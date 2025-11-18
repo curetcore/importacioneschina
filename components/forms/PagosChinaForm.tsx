@@ -38,7 +38,7 @@ interface PagoChina {
   moneda: "USD" | "CNY" | "RD$"
   montoOriginal: number
   tasaCambio: number
-  comisionBancoRD: number
+  comisionBancoUSD: number
   adjuntos?: FileAttachment[]
 }
 
@@ -88,7 +88,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       moneda: "USD",
       montoOriginal: undefined,
       tasaCambio: 1,
-      comisionBancoRD: 0,
+      comisionBancoUSD: 0,
     },
   })
 
@@ -99,11 +99,12 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   const monedaValue = watch("moneda")
   const montoOriginalValue = watch("montoOriginal")
   const tasaCambioValue = watch("tasaCambio")
-  const comisionBancoRDValue = watch("comisionBancoRD")
+  const comisionBancoUSDValue = watch("comisionBancoUSD")
 
   // Cálculos automáticos
   const montoRD = (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
-  const montoRDNeto = montoRD + (comisionBancoRDValue ?? 0) // FIX: SUMA la comisión (costo total real)
+  const comisionRD = (comisionBancoUSDValue ?? 0) * (tasaCambioValue ?? 1)
+  const montoRDNeto = montoRD + comisionRD // SUMA la comisión convertida a RD$ (costo total real)
 
   // Cargar OCs disponibles y configuraciones
   useEffect(() => {
@@ -165,7 +166,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         moneda: pagoToEdit.moneda,
         montoOriginal: pagoToEdit.montoOriginal,
         tasaCambio: pagoToEdit.tasaCambio,
-        comisionBancoRD: pagoToEdit.comisionBancoRD,
+        comisionBancoUSD: pagoToEdit.comisionBancoUSD,
       })
       setAdjuntos(pagoToEdit.adjuntos || [])
     } else {
@@ -178,7 +179,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         moneda: "USD",
         montoOriginal: undefined,
         tasaCambio: 1,
-        comisionBancoRD: 0,
+        comisionBancoUSD: 0,
       })
       setAdjuntos([])
     }
@@ -224,7 +225,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         moneda: "USD",
         montoOriginal: undefined,
         tasaCambio: 1,
-        comisionBancoRD: 0,
+        comisionBancoUSD: 0,
       })
       setAdjuntos([])
 
@@ -249,7 +250,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       moneda: "USD",
       montoOriginal: undefined,
       tasaCambio: 1,
-      comisionBancoRD: 0,
+      comisionBancoUSD: 0,
     })
     setAdjuntos([])
     onOpenChange(false)
@@ -414,25 +415,25 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 )}
               </div>
 
-              {/* Comisión Banco RD */}
+              {/* Comisión Banco USD */}
               <div>
                 <label
-                  htmlFor="comisionBancoRD"
+                  htmlFor="comisionBancoUSD"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Comisión Banco (RD$)
+                  Comisión Banco (USD)
                 </label>
                 <Input
-                  id="comisionBancoRD"
+                  id="comisionBancoUSD"
                   type="number"
                   min="0"
                   step="0.01"
-                  {...register("comisionBancoRD", { valueAsNumber: true })}
-                  placeholder="Ej: 500.00"
+                  {...register("comisionBancoUSD", { valueAsNumber: true })}
+                  placeholder="Ej: 10.00"
                   disabled={isSubmitting}
                 />
-                {errors.comisionBancoRD && (
-                  <p className="text-xs text-red-600 mt-1">{errors.comisionBancoRD.message}</p>
+                {errors.comisionBancoUSD && (
+                  <p className="text-xs text-red-600 mt-1">{errors.comisionBancoUSD.message}</p>
                 )}
               </div>
             </div>
@@ -440,7 +441,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
             {/* Cálculos Automáticos */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
               <h4 className="text-sm font-medium text-gray-700">Cálculos Automáticos</h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
                     Monto en RD$
@@ -458,6 +459,21 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Comisión en RD$
+                  </label>
+                  <div className="text-lg font-semibold text-orange-600">
+                    RD${" "}
+                    {comisionRD.toLocaleString("es-DO", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ${comisionBancoUSDValue?.toLocaleString() || "0"} × {tasaCambioValue || "1"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
                     Costo Total (RD$)
                   </label>
                   <div className="text-lg font-semibold text-green-700">
@@ -467,7 +483,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Monto RD$ + Comisión</p>
+                  <p className="text-xs text-gray-500 mt-1">Monto + Comisión</p>
                 </div>
               </div>
             </div>
