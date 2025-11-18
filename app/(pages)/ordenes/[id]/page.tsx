@@ -52,7 +52,7 @@ interface OCDetail {
     moneda: string
     montoOriginal: number
     tasaCambio: number
-    comisionBancoRD: number
+    comisionBancoUSD: number
     montoRD: number
     montoRDNeto: number
   }>
