@@ -186,18 +186,18 @@ export function SizeDistributionInput({
 
       {/* Active sizes with quantities */}
       {sortedSizes.length > 0 && (
-        <div className={`border rounded-lg p-3 ${isValid ? "bg-gray-50" : "bg-red-50 border-red-300"}`}>
+        <div
+          className={`border rounded-lg p-3 ${isValid ? "bg-gray-50" : "bg-yellow-50 border-yellow-300"}`}
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">Distribución de Tallas</span>
             {hasExpectedTotal ? (
               <div className="text-sm font-semibold">
-                <span className={isValid ? "text-green-600" : "text-red-600"}>
+                <span className={isValid ? "text-green-600" : "text-yellow-600"}>
                   Total: {total} {isValid ? "✓" : "⚠"}
                 </span>
                 {!isValid && (
-                  <span className="text-xs text-red-600 ml-2">
-                    (Esperado: {expectedTotal})
-                  </span>
+                  <span className="text-xs text-yellow-600 ml-2">(Esperado: {expectedTotal})</span>
                 )}
               </div>
             ) : (
@@ -245,21 +245,27 @@ export function SizeDistributionInput({
 
       {/* Warning when totals don't match */}
       {hasExpectedTotal && hasSizes && !isValid && (
-        <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm">
+        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 text-sm">
           <div className="flex items-start gap-2">
-            <span className="text-red-600 font-bold text-lg">⚠</span>
+            <span className="text-yellow-600 font-bold text-lg">⚠</span>
             <div className="flex-1">
-              <div className="font-semibold text-red-900 mb-1">Las cantidades no coinciden</div>
-              <div className="text-red-700">
-                <span className="font-medium">Cantidad total del pedido:</span> {expectedTotal} unidades
+              <div className="font-semibold text-yellow-900 mb-1">
+                Distribución de tallas incompleta
               </div>
-              <div className="text-red-700">
+              <div className="text-yellow-700">
+                <span className="font-medium">Cantidad total del pedido:</span> {expectedTotal}{" "}
+                unidades
+              </div>
+              <div className="text-yellow-700">
                 <span className="font-medium">Suma de tallas:</span> {total} unidades
               </div>
-              <div className="text-red-600 font-medium mt-1">
+              <div className="text-yellow-600 font-medium mt-2">
                 {total < expectedTotal
                   ? `Faltan ${expectedTotal - total} unidades por distribuir`
                   : `Hay ${total - expectedTotal} unidades de más`}
+              </div>
+              <div className="text-yellow-700 text-xs mt-2 italic">
+                Puedes seguir agregando tallas. La validación se aplicará al guardar la orden.
               </div>
             </div>
           </div>
