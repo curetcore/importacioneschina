@@ -86,9 +86,6 @@ export const authOptions: NextAuthOptions = {
           data: { lastLogin: new Date() },
         })
 
-        // Debug: verificar rol del usuario
-        console.log(`[AUTH] Usuario autenticado: ${user.email}, rol: ${user.role}`)
-
         return {
           id: user.id,
           email: user.email,
