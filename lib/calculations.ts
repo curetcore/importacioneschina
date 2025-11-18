@@ -208,7 +208,7 @@ interface PagoChina {
   montoOriginal: number | Prisma.Decimal
   moneda: string
   tasaCambio: number | Prisma.Decimal
-  comisionBancoRD: number | Prisma.Decimal
+  comisionBancoUSD: number | Prisma.Decimal
 }
 
 export interface ItemConCostos extends Omit<OCChinaItem, "precioUnitarioUSD" | "subtotalUSD"> {
@@ -451,18 +451,19 @@ export interface CostoCompletoItem {
   subtotalUSD: number
 
   // Desglose de costos en RD$
-  costoFOBRD: number              // Precio FOB convertido a RD$
-  pagosDistribuidosRD: number     // Porción de pagos asignada a este producto
-  gastosDistribuidosRD: number    // Porción de gastos asignada a este producto
+  costoFOBRD: number // Precio FOB convertido a RD$
+  pagosDistribuidosRD: number // Porción de pagos asignada a este producto
+  gastosDistribuidosRD: number // Porción de gastos asignada a este producto
   comisionesDistribuidasRD: number // Porción de comisiones asignada a este producto
 
   // Costo total y unitario
-  costoTotalRD: number            // Suma de todos los costos
-  costoUnitarioRD: number         // Costo total / cantidad
+  costoTotalRD: number // Suma de todos los costos
+  costoUnitarioRD: number // Costo total / cantidad
 
   // Metadatos
-  tasaCambio: number              // Tasa de cambio usada
-  metodosUsados: {                // Métodos de distribución aplicados
+  tasaCambio: number // Tasa de cambio usada
+  metodosUsados: {
+    // Métodos de distribución aplicados
     pagos: string
     gastos: string
     comisiones: string
@@ -497,49 +498,51 @@ export function calcularCostosCompletos(
     sku: item.sku,
     nombre: item.nombre,
     cantidadTotal: item.cantidadTotal,
-    precioUnitarioUSD: typeof item.precioUnitarioUSD === "number"
-      ? item.precioUnitarioUSD
-      : parseFloat(item.precioUnitarioUSD.toString()),
-    subtotalUSD: typeof item.subtotalUSD === "number"
-      ? item.subtotalUSD
-      : parseFloat(item.subtotalUSD.toString()),
+    precioUnitarioUSD:
+      typeof item.precioUnitarioUSD === "number"
+        ? item.precioUnitarioUSD
+        : parseFloat(item.precioUnitarioUSD.toString()),
+    subtotalUSD:
+      typeof item.subtotalUSD === "number"
+        ? item.subtotalUSD
+        : parseFloat(item.subtotalUSD.toString()),
   }))
 
   // 3. Preparar datos para sistema de distribución profesional
   const productosParaDistribucion = items.map(item => ({
     id: item.id,
     cantidad: item.cantidadTotal,
-    pesoUnitarioKg: item.pesoUnitarioKg
-      ? parseFloat(item.pesoUnitarioKg.toString())
-      : null,
+    pesoUnitarioKg: item.pesoUnitarioKg ? parseFloat(item.pesoUnitarioKg.toString()) : null,
     volumenUnitarioCBM: item.volumenUnitarioCBM
       ? parseFloat(item.volumenUnitarioCBM.toString())
       : null,
-    precioUnitarioUSD: typeof item.precioUnitarioUSD === "number"
-      ? item.precioUnitarioUSD
-      : parseFloat(item.precioUnitarioUSD.toString()),
+    precioUnitarioUSD:
+      typeof item.precioUnitarioUSD === "number"
+        ? item.precioUnitarioUSD
+        : parseFloat(item.precioUnitarioUSD.toString()),
   }))
 
   // 4. Calcular totales de pagos, gastos y comisiones
   const totalPagosRD = pagosChina.reduce((sum, pago) => {
     if (!pago.montoRDNeto) return sum
-    const monto = typeof pago.montoRDNeto === "number"
-      ? pago.montoRDNeto
-      : parseFloat(pago.montoRDNeto.toString())
+    const monto =
+      typeof pago.montoRDNeto === "number"
+        ? pago.montoRDNeto
+        : parseFloat(pago.montoRDNeto.toString())
     return sum + monto
   }, 0)
 
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
-    const monto = typeof gasto.montoRD === "number"
-      ? gasto.montoRD
-      : parseFloat(gasto.montoRD.toString())
+    const monto =
+      typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
     return sum + monto
   }, 0)
 
   const totalComisionesRD = pagosChina.reduce((sum, pago) => {
-    const comision = typeof pago.comisionBancoRD === "number"
-      ? pago.comisionBancoRD
-      : parseFloat(pago.comisionBancoRD.toString())
+    const comision =
+      typeof pago.comisionBancoUSD === "number"
+        ? pago.comisionBancoUSD
+        : parseFloat(pago.comisionBancoUSD.toString())
     return sum + comision
   }, 0)
 
@@ -599,12 +602,11 @@ export function calcularCostosCompletos(
     //   debido a descuentos, ajustes, o pagos parciales
     //
     // Por lo tanto, sumamos todo para obtener el costo total real
-    const costoTotalRD = costoFOBRD + pagosDistribuidosRD + gastosDistribuidosRD + comisionesDistribuidasRD
+    const costoTotalRD =
+      costoFOBRD + pagosDistribuidosRD + gastosDistribuidosRD + comisionesDistribuidasRD
 
     // Costo unitario
-    const costoUnitarioRD = item.cantidadTotal > 0
-      ? costoTotalRD / item.cantidadTotal
-      : 0
+    const costoUnitarioRD = item.cantidadTotal > 0 ? costoTotalRD / item.cantidadTotal : 0
 
     return {
       id: item.id,
