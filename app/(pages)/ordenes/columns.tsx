@@ -85,7 +85,7 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     header: "Unidades",
     cell: ({ row }) => {
       const totalUnidades =
-        row.original.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0
+        row.original.items?.reduce((sum, item) => sum + Number(item.cantidadTotal), 0) || 0
       return (
         <div className="text-right text-gray-900 whitespace-nowrap">
           {totalUnidades.toLocaleString()}
@@ -97,7 +97,8 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     accessorKey: "costoFOB",
     header: "Costo FOB",
     cell: ({ row }) => {
-      const totalFOB = row.original.items?.reduce((sum, item) => sum + item.subtotalUSD, 0) || 0
+      const totalFOB =
+        row.original.items?.reduce((sum, item) => sum + Number(item.subtotalUSD), 0) || 0
       return (
         <div className="text-right font-medium text-gray-900 whitespace-nowrap">
           {formatCurrency(totalFOB, "USD")}
