@@ -150,6 +150,38 @@ export function getUserAgent(request: Request): string | undefined {
 }
 
 /**
+ * Helper para obtener el identificador legible de una entidad
+ */
+function getHumanReadableId(entidad: string, data?: Record<string, any>): string {
+  if (!data) return ""
+
+  // Mapeo de entidades a sus campos legibles
+  const fieldMappings: Record<string, string[]> = {
+    OCChina: ["oc"],
+    PagosChina: ["idPago"],
+    GastosLogisticos: ["idGasto"],
+    InventarioRecibido: ["codigoRecepcion", "codigo"],
+    Proveedor: ["nombre", "codigo"],
+    Producto: ["nombre", "sku"],
+    Configuracion: ["categoria", "clave"],
+    ConfiguracionDistribucionCostos: ["nombre"],
+    User: ["name", "email"],
+  }
+
+  const fields = fieldMappings[entidad] || []
+
+  // Intentar usar el primer campo disponible
+  for (const field of fields) {
+    if (data[field]) {
+      return data[field]
+    }
+  }
+
+  // Fallback: usar el ID si no hay campo legible
+  return data.id?.substring(0, 8) || ""
+}
+
+/**
  * Helper para crear descripción legible automáticamente
  */
 export function createAuditDescription(
@@ -157,18 +189,21 @@ export function createAuditDescription(
   entidad: string,
   data?: Record<string, any>
 ): string {
+  const identifier = getHumanReadableId(entidad, data)
+  const displayIdentifier = identifier ? ` ${identifier}` : ""
+
   switch (action) {
     case AuditAction.CREATE:
-      return `Creado ${entidad} ${data?.id || ""}`
+      return `Creado ${entidad}${displayIdentifier}`
 
     case AuditAction.UPDATE:
-      return `Actualizado ${entidad} ${data?.id || ""}`
+      return `Actualizado ${entidad}${displayIdentifier}`
 
     case AuditAction.DELETE:
-      return `Eliminado ${entidad} ${data?.id || ""}`
+      return `Eliminado ${entidad}${displayIdentifier}`
 
     case AuditAction.RESTORE:
-      return `Restaurado ${entidad} ${data?.id || ""}`
+      return `Restaurado ${entidad}${displayIdentifier}`
 
     default:
       return `Acción ${action} en ${entidad}`
@@ -184,20 +219,26 @@ export async function auditCreate(
   request?: Request,
   usuarioEmail?: string
 ): Promise<void> {
+  // Si no se proporciona usuarioEmail, intentar obtenerlo del request
+  let email = usuarioEmail
+  if (!email && request) {
+    email = await extractUserEmailFromRequest(request)
+  }
+
   const auditLogId = await logAudit({
     entidad,
     entidadId: data.id,
     accion: AuditAction.CREATE,
     cambiosDespues: data,
     descripcion: createAuditDescription(AuditAction.CREATE, entidad, data),
-    usuarioEmail,
+    usuarioEmail: email,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
 
   // Crear notificación automáticamente
   if (auditLogId) {
-    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.CREATE, usuarioEmail)
+    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.CREATE, email)
   }
 }
 
@@ -218,6 +259,12 @@ export async function auditUpdate(
     return
   }
 
+  // Si no se proporciona usuarioEmail, intentar obtenerlo del request
+  let email = usuarioEmail
+  if (!email && request) {
+    email = await extractUserEmailFromRequest(request)
+  }
+
   const auditLogId = await logAudit({
     entidad,
     entidadId: after.id,
@@ -226,14 +273,14 @@ export async function auditUpdate(
     cambiosDespues: after,
     camposModificados,
     descripcion: createAuditDescription(AuditAction.UPDATE, entidad, after),
-    usuarioEmail,
+    usuarioEmail: email,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
 
   // Crear notificación automáticamente
   if (auditLogId) {
-    await createNotificationFromAudit(auditLogId, entidad, after.id, AuditAction.UPDATE, usuarioEmail)
+    await createNotificationFromAudit(auditLogId, entidad, after.id, AuditAction.UPDATE, email)
   }
 }
 
@@ -246,19 +293,41 @@ export async function auditDelete(
   request?: Request,
   usuarioEmail?: string
 ): Promise<void> {
+  // Si no se proporciona usuarioEmail, intentar obtenerlo del request
+  let email = usuarioEmail
+  if (!email && request) {
+    email = await extractUserEmailFromRequest(request)
+  }
+
   const auditLogId = await logAudit({
     entidad,
     entidadId: data.id,
     accion: AuditAction.DELETE,
     cambiosAntes: data,
     descripcion: createAuditDescription(AuditAction.DELETE, entidad, data),
-    usuarioEmail,
+    usuarioEmail: email,
     ipAddress: request ? getClientIP(request) : undefined,
     userAgent: request ? getUserAgent(request) : undefined,
   })
 
   // Crear notificación automáticamente
   if (auditLogId) {
-    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.DELETE, usuarioEmail)
+    await createNotificationFromAudit(auditLogId, entidad, data.id, AuditAction.DELETE, email)
+  }
+}
+
+/**
+ * Helper para extraer el email del usuario autenticado desde el request
+ */
+async function extractUserEmailFromRequest(request: Request): Promise<string | undefined> {
+  try {
+    const { getServerSession } = await import("next-auth")
+    const { authOptions } = await import("@/lib/auth-options")
+
+    const session = await getServerSession(authOptions)
+    return session?.user?.email || undefined
+  } catch (error) {
+    console.error("[Audit] Error extracting user email from request:", error)
+    return undefined
   }
 }

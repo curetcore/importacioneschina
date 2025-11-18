@@ -26,6 +26,7 @@ interface AuditLog {
   accion: string
   descripcion: string | null
   usuarioEmail: string | null
+  usuarioNombre?: string
   ipAddress: string | null
   cambiosAntes: any
   cambiosDespues: any
@@ -120,6 +121,9 @@ export function UserHistoryModal({ open, onOpenChange }: UserHistoryModalProps) 
                     )}
 
                     <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                      {log.usuarioNombre && (
+                        <span className="font-medium text-gray-600">Por: {log.usuarioNombre}</span>
+                      )}
                       <span>{formatTimeAgo(log.createdAt)}</span>
                       {log.ipAddress && <span>IP: {log.ipAddress}</span>}
                     </div>

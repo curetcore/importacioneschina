@@ -249,6 +249,9 @@ model User {
   role                  String   @default("user") // "admin" | "user"
   activo                Boolean  @default(true)
 
+  // Relaciones
+  auditLogs             AuditLog[]
+
   // Timestamps
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
@@ -333,6 +336,7 @@ model AuditLog {
   // Quién y cuándo
   usuarioId             String?  @map("usuario_id")  // ID del usuario (futuro)
   usuarioEmail          String?  @map("usuario_email")  // Email del usuario
+  usuario               User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
   ipAddress             String?  @map("ip_address")  // IP del cliente
   userAgent             String?  @map("user_agent")  // Navegador/cliente
 

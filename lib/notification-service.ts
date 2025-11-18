@@ -103,14 +103,29 @@ export async function createNotificationFromAudit(
   usuarioEmail?: string
 ): Promise<void> {
   try {
+    const db = await getPrismaClient()
+
     // Generar título basado en la acción y entidad
     const actionVerb = getActionVerb(accion)
     const entityName = getEntityDisplayName(entidad)
 
     const titulo = `${entityName} ${actionVerb}`
-    const descripcion = usuarioEmail
-      ? `Por ${usuarioEmail} hace un momento`
-      : "Hace un momento"
+
+    // Obtener el nombre del usuario si existe
+    let descripcion = "Hace un momento"
+    if (usuarioEmail) {
+      const user = await db.user.findUnique({
+        where: { email: usuarioEmail },
+        select: { name: true, lastName: true },
+      })
+
+      if (user) {
+        const userName = [user.name, user.lastName].filter(Boolean).join(" ")
+        descripcion = `Por ${userName} hace un momento`
+      } else {
+        descripcion = `Por ${usuarioEmail} hace un momento`
+      }
+    }
 
     // Determinar ícono
     const icono = AUDIT_ACTION_ICONS[accion] || NOTIFICATION_ICONS.audit

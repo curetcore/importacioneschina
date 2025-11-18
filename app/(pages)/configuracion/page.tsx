@@ -21,6 +21,7 @@ import { useApiQuery } from "@/lib/hooks/useApiQuery"
 import { DistribucionCostosSettings } from "@/components/configuracion/DistribucionCostosSettings"
 import { UserProfileModal } from "@/components/user/UserProfileModal"
 import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
+import { EditUserModal } from "@/components/admin/EditUserModal"
 import { formatTimeAgo } from "@/lib/utils"
 
 interface Configuracion {
@@ -104,7 +105,9 @@ interface User {
 function AdminUsersSection() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const queryClient = useQueryClient()
+  const { addToast } = useToast()
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -116,6 +119,39 @@ function AdminUsersSection() {
   })
 
   const users: User[] = data?.data || []
+  const userToDelete = users.find(u => u.id === deleteUserId)
+
+  const handleDelete = async () => {
+    if (!deleteUserId) return
+
+    setDeleteLoading(true)
+    try {
+      const result = await apiDelete(`/api/admin/users/${deleteUserId}`)
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar usuario")
+      }
+
+      addToast({
+        type: "success",
+        title: "Usuario eliminado",
+        description: result.message || "El usuario ha sido eliminado exitosamente",
+      })
+
+      setDeleteUserId(null)
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] })
+      queryClient.invalidateQueries({ queryKey: ["user-activity"] })
+    } catch (error: any) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: getErrorMessage(error),
+        details: getErrorDetails(error),
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
   return (
     <Card>
@@ -226,7 +262,23 @@ function AdminUsersSection() {
         )}
       </CardContent>
 
-      {/* Aquí irían los modales de editar/eliminar que agregaremos después */}
+      <EditUserModal
+        open={!!editingUser}
+        onOpenChange={open => !open && setEditingUser(null)}
+        user={editingUser}
+      />
+
+      <ConfirmDialog
+        open={!!deleteUserId}
+        onOpenChange={open => !open && setDeleteUserId(null)}
+        onConfirm={handleDelete}
+        title="Eliminar Usuario"
+        description={`¿Estás seguro de eliminar al usuario "${userToDelete?.email}"? Esta acción no se puede deshacer y el usuario perderá acceso al sistema.`}
+        confirmText="Eliminar Usuario"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </Card>
   )
 }

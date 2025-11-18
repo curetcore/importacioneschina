@@ -36,13 +36,33 @@ export async function GET(request: NextRequest) {
         },
         take: Math.min(limit, 100), // Máximo 100
         skip: offset,
+        include: {
+          usuario: {
+            select: {
+              id: true,
+              name: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
       }),
       db.auditLog.count({ where }),
     ])
 
+    // Transformar logs para incluir nombre completo del usuario
+    const logsWithUserName = logs.map(log => ({
+      ...log,
+      usuarioNombre: log.usuario
+        ? [log.usuario.name, log.usuario.lastName].filter(Boolean).join(" ")
+        : log.usuarioEmail
+          ? log.usuarioEmail
+          : "Sistema",
+    }))
+
     return NextResponse.json({
       success: true,
-      data: logs,
+      data: logsWithUserName,
       total,
       limit,
       offset,
