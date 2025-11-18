@@ -7,7 +7,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
  */
 export async function PATCH(request: Request, { params }: { params: { sku: string } }) {
   try {
-    const prisma = getPrismaClient()
+    const prisma = await getPrismaClient()
     const { sku } = params
     const body = await request.json()
     const { precioVenta } = body

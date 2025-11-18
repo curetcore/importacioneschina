@@ -30,33 +30,35 @@ export const logger = winston.createLogger({
     customFormat
   ),
   transports: [
-    // Console output (solo en desarrollo)
+    // Console output
+    new winston.transports.Console({
+      format: combine(
+        process.env.NODE_ENV !== "production" ? colorize() : winston.format.uncolorize(),
+        timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        customFormat
+      ),
+    }),
+
+    // Archivo de errores (solo en desarrollo donde hay permisos de escritura)
     ...(process.env.NODE_ENV !== "production"
       ? [
-          new winston.transports.Console({
-            format: combine(colorize(), timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), customFormat),
+          new DailyRotateFile({
+            filename: "logs/error-%DATE%.log",
+            datePattern: "YYYY-MM-DD",
+            level: "error",
+            maxSize: "20m",
+            maxFiles: "30d",
+            format: combine(timestamp(), errors({ stack: true }), winston.format.json()),
+          }),
+          new DailyRotateFile({
+            filename: "logs/combined-%DATE%.log",
+            datePattern: "YYYY-MM-DD",
+            maxSize: "20m",
+            maxFiles: "14d",
+            format: combine(timestamp(), winston.format.json()),
           }),
         ]
       : []),
-
-    // Archivo de errores (todos los ambientes)
-    new DailyRotateFile({
-      filename: "logs/error-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
-      level: "error",
-      maxSize: "20m",
-      maxFiles: "30d",
-      format: combine(timestamp(), errors({ stack: true }), winston.format.json()),
-    }),
-
-    // Archivo de logs combinados (todos los ambientes)
-    new DailyRotateFile({
-      filename: "logs/combined-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
-      maxSize: "20m",
-      maxFiles: "14d",
-      format: combine(timestamp(), winston.format.json()),
-    }),
   ],
 })
 

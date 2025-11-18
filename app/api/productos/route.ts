@@ -7,7 +7,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
  */
 export async function GET() {
   try {
-    const prisma = getPrismaClient()
+    const prisma = await getPrismaClient()
 
     // 1. Obtener todos los items con sus inventarios y OCs
     const items = await prisma.oCChinaItem.findMany({

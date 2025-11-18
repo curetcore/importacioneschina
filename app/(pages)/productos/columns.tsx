@@ -75,24 +75,22 @@ function EditablePrecioVenta({
           }}
           disabled={isSaving}
         />
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-6 w-6"
+        <button
+          type="button"
+          className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-50"
           onClick={handleSave}
           disabled={isSaving}
         >
           <Check className="h-3 w-3 text-green-600" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-6 w-6"
+        </button>
+        <button
+          type="button"
+          className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-50"
           onClick={handleCancel}
           disabled={isSaving}
         >
           <X className="h-3 w-3 text-red-600" />
-        </Button>
+        </button>
       </div>
     )
   }
@@ -100,14 +98,13 @@ function EditablePrecioVenta({
   return (
     <div className="flex items-center gap-2 group">
       <span className="font-medium">{value ? formatCurrency(value) : "—"}</span>
-      <Button
-        size="icon"
-        variant="ghost"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+      <button
+        type="button"
+        className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={() => setIsEditing(true)}
       >
         <Pencil className="h-3 w-3 text-gray-400" />
-      </Button>
+      </button>
     </div>
   )
 }
@@ -139,14 +136,13 @@ export function getProductosColumns(options: ColumnOptions): ColumnDef<ProductoR
       cell: ({ row }) => {
         const numeroTallas = row.original.numeroTallas
         return (
-          <Button
-            variant="link"
-            size="sm"
-            className="h-auto p-0 text-blue-600 hover:text-blue-800"
+          <button
+            type="button"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm"
             onClick={() => onTallasClick(row.original)}
           >
             {numeroTallas} {numeroTallas === 1 ? "talla" : "tallas"}
-          </Button>
+          </button>
         )
       },
     },
