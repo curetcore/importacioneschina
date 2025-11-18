@@ -244,12 +244,14 @@ describe("Cálculos Financieros", () => {
           moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(30000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
         {
           montoOriginal: new Prisma.Decimal(500),
           moneda: "USD",
           tasaCambio: new Prisma.Decimal(58),
           montoRDNeto: new Prisma.Decimal(29000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
       ]
 
@@ -264,12 +266,14 @@ describe("Cálculos Financieros", () => {
           moneda: "RD$",
           tasaCambio: new Prisma.Decimal(1),
           montoRDNeto: new Prisma.Decimal(1000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
         {
           montoOriginal: new Prisma.Decimal(100),
           moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(6000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
       ]
 
@@ -288,6 +292,7 @@ describe("Cálculos Financieros", () => {
           moneda: "RD$",
           tasaCambio: new Prisma.Decimal(1),
           montoRDNeto: new Prisma.Decimal(1000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
       ]
 
@@ -332,6 +337,7 @@ describe("Cálculos Financieros", () => {
           moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(60000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
       ]
 
@@ -419,6 +425,7 @@ describe("Cálculos Financieros", () => {
           moneda: "USD",
           tasaCambio: new Prisma.Decimal(60),
           montoRDNeto: new Prisma.Decimal(60000),
+          comisionBancoRD: new Prisma.Decimal(0),
         },
       ]
 

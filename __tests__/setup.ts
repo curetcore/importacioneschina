@@ -4,7 +4,8 @@
  */
 
 // Configurar variables de entorno para tests
-process.env.NODE_ENV = 'test'
+// @ts-ignore - NODE_ENV es read-only pero necesitamos establecerlo para tests
+process.env = { ...process.env, NODE_ENV: 'test' }
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/test_db'
 
 // Timeout global
