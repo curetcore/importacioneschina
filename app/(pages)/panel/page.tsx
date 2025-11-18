@@ -124,8 +124,8 @@ export default function PanelPage() {
     )
   }
 
-  const totalPagos = data.financiero.pagosPorMoneda.reduce((sum, m) => sum + m.totalRD, 0)
-  const totalGastos = data.gastos.gastosPorTipo.reduce((sum, g) => sum + g.value, 0)
+  const totalPagos = data.financiero.pagosPorMoneda.reduce((sum, m) => sum + Number(m.totalRD), 0)
+  const totalGastos = data.gastos.gastosPorTipo.reduce((sum, g) => sum + Number(g.value), 0)
 
   return (
     <MainLayout>
@@ -200,7 +200,7 @@ export default function PanelPage() {
               </div>
               <div className="space-y-3">
                 {data.financiero.pagosPorMetodo.map((item, index) => {
-                  const percentage = totalPagos > 0 ? (item.value / totalPagos) * 100 : 0
+                  const percentage = totalPagos > 0 ? (Number(item.value) / totalPagos) * 100 : 0
                   return (
                     <div key={index} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
@@ -230,7 +230,7 @@ export default function PanelPage() {
               </div>
               <div className="space-y-3">
                 {data.financiero.pagosPorTipo.map((item, index) => {
-                  const percentage = totalPagos > 0 ? (item.value / totalPagos) * 100 : 0
+                  const percentage = totalPagos > 0 ? (Number(item.value) / totalPagos) * 100 : 0
                   return (
                     <div key={index} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
@@ -260,7 +260,7 @@ export default function PanelPage() {
               </div>
               <div className="space-y-3">
                 {data.financiero.pagosPorMoneda.map((item, index) => {
-                  const percentage = totalPagos > 0 ? (item.totalRD / totalPagos) * 100 : 0
+                  const percentage = totalPagos > 0 ? (Number(item.totalRD) / totalPagos) * 100 : 0
                   return (
                     <div
                       key={index}
