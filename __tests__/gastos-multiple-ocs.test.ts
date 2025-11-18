@@ -103,22 +103,8 @@ describe('Gastos con Múltiples OCs', () => {
   })
 
   describe('Validaciones de Integridad', () => {
-    it('debe tener al menos 1 OC asociada', async () => {
-      await expect(async () => {
-        await prisma.gastosLogisticos.create({
-          data: {
-            idGasto: `TEST-INVALID-${Date.now()}`,
-            fechaGasto: new Date(),
-            tipoGasto: 'Test',
-            metodoPago: 'Efectivo',
-            montoRD: 1000,
-            ordenesCompra: {
-              create: [], // Sin OCs - debe fallar
-            },
-          },
-        })
-      }).rejects.toThrow()
-    })
+    // NOTA: La validación "al menos 1 OC" se hace en Zod (gastosLogisticosSchema),
+    // no a nivel de base de datos. Ver tests de validación en gastos-api.test.ts
 
     it('no debe permitir OCs duplicadas en el mismo gasto', async () => {
       await expect(async () => {
