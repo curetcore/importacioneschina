@@ -5,6 +5,9 @@ import { handleApiError } from "@/lib/api-error-handler"
 import { QueryCache } from "@/lib/cache-helpers"
 import { CacheKeys, CacheTTL } from "@/lib/redis"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     // Cachear dashboard completo por 5 minutos

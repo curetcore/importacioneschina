@@ -11,6 +11,9 @@ import { loggers, logWarning } from "@/lib/logger"
 import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
 import { CacheTTL } from "@/lib/redis"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 interface OCItemInput {
   sku: string
   nombre: string

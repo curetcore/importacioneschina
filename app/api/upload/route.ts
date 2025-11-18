@@ -5,6 +5,9 @@ import path from "path"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // Configuración
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]

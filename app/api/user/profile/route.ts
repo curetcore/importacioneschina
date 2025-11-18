@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth-options"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { logAudit, AuditAction } from "@/lib/audit-logger"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 /**
  * PATCH /api/user/profile
  * Actualizar perfil del usuario actual (nombre, apellido)

@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { handleApiError } from "@/lib/api-error-handler"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 interface FileAttachment {
   nombre: string
   url: string

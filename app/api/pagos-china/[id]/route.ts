@@ -6,6 +6,9 @@ import { Prisma } from "@prisma/client"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // GET /api/pagos-china/[id] - Obtener un pago específico
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

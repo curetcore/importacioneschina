@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 /**
  * GET /api/productos
  * Obtener todos los productos con datos consolidados de inventario

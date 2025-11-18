@@ -4,6 +4,9 @@ import { gastosLogisticosSchema } from "@/lib/validations"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 
+// Force dynamic rendering - this route uses headers() for auth and rate limiting
+export const dynamic = "force-dynamic"
+
 // GET /api/gastos-logisticos/[id]
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -89,7 +92,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Actualizar el gasto usando una transacción
     // NOTA: idGasto NO se puede modificar (es autogenerado e inmutable)
-    const updatedGasto = await db.$transaction(async (tx) => {
+    const updatedGasto = await db.$transaction(async tx => {
       // 1. Actualizar datos principales del gasto
       const gasto = await tx.gastosLogisticos.update({
         where: { id },
@@ -112,7 +115,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
       // 3. Crear las nuevas relaciones con OCs
       await tx.gastoLogisticoOC.createMany({
-        data: validatedData.ocIds.map((ocId) => ({
+        data: validatedData.ocIds.map(ocId => ({
           gastoId: id,
           ocId,
         })),
