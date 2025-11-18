@@ -10,7 +10,7 @@ import {
   FileText,
   Inbox,
   Calculator,
-  History,
+  Bell,
   Settings,
 } from "lucide-react"
 
@@ -21,7 +21,7 @@ const menuItems = [
   { href: "/gastos-logisticos", label: "Gastos", icon: FileText },
   { href: "/inventario-recibido", label: "Inventario", icon: Inbox },
   { href: "/analisis-costos", label: "Análisis de Costos", icon: Calculator },
-  { href: "/audit-log", label: "Auditoría", icon: History },
+  { href: "/notificaciones", label: "Notificaciones", icon: Bell },
   { href: "/configuracion", label: "Configuración", icon: Settings },
 ]
 
