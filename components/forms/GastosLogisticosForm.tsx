@@ -233,7 +233,7 @@ export function GastosLogisticosForm({
   }
 
   // Debug: Log validation errors
-  React.useEffect(() => {
+  useEffect(() => {
     if (Object.keys(errors).length > 0) {
       console.log("❌ Validation errors:", errors)
     }
