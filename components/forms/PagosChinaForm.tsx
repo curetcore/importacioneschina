@@ -192,6 +192,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   }, [pagoToEdit, reset])
 
   const onSubmit = async (data: PagosChinaInput) => {
+    console.log("🔵 onSubmit llamado con data:", data)
+    console.log("🔵 Errores de validación:", errors)
     try {
       // Enviar al API
       const url = isEditMode ? `/api/pagos-china/${pagoToEdit.id}` : "/api/pagos-china"
