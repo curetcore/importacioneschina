@@ -302,15 +302,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
 
       // Actualizar OC y crear nuevos items validados
+      // IMPORTANTE: Solo actualizar campos específicos para evitar pasar campos inválidos como "new"
       return await tx.oCChina.update({
         where: { id },
         data: {
-          oc,
-          proveedor,
+          oc: oc,
+          proveedor: proveedor,
           fechaOC: new Date(fechaOC),
-          descripcionLote,
-          categoriaPrincipal,
-          adjuntos: adjuntos || null,
+          descripcionLote: descripcionLote || null,
+          categoriaPrincipal: categoriaPrincipal,
+          adjuntos: adjuntos || existing.adjuntos || null,
           items: {
             create: itemsValidados,
           },
