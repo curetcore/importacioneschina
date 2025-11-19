@@ -151,12 +151,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const { oc, proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
 
-    // DEBUG: Log para ver qué adjuntos se están recibiendo en UPDATE
-    console.log("🔍 DEBUG UPDATE - Adjuntos recibidos:", JSON.stringify(adjuntos, null, 2))
-    console.log("🔍 DEBUG UPDATE - Tipo de adjuntos:", typeof adjuntos)
-    console.log("🔍 DEBUG UPDATE - Es array?:", Array.isArray(adjuntos))
-    console.log("🔍 DEBUG UPDATE - Length:", adjuntos?.length)
-
     // Obtener el cliente Prisma apropiado (demo o producción)
     const db = await getPrismaClient()
 

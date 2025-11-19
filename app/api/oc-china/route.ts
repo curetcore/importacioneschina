@@ -166,12 +166,6 @@ export async function POST(request: NextRequest) {
 
     const { proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
 
-    // DEBUG: Log para ver qué adjuntos se están recibiendo
-    console.log("🔍 DEBUG - Adjuntos recibidos:", JSON.stringify(adjuntos, null, 2))
-    console.log("🔍 DEBUG - Tipo de adjuntos:", typeof adjuntos)
-    console.log("🔍 DEBUG - Es array?:", Array.isArray(adjuntos))
-    console.log("🔍 DEBUG - Length:", adjuntos?.length)
-
     // Validaciones básicas
     if (!proveedor || !fechaOC || !categoriaPrincipal) {
       throw Errors.badRequest("Faltan campos requeridos: proveedor, fechaOC o categoriaPrincipal")
