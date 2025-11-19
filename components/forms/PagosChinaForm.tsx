@@ -521,7 +521,15 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              onClick={e => {
+                console.log("🔴 BOTÓN CLICKEADO - Evento:", e)
+                console.log("🔴 isSubmitting:", isSubmitting)
+                console.log("🔴 Errores actuales:", errors)
+              }}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
