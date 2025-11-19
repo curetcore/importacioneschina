@@ -149,6 +149,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { id } = params
     const body = await request.json()
 
+    // DEBUG: Ver todos los campos que está enviando el frontend
+    console.log("🔍 BODY KEYS:", Object.keys(body))
+    console.log("🔍 BODY COMPLETO:", JSON.stringify(body, null, 2))
+
     const { oc, proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
 
     // Obtener el cliente Prisma apropiado (demo o producción)
