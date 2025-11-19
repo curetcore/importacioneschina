@@ -306,16 +306,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
 
       // Actualizar OC y crear nuevos items validados
-      // IMPORTANTE: Pasar datos inline sin spread operator para evitar bugs de Prisma
+      // IMPORTANTE: Usar objeto limpio sin new Date() que causa problemas con Prisma
+      const updateData = {
+        oc: String(oc),
+        proveedor: String(proveedor),
+        fechaOC: fechaOC, // Prisma acepta string ISO directamente
+        descripcionLote: descripcionLote || null,
+        categoriaPrincipal: String(categoriaPrincipal),
+        adjuntos: adjuntos || existing.adjuntos || null,
+      }
+
       return await tx.oCChina.update({
         where: { id },
         data: {
-          oc: String(oc),
-          proveedor: String(proveedor),
-          fechaOC: String(fechaOC), // Convertir explícitamente a string
-          descripcionLote: descripcionLote || null,
-          categoriaPrincipal: String(categoriaPrincipal),
-          adjuntos: adjuntos || existing.adjuntos || null,
+          ...updateData,
           items: {
             create: itemsValidados,
           },
