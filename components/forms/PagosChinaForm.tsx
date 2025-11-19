@@ -191,9 +191,14 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
     }
   }, [pagoToEdit, reset])
 
+  const onInvalid = (errors: any) => {
+    console.log("❌ VALIDACIÓN FALLÓ - Errores encontrados:", errors)
+    console.log("❌ Errores completos:", JSON.stringify(errors, null, 2))
+  }
+
   const onSubmit = async (data: PagosChinaInput) => {
-    console.log("🔵 onSubmit llamado con data:", data)
-    console.log("🔵 Errores de validación:", errors)
+    console.log("✅ onSubmit llamado con data:", data)
+    console.log("✅ Errores de validación:", errors)
     try {
       // Enviar al API
       const url = isEditMode ? `/api/pagos-china/${pagoToEdit.id}` : "/api/pagos-china"
@@ -272,7 +277,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
           <DialogTitle>{isEditMode ? "Editar Pago" : "Nuevo Pago"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
           <div className="p-6 space-y-4">
             {/* ID Pago - Solo mostrar en modo edición */}
             {isEditMode && (
