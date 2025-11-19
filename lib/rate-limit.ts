@@ -113,7 +113,7 @@ export enum RateLimits {
 const RATE_LIMIT_CONFIGS: Record<RateLimits, RateLimitConfig> = {
   [RateLimits.upload]: {
     interval: 60 * 1000, // 60 segundos
-    uniqueTokenPerInterval: 3,
+    uniqueTokenPerInterval: 20, // Aumentado de 3 a 20
   },
   [RateLimits.mutation]: {
     interval: 10 * 1000, // 10 segundos
