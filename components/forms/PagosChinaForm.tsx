@@ -101,8 +101,15 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   const comisionBancoUSDValue = watch("comisionBancoUSD")
 
   // Cálculos automáticos
-  const montoRD = (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
+  // Solo multiplica por tasa si la moneda es USD, si es RD$ ya está en pesos
+  const montoRD =
+    monedaValue === "RD$"
+      ? (montoOriginalValue ?? 0)
+      : (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
+
+  // La comisión SIEMPRE es en USD, siempre se multiplica por la tasa
   const comisionRD = (comisionBancoUSDValue ?? 0) * (tasaCambioValue ?? 1)
+
   const montoRDNeto = montoRD + comisionRD // SUMA la comisión convertida a RD$ (costo total real)
 
   // Cargar OCs disponibles y configuraciones
@@ -453,7 +460,9 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                     })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {montoOriginalValue?.toLocaleString() || "0"} × {tasaCambioValue || "1"}
+                    {monedaValue === "RD$"
+                      ? `RD$${montoOriginalValue?.toLocaleString() || "0"} (ya en pesos)`
+                      : `$${montoOriginalValue?.toLocaleString() || "0"} × ${tasaCambioValue || "1"}`}
                   </p>
                 </div>
                 <div>
