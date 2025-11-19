@@ -330,8 +330,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
     })
 
-    // Audit log
-    await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request)
+    // Audit log - TEMPORARILY DISABLED FOR DEBUGGING
+    // await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request)
 
     return NextResponse.json({
       success: true,
