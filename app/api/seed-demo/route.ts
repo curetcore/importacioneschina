@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prismaDemo } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { invalidateCache } from "@/lib/cache-helpers"
 
 /**
  * API endpoint para inicializar la base de datos DEMO
@@ -24,6 +25,9 @@ export async function POST(req: Request) {
     })
 
     if (existingUser) {
+      // Invalidar caché para refrescar datos
+      await invalidateCache("*")
+
       return NextResponse.json({
         success: true,
         message: "La base de datos demo ya está inicializada",
@@ -295,6 +299,9 @@ export async function POST(req: Request) {
         },
       })
     }
+
+    // Invalidar todos los cachés para que los datos se refresquen inmediatamente
+    await invalidateCache("*")
 
     return NextResponse.json({
       success: true,
