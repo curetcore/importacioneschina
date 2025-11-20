@@ -67,6 +67,13 @@ const ENTITY_URLS: Record<string, string> = {
  */
 export async function createNotification(input: CreateNotificationInput): Promise<void> {
   try {
+    console.log("📝 [Notification] Creating notification:", {
+      tipo: input.tipo,
+      titulo: input.titulo,
+      entidad: input.entidad,
+      pusherEnabled: isPusherEnabled(),
+    })
+
     const db = await getPrismaClient()
 
     // Usar ícono por defecto si no se proporciona
@@ -88,8 +95,12 @@ export async function createNotification(input: CreateNotificationInput): Promis
       },
     })
 
+    console.log("✅ [Notification] Created in DB:", notification.id)
+
     // Trigger Pusher event si está habilitado
     if (isPusherEnabled()) {
+      console.log("📡 [Pusher] Triggering event...")
+
       // Canal: notificaciones globales o por usuario
       const channel = input.usuarioId ? `private-notifications-${input.usuarioId}` : "notifications"
 
@@ -105,9 +116,14 @@ export async function createNotification(input: CreateNotificationInput): Promis
         prioridad: notification.prioridad,
         createdAt: notification.createdAt.toISOString(),
       })
+
+      console.log("✅ [Pusher] Event triggered successfully on channel:", channel)
+    } else {
+      console.log("⚠️ [Pusher] Disabled - notification saved to DB only")
     }
   } catch (error) {
-    console.error("Error creating notification:", error)
+    console.error("❌ [Notification] Error creating notification:", error)
+    console.error("❌ [Notification] Input was:", input)
     // No lanzar error para no bloquear operaciones principales
   }
 }
