@@ -51,14 +51,34 @@ export async function GET(request: NextRequest) {
     ])
 
     // Transformar logs para incluir nombre completo del usuario
-    const logsWithUserName = logs.map(log => ({
-      ...log,
-      usuarioNombre: log.usuario
-        ? [log.usuario.name, log.usuario.lastName].filter(Boolean).join(" ")
-        : log.usuarioEmail
-          ? log.usuarioEmail
-          : "Sistema",
-    }))
+    // Si no hay usuario vinculado pero sí hay email, buscarlo en la DB
+    const logsWithUserName = await Promise.all(
+      logs.map(async log => {
+        let usuarioNombre = "Sistema"
+
+        if (log.usuario) {
+          // Usuario vinculado por ID
+          usuarioNombre = [log.usuario.name, log.usuario.lastName].filter(Boolean).join(" ")
+        } else if (log.usuarioEmail) {
+          // Usuario no vinculado, buscar por email
+          const usuario = await db.user.findUnique({
+            where: { email: log.usuarioEmail },
+            select: { name: true, lastName: true },
+          })
+
+          if (usuario) {
+            usuarioNombre = [usuario.name, usuario.lastName].filter(Boolean).join(" ")
+          } else {
+            usuarioNombre = log.usuarioEmail
+          }
+        }
+
+        return {
+          ...log,
+          usuarioNombre,
+        }
+      })
+    )
 
     return NextResponse.json({
       success: true,

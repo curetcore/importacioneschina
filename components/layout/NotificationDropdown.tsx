@@ -45,8 +45,8 @@ function NotificationIcon({ iconName }: { iconName: string | null }) {
     return <IconComponent size={20} className="text-gray-600" />
   }
 
-  // Fallback: Si el ícono no está en el mapa, mostrar como texto (compatibilidad con emojis antiguos)
-  return <span className="text-xl">{iconName}</span>
+  // Fallback: Si el ícono no está en el mapa (notificaciones antiguas con emojis), mostrar ícono por defecto
+  return <FileText size={20} className="text-gray-500" />
 }
 
 export default function NotificationDropdown() {
