@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { prismaDemo } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
 export async function GET() {
   try {
-    // Verificar si existe el usuario demo
-    let demoUser = await prisma.user.findUnique({
+    // Verificar si existe el usuario demo en la base de datos demo
+    let demoUser = await prismaDemo.user.findUnique({
       where: { email: "demo@sistema.com" },
       select: {
         id: true,
@@ -19,7 +19,7 @@ export async function GET() {
     if (!demoUser) {
       // Crear usuario demo si no existe
       const hashedPassword = await bcrypt.hash("Demo123!", 10)
-      demoUser = await prisma.user.create({
+      demoUser = await prismaDemo.user.create({
         data: {
           name: "Usuario Demo",
           email: "demo@sistema.com",
