@@ -43,13 +43,13 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // Shopify Polaris Design System 2025 - Paleta oficial actualizada
+        // Shopify Polaris Design System 2025 - Paleta oficial actualizada (colores reales de Shopify)
         shopify: {
           // Primary/Brand - Gris oscuro (cambio en 2025, antes era verde)
           primary: {
-            DEFAULT: "#303030", // Gris oscuro principal
+            DEFAULT: "#202223", // Gris oscuro principal (Shopify real)
             hover: "#1a1a1a", // Negro en hover
-            pressed: "#1a1a1a",
+            pressed: "#111213", // Negro profundo (navbar color)
             text: "#4a4a4a", // Gris medio para texto
           },
           // Interactive - Azul para links y acciones
@@ -101,16 +101,17 @@ module.exports = {
           },
           // Text colors
           text: {
-            DEFAULT: "#303030", // Gris oscuro (casi negro)
-            subdued: "#616161", // Gris medio
+            DEFAULT: "#202223", // Gris oscuro casi negro (Shopify real)
+            subdued: "#6B6C72", // Gris medio (Shopify)
             disabled: "#b5b5b5", // Gris claro
             link: "#005bd3", // Azul para links
             onPrimary: "#ffffff", // Blanco sobre primary
+            inverse: "#ffffff", // Blanco para navbar oscuro
           },
           // Surface/Background colors
           surface: {
             DEFAULT: "#ffffff", // Blanco puro para cards
-            neutral: "#f1f1f1", // Gris muy claro
+            neutral: "#F6F6F7", // Gris muy claro (sidebar Shopify)
             subdued: "#f1f1f1", // Gris claro
             disabled: "#fafafa",
             hovered: "#f6f6f6",
@@ -119,17 +120,25 @@ module.exports = {
           },
           // Background (page background)
           background: {
-            DEFAULT: "#f1f1f1", // Gris claro page background
+            DEFAULT: "#F2F3F4", // Gris claro page background (Shopify real)
             hover: "#e4e4e4",
             pressed: "#d2d2d2",
             selected: "#d2d2d2",
           },
           // Borders
           border: {
-            DEFAULT: "#c9c9c9", // Border normal
-            subdued: "#e4e4e4", // Muy sutil
-            neutral: "#d2d2d2", // Sutil
+            DEFAULT: "#D2D5D8", // Border normal (Shopify)
+            subdued: "#E4E5E7", // Muy sutil (Shopify)
+            neutral: "#E1E4E8", // Dividers (Shopify)
             strong: "#8c8c8c", // Fuerte
+            card: "#D8D8D8", // KPI cards border (Shopify)
+          },
+          // Navbar (top bar oscuro)
+          navbar: {
+            DEFAULT: "#111213", // Negro con ligero tinte gris
+            search: "#1C1C1C", // Barra de búsqueda
+            text: "#ffffff", // Texto blanco
+            icon: "#ffffff", // Iconos blancos
           },
           // Inverse (dark backgrounds)
           inverse: {

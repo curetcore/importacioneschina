@@ -20,26 +20,28 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors",
+          "bg-white border border-shopify-border-card rounded-lg p-5 hover:border-shopify-border transition-colors",
           className
         )}
         {...props}
       >
         {/* Header: Label + Icon */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-          {icon && <div className="text-gray-400 w-4 h-4">{icon}</div>}
+          <p className="text-xs font-medium text-shopify-text-subdued uppercase tracking-wide">
+            {label}
+          </p>
+          {icon && <div className="text-shopify-text-subdued w-4 h-4">{icon}</div>}
         </div>
 
         {/* Value */}
         {loading ? (
           <div className="h-8 w-24 animate-pulse rounded bg-gray-200" />
         ) : (
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          <p className="text-2xl font-semibold text-shopify-text">{value}</p>
         )}
 
         {/* Optional Subtitle */}
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-shopify-text-subdued mt-1">{subtitle}</p>}
       </div>
     )
   }

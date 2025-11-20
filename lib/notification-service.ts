@@ -1,4 +1,5 @@
 import { getPrismaClient } from "./db-helpers"
+import { triggerPusherEvent, isPusherEnabled } from "./pusher-server"
 
 /**
  * Tipos de notificación
@@ -71,7 +72,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
     // Usar ícono por defecto si no se proporciona
     const icono = input.icono || NOTIFICATION_ICONS[input.tipo]
 
-    await db.notificacion.create({
+    const notification = await db.notificacion.create({
       data: {
         tipo: input.tipo,
         titulo: input.titulo,
@@ -86,6 +87,25 @@ export async function createNotification(input: CreateNotificationInput): Promis
         expiresAt: input.expiresAt,
       },
     })
+
+    // Trigger Pusher event si está habilitado
+    if (isPusherEnabled()) {
+      // Canal: notificaciones globales o por usuario
+      const channel = input.usuarioId ? `private-notifications-${input.usuarioId}` : "notifications"
+
+      await triggerPusherEvent(channel, "new-notification", {
+        id: notification.id,
+        tipo: notification.tipo,
+        titulo: notification.titulo,
+        descripcion: notification.descripcion,
+        icono: notification.icono,
+        entidad: notification.entidad,
+        entidadId: notification.entidadId,
+        url: notification.url,
+        prioridad: notification.prioridad,
+        createdAt: notification.createdAt.toISOString(),
+      })
+    }
   } catch (error) {
     console.error("Error creating notification:", error)
     // No lanzar error para no bloquear operaciones principales
