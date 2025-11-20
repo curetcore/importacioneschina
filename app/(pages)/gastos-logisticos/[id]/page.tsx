@@ -90,37 +90,40 @@ export default function GastoDetailPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+        <div className="flex items-center justify-between border-b border-shopify-border-subdued pb-6 mb-2">
           <div>
             <Button
-              variant="ghost"
+              variant="plain"
               onClick={() => router.push("/gastos-logisticos")}
-              className="mb-2 -ml-2"
+              className="mb-3 -ml-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Gastos
             </Button>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-gray-900">Gasto #{gasto.idGasto}</h1>
-              <span className="text-sm text-gray-500">
-                {formatDate(gasto.fechaGasto)} • {gasto.tipoGasto} • {gasto.metodoPago}
-              </span>
+            <div>
+              <h1 className="text-2xl font-bold text-shopify-text">Gasto #{gasto.idGasto}</h1>
+              <p className="text-sm text-shopify-text-subdued mt-1">
+                {formatDate(gasto.fechaGasto)} | {gasto.tipoGasto} | {gasto.metodoPago}
+              </p>
+              {gasto.proveedorServicio && (
+                <p className="text-sm text-shopify-text-subdued mt-0.5 font-medium">
+                  {gasto.proveedorServicio}
+                </p>
+              )}
             </div>
-            {gasto.proveedorServicio && (
-              <p className="text-sm text-gray-500 mt-1">{gasto.proveedorServicio}</p>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
+              size="sm"
               onClick={() => router.push(`/gastos-logisticos?edit=${gasto.id}`)}
             >
               <Edit className="w-4 h-4 mr-2" />
               Editar
             </Button>
             <Button
-              variant="outline"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              variant="critical"
+              size="sm"
               onClick={() => router.push(`/gastos-logisticos?delete=${gasto.id}`)}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -132,7 +135,7 @@ export default function GastoDetailPage() {
         {/* Información del Gasto */}
         <Card>
           <CardHeader>
-            <CardTitle>Información del Gasto</CardTitle>
+            <CardTitle className="font-semibold">Información del Gasto</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,7 +174,7 @@ export default function GastoDetailPage() {
         {/* Órdenes de Compra Asociadas */}
         <Card>
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="font-semibold">
               Órdenes de Compra Asociadas ({numOCs})
               {numOCs > 1 && (
                 <span className="text-sm font-normal text-gray-500 ml-2">
@@ -225,7 +228,7 @@ export default function GastoDetailPage() {
         {/* Sección de Adjuntos */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-semibold">
               <Paperclip size={18} />
               Archivos Adjuntos ({gasto.adjuntos?.length || 0})
             </CardTitle>
