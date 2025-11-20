@@ -88,34 +88,38 @@ export default function PagoDetailPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+        <div className="flex items-center justify-between border-b border-shopify-border-subdued pb-6 mb-2">
           <div>
             <Button
-              variant="ghost"
+              variant="plain"
               onClick={() => router.push("/pagos-china")}
-              className="mb-2 -ml-2"
+              className="mb-3 -ml-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Pagos
             </Button>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-gray-900">Pago #{pago.idPago}</h1>
-              <span className="text-sm text-gray-500">
-                {formatDate(pago.fechaPago)} • {pago.tipoPago} • {pago.metodoPago}
-              </span>
+            <div>
+              <h1 className="text-2xl font-bold text-shopify-text">Pago #{pago.idPago}</h1>
+              <p className="text-sm text-shopify-text-subdued mt-1">
+                {formatDate(pago.fechaPago)} | {pago.tipoPago} | {pago.metodoPago}
+              </p>
+              <p className="text-sm text-shopify-text-subdued mt-0.5 font-medium">
+                OC: {pago.ocChina.oc} - {pago.ocChina.proveedor}
+              </p>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              OC: {pago.ocChina.oc} - {pago.ocChina.proveedor}
-            </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => router.push(`/pagos-china?edit=${pago.id}`)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push(`/pagos-china?edit=${pago.id}`)}
+            >
               <Edit className="w-4 h-4 mr-2" />
               Editar
             </Button>
             <Button
-              variant="outline"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              variant="critical"
+              size="sm"
               onClick={() => router.push(`/pagos-china?delete=${pago.id}`)}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -127,7 +131,7 @@ export default function PagoDetailPage() {
         {/* Información del Pago */}
         <Card>
           <CardHeader>
-            <CardTitle>Información del Pago</CardTitle>
+            <CardTitle className="font-semibold">Información del Pago</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -182,7 +186,7 @@ export default function PagoDetailPage() {
         {/* Información de la OC */}
         <Card>
           <CardHeader>
-            <CardTitle>Orden de Compra Asociada</CardTitle>
+            <CardTitle className="font-semibold">Orden de Compra Asociada</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -217,7 +221,7 @@ export default function PagoDetailPage() {
         {/* Sección de Adjuntos */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-semibold">
               <Paperclip size={18} />
               Archivos Adjuntos ({pago.adjuntos?.length || 0})
             </CardTitle>
