@@ -100,15 +100,22 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   const tasaCambioValue = watch("tasaCambio")
   const comisionBancoUSDValue = watch("comisionBancoUSD")
 
+  // Helper para convertir valores de forma segura (evita NaN)
+  const toNumber = (value: any): number => {
+    if (value === null || value === undefined || value === "") return 0
+    const num = Number(value)
+    return isNaN(num) ? 0 : num
+  }
+
   // Cálculos automáticos
   // Solo multiplica por tasa si la moneda es USD, si es RD$ ya está en pesos
   const montoRD =
     monedaValue === "RD$"
-      ? (montoOriginalValue ?? 0)
-      : (montoOriginalValue ?? 0) * (tasaCambioValue ?? 1)
+      ? toNumber(montoOriginalValue)
+      : toNumber(montoOriginalValue) * toNumber(tasaCambioValue)
 
   // La comisión SIEMPRE es en USD, siempre se multiplica por la tasa
-  const comisionRD = (comisionBancoUSDValue ?? 0) * (tasaCambioValue ?? 1)
+  const comisionRD = toNumber(comisionBancoUSDValue) * toNumber(tasaCambioValue)
 
   const montoRDNeto = montoRD + comisionRD // SUMA la comisión convertida a RD$ (costo total real)
 
@@ -468,8 +475,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {monedaValue === "RD$"
-                      ? `RD$${montoOriginalValue?.toLocaleString() || "0"} (ya en pesos)`
-                      : `$${montoOriginalValue?.toLocaleString() || "0"} × ${tasaCambioValue || "1"}`}
+                      ? `RD$${toNumber(montoOriginalValue).toLocaleString()} (ya en pesos)`
+                      : `$${toNumber(montoOriginalValue).toLocaleString()} × ${toNumber(tasaCambioValue).toLocaleString()}`}
                   </p>
                 </div>
                 <div>
@@ -484,7 +491,8 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
                     })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    ${comisionBancoUSDValue?.toLocaleString() || "0"} × {tasaCambioValue || "1"}
+                    ${toNumber(comisionBancoUSDValue).toLocaleString()} ×{" "}
+                    {toNumber(tasaCambioValue).toLocaleString()}
                   </p>
                 </div>
                 <div>
