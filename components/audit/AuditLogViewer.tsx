@@ -11,17 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  History,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Calendar,
-  User,
-  Database,
-} from "lucide-react"
+import { History, Search, Filter, ChevronLeft, ChevronRight, Calendar, User } from "lucide-react"
 import { formatTimeAgo } from "@/lib/utils"
 
 interface AuditLog {
@@ -44,6 +34,25 @@ interface AuditLogViewerProps {
   defaultEntidad?: string
 }
 
+// Traducción de acciones
+const ACCION_LABELS: Record<string, string> = {
+  CREATE: "Creación",
+  UPDATE: "Actualización",
+  DELETE: "Eliminación",
+  RESTORE: "Restauración",
+}
+
+// Traducción de entidades
+const ENTIDAD_LABELS: Record<string, string> = {
+  OCChina: "Órdenes de Compra",
+  PagosChina: "Pagos",
+  GastosLogisticos: "Gastos Logísticos",
+  InventarioRecibido: "Inventario",
+  Proveedor: "Proveedores",
+  Configuracion: "Configuración",
+  ConfiguracionDistribucionCostos: "Config. Distribución",
+}
+
 const ACTION_COLORS: Record<string, string> = {
   CREATE: "bg-green-100 text-green-700",
   UPDATE: "bg-blue-100 text-blue-700",
@@ -56,6 +65,49 @@ const ACTION_ICONS: Record<string, string> = {
   UPDATE: "✏️",
   DELETE: "🗑️",
   RESTORE: "♻️",
+}
+
+// Función para obtener el label de una acción
+function getAccionLabel(accion: string): string {
+  return ACCION_LABELS[accion] || accion
+}
+
+// Función para obtener el label de una entidad
+function getEntidadLabel(entidad: string): string {
+  return ENTIDAD_LABELS[entidad] || entidad
+}
+
+// Función para formatear campos de forma legible
+function formatCampoNombre(campo: string): string {
+  // Convertir camelCase a palabras separadas
+  const palabras = campo.replace(/([A-Z])/g, " $1").trim()
+  // Capitalizar primera letra
+  return palabras.charAt(0).toUpperCase() + palabras.slice(1)
+}
+
+// Función para formatear valores de forma legible
+function formatValor(valor: any): string {
+  if (valor === null || valor === undefined) return "N/A"
+  if (typeof valor === "boolean") return valor ? "Sí" : "No"
+  if (typeof valor === "object") {
+    if (Array.isArray(valor)) {
+      return `${valor.length} elementos`
+    }
+    return "Objeto complejo"
+  }
+  if (typeof valor === "string") {
+    // Si es una fecha ISO
+    if (/^\d{4}-\d{2}-\d{2}T/.test(valor)) {
+      try {
+        return new Date(valor).toLocaleString("es-ES")
+      } catch {
+        return valor
+      }
+    }
+    // Limitar longitud
+    return valor.length > 100 ? valor.substring(0, 100) + "..." : valor
+  }
+  return String(valor)
 }
 
 export function AuditLogViewer({
@@ -107,9 +159,12 @@ export function AuditLogViewer({
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={16}
+              />
               <Input
-                placeholder="Buscar por email..."
+                placeholder="Buscar por usuario..."
                 value={searchEmail}
                 onChange={e => setSearchEmail(e.target.value)}
                 className="pl-9"
@@ -120,25 +175,25 @@ export function AuditLogViewer({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="text-sm px-3 py-1.5">
-                <Database size={16} className="mr-2" />
-                {entidadFilter || "Todas las entidades"}
+                <Filter size={16} className="mr-2" />
+                {getEntidadLabel(entidadFilter) || "Todas las secciones"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => setEntidadFilter("")}>
-                Todas las entidades
+                Todas las secciones
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEntidadFilter("OCChina")}>
                 Órdenes de Compra
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEntidadFilter("PagosChina")}>
-                Pagos China
+                Pagos
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEntidadFilter("GastosLogisticos")}>
                 Gastos Logísticos
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEntidadFilter("InventarioRecibido")}>
-                Inventario Recibido
+                Inventario
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEntidadFilter("Proveedor")}>
                 Proveedores
@@ -150,7 +205,7 @@ export function AuditLogViewer({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="text-sm px-3 py-1.5">
                 <Filter size={16} className="mr-2" />
-                {accionFilter || "Todas las acciones"}
+                {getAccionLabel(accionFilter) || "Todas las acciones"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -198,63 +253,53 @@ export function AuditLogViewer({
               {logs.map(log => (
                 <div
                   key={log.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  onClick={() => setSelectedLog(log)}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      {/* Icon */}
-                      <span className="text-xl flex-shrink-0">
-                        {ACTION_ICONS[log.accion] || "📝"}
-                      </span>
+                  <div className="flex items-start gap-3 flex-1">
+                    {/* Icon */}
+                    <span className="text-xl flex-shrink-0">
+                      {ACTION_ICONS[log.accion] || "📝"}
+                    </span>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              ACTION_COLORS[log.accion] || "bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {log.accion}
-                          </span>
-                          <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
-                            {log.entidad}
-                          </span>
-                        </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            ACTION_COLORS[log.accion] || "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {getAccionLabel(log.accion)}
+                        </span>
+                        <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
+                          {getEntidadLabel(log.entidad)}
+                        </span>
+                      </div>
 
-                        <p className="text-sm font-medium text-gray-900 mb-1">
-                          {log.descripcion || `${log.accion} en ${log.entidad}`}
-                        </p>
+                      <p className="text-sm font-medium text-gray-900 mb-1">
+                        {log.descripcion ||
+                          `${getAccionLabel(log.accion)} en ${getEntidadLabel(log.entidad)}`}
+                      </p>
 
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} />
+                          {formatTimeAgo(new Date(log.createdAt))}
+                        </span>
+                        {log.usuarioEmail && (
                           <span className="flex items-center gap-1">
-                            <Calendar size={12} />
-                            {formatTimeAgo(new Date(log.createdAt))}
+                            <User size={12} />
+                            {log.usuarioEmail}
                           </span>
-                          {log.usuarioEmail && (
-                            <span className="flex items-center gap-1">
-                              <User size={12} />
-                              {log.usuarioEmail}
-                            </span>
-                          )}
-                          {log.camposModificados.length > 0 && (
-                            <span className="text-blue-600">
-                              {log.camposModificados.length} campos modificados
-                            </span>
-                          )}
-                        </div>
+                        )}
+                        {log.camposModificados.length > 0 && (
+                          <span className="text-blue-600">
+                            {log.camposModificados.length} cambios
+                          </span>
+                        )}
                       </div>
                     </div>
-
-                    {/* View Details Button */}
-                    <Button
-                      variant="ghost"
-                      className="text-sm px-2 py-1"
-                      onClick={() => setSelectedLog(log)}
-                      title="Ver detalles"
-                    >
-                      <Eye size={16} />
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -292,7 +337,7 @@ export function AuditLogViewer({
         </CardContent>
       </Card>
 
-      {/* Details Modal */}
+      {/* Details Modal - Simplificado */}
       {selectedLog && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -303,7 +348,7 @@ export function AuditLogViewer({
             onClick={e => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-              <h3 className="font-semibold text-lg">Detalles del Audit Log</h3>
+              <h3 className="font-semibold text-lg">Detalles del Registro</h3>
               <Button variant="ghost" className="px-2 py-1" onClick={() => setSelectedLog(null)}>
                 ✕
               </Button>
@@ -314,66 +359,84 @@ export function AuditLogViewer({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500">Acción</label>
-                  <p className="text-sm mt-1">{selectedLog.accion}</p>
+                  <p className="text-sm mt-1 font-medium">{getAccionLabel(selectedLog.accion)}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500">Entidad</label>
-                  <p className="text-sm mt-1">{selectedLog.entidad}</p>
+                  <label className="text-xs font-medium text-gray-500">Sección</label>
+                  <p className="text-sm mt-1 font-medium">{getEntidadLabel(selectedLog.entidad)}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500">Usuario</label>
-                  <p className="text-sm mt-1">{selectedLog.usuarioEmail || "N/A"}</p>
+                  <p className="text-sm mt-1">{selectedLog.usuarioEmail || "Sistema"}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500">Fecha</label>
                   <p className="text-sm mt-1">
-                    {new Date(selectedLog.createdAt).toLocaleString()}
+                    {new Date(selectedLog.createdAt).toLocaleString("es-ES")}
                   </p>
                 </div>
                 {selectedLog.ipAddress && (
                   <div>
-                    <label className="text-xs font-medium text-gray-500">IP</label>
+                    <label className="text-xs font-medium text-gray-500">Dirección IP</label>
                     <p className="text-sm mt-1">{selectedLog.ipAddress}</p>
                   </div>
                 )}
               </div>
 
-              {/* Modified Fields */}
+              {/* Cambios realizados */}
               {selectedLog.camposModificados.length > 0 && (
                 <div>
-                  <label className="text-xs font-medium text-gray-500">Campos Modificados</label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedLog.camposModificados.map(field => (
-                      <span
-                        key={field}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
-                      >
-                        {field}
-                      </span>
-                    ))}
+                  <label className="text-xs font-medium text-gray-500 block mb-2">
+                    Cambios Realizados ({selectedLog.camposModificados.length})
+                  </label>
+                  <div className="space-y-3 bg-gray-50 p-4 rounded">
+                    {selectedLog.camposModificados.map(campo => {
+                      const valorAntes = selectedLog.cambiosAntes?.[campo]
+                      const valorDespues = selectedLog.cambiosDespues?.[campo]
+
+                      return (
+                        <div
+                          key={campo}
+                          className="border-b border-gray-200 last:border-b-0 pb-3 last:pb-0"
+                        >
+                          <div className="text-xs font-semibold text-gray-700 mb-1">
+                            {formatCampoNombre(campo)}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <div className="text-gray-500 mb-0.5">Antes:</div>
+                              <div className="bg-red-50 text-red-700 p-2 rounded">
+                                {formatValor(valorAntes)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-gray-500 mb-0.5">Después:</div>
+                              <div className="bg-green-50 text-green-700 p-2 rounded">
+                                {formatValor(valorDespues)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Changes Before/After */}
-              {(selectedLog.cambiosAntes || selectedLog.cambiosDespues) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedLog.cambiosAntes && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">Antes</label>
-                      <pre className="text-xs bg-gray-50 p-3 rounded mt-2 overflow-auto max-h-60">
-                        {JSON.stringify(selectedLog.cambiosAntes, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                  {selectedLog.cambiosDespues && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">Después</label>
-                      <pre className="text-xs bg-gray-50 p-3 rounded mt-2 overflow-auto max-h-60">
-                        {JSON.stringify(selectedLog.cambiosDespues, null, 2)}
-                      </pre>
-                    </div>
-                  )}
+              {/* Mensaje para creaciones/eliminaciones */}
+              {selectedLog.accion === "CREATE" && (
+                <div className="bg-green-50 border border-green-200 rounded p-3">
+                  <p className="text-sm text-green-800">
+                    Se creó un nuevo registro en {getEntidadLabel(selectedLog.entidad)}
+                  </p>
+                </div>
+              )}
+
+              {selectedLog.accion === "DELETE" && (
+                <div className="bg-red-50 border border-red-200 rounded p-3">
+                  <p className="text-sm text-red-800">
+                    Se eliminó un registro de {getEntidadLabel(selectedLog.entidad)}
+                  </p>
                 </div>
               )}
             </div>
