@@ -79,13 +79,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             sku: "asc",
           },
         },
-        pagosChina: true,
+        pagosChina: {
+          where: { deletedAt: null },
+        },
         gastosLogisticos: {
+          where: {
+            gasto: {
+              deletedAt: null,
+            },
+          },
           include: {
             gasto: true,
           },
         },
         inventarioRecibido: {
+          where: { deletedAt: null },
           include: {
             item: true,
           },
@@ -93,9 +101,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         _count: {
           select: {
             items: true,
-            pagosChina: true,
+            pagosChina: {
+              where: { deletedAt: null },
+            },
             gastosLogisticos: true,
-            inventarioRecibido: true,
+            inventarioRecibido: {
+              where: { deletedAt: null },
+            },
           },
         },
       },
@@ -110,13 +122,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       ...oc,
       gastosLogisticos: await Promise.all(
         oc.gastosLogisticos.map(async gl => {
-          // For each gasto, fetch all associated OCs
+          // For each gasto, fetch all associated OCs (excluding deleted ones)
           const allOCsForGasto = await db.gastoLogisticoOC.findMany({
             where: {
               gastoId: gl.gasto.id,
             },
             include: {
               ocChina: {
+                where: { deletedAt: null },
                 select: {
                   id: true,
                   oc: true,
