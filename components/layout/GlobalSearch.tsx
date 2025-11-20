@@ -131,22 +131,22 @@ export default function GlobalSearch() {
   }
 
   // Group results by type
-  const groupedResults = results.reduce((acc, result) => {
-    if (!acc[result.type]) {
-      acc[result.type] = []
-    }
-    acc[result.type].push(result)
-    return acc
-  }, {} as Record<SearchResult["type"], SearchResult[]>)
+  const groupedResults = results.reduce(
+    (acc, result) => {
+      if (!acc[result.type]) {
+        acc[result.type] = []
+      }
+      acc[result.type].push(result)
+      return acc
+    },
+    {} as Record<SearchResult["type"], SearchResult[]>
+  )
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
+    <div ref={searchRef} className="relative w-full">
       {/* Search Input */}
       <div className="relative">
-        <Search
-          size={18}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           ref={inputRef}
           type="text"
@@ -202,16 +202,10 @@ export default function GlobalSearch() {
                       onClick={() => handleResultClick(result)}
                       className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-0"
                     >
-                      <div className="mt-0.5">
-                        {TYPE_ICONS[result.type]}
-                      </div>
+                      <div className="mt-0.5">{TYPE_ICONS[result.type]}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 text-sm truncate">
-                          {result.title}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">
-                          {result.subtitle}
-                        </p>
+                        <p className="font-medium text-gray-900 text-sm truncate">{result.title}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{result.subtitle}</p>
                       </div>
                     </button>
                   ))}

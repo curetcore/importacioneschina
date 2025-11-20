@@ -7,10 +7,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden">
       <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-8 min-w-0">{children}</main>
-      </div>
+      <Sidebar />
+      {/* pt-16 para navbar (h-16), pl-60 para sidebar (w-60) */}
+      <main className="pt-16 pl-60 p-8 min-w-0">{children}</main>
     </div>
   )
 }
