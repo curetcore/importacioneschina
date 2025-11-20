@@ -128,7 +128,7 @@ function formatValor(valor: any): string {
           day: "2-digit",
           hour: "2-digit",
           minute: "2-digit",
-          hour12: false,
+          hour12: true,
         })
       } catch {
         return valor
@@ -408,7 +408,7 @@ export function AuditLogViewer({
                       day: "2-digit",
                       hour: "2-digit",
                       minute: "2-digit",
-                      hour12: false,
+                      hour12: true,
                     })}
                   </p>
                 </div>
