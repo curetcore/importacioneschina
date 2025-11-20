@@ -59,10 +59,10 @@ export const gastosLogisticosSchema = z.object({
       message: "La fecha del gasto no puede ser futura",
     }),
   tipoGasto: z.string().min(1, "El tipo de gasto es requerido"),
-  proveedorServicio: z.string().optional(),
+  proveedorServicio: z.string().nullish(), // Acepta null, undefined, o string
   metodoPago: z.string().min(1, "El metodo de pago es requerido"),
   montoRD: z.coerce.number().positive("El monto debe ser mayor a 0"),
-  notas: z.string().optional(),
+  notas: z.string().nullish(), // Acepta null, undefined, o string
 })
 
 export type GastosLogisticosInput = z.infer<typeof gastosLogisticosSchema>
@@ -80,7 +80,7 @@ export const inventarioRecibidoSchema = z.object({
     }),
   bodegaInicial: z.string().min(1, "La bodega es requerida"),
   cantidadRecibida: z.coerce.number().int().positive("La cantidad debe ser mayor a 0"),
-  notas: z.string().optional(),
+  notas: z.string().nullish(), // Acepta null, undefined, o string
 })
 
 export type InventarioRecibidoInput = z.infer<typeof inventarioRecibidoSchema>
