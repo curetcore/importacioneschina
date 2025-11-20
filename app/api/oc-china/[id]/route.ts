@@ -126,10 +126,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           const allOCsForGasto = await db.gastoLogisticoOC.findMany({
             where: {
               gastoId: gl.gasto.id,
+              ocChina: {
+                deletedAt: null,
+              },
             },
             include: {
               ocChina: {
-                where: { deletedAt: null },
                 select: {
                   id: true,
                   oc: true,

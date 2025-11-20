@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
+import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -61,6 +62,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         items: true,
       },
     })
+
+    // Invalidar cache
+    await CacheInvalidator.invalidateOCChina(id)
 
     return NextResponse.json({
       success: true,
@@ -125,6 +129,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
         adjuntos: updatedAttachments as any,
       },
     })
+
+    // Invalidar cache
+    await CacheInvalidator.invalidateOCChina(id)
 
     return NextResponse.json({
       success: true,

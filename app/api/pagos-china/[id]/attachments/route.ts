@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
+import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -33,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Verificar que el pago existe
     const pago = await db.pagosChina.findUnique({
       where: { id },
-      select: { adjuntos: true },
+      select: { adjuntos: true, ocId: true },
     })
 
     if (!pago) {
@@ -65,6 +66,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         },
       },
     })
+
+    // Invalidar cache de la OC asociada
+    await CacheInvalidator.invalidatePagosChina(pago.ocId)
 
     return NextResponse.json({
       success: true,
@@ -104,7 +108,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Verificar que el pago existe
     const pago = await db.pagosChina.findUnique({
       where: { id },
-      select: { adjuntos: true },
+      select: { adjuntos: true, ocId: true },
     })
 
     if (!pago) {
@@ -128,6 +132,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
         adjuntos: updatedAttachments as any,
       },
     })
+
+    // Invalidar cache de la OC asociada
+    await CacheInvalidator.invalidatePagosChina(pago.ocId)
 
     return NextResponse.json({
       success: true,
