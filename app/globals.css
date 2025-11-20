@@ -60,7 +60,8 @@
 
 /* Airtable-style Table Styles - Shopify Polaris 2025 */
 .airtable-table-container {
-  @apply bg-shopify-surface rounded-lg;
+  background: #ffffff;
+  border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -72,7 +73,8 @@
 }
 
 .airtable-th {
-  @apply bg-shopify-surface-subdued text-shopify-text-subdued;
+  background: #f1f1f1;
+  color: #616161;
   border-bottom: 1.5px solid #e4e4e4;
   border-right: 1px solid #e4e4e4;
   padding: 10px 12px;
@@ -97,7 +99,7 @@
 }
 
 .airtable-th.sortable:hover {
-  @apply bg-shopify-surface-pressed;
+  background: #f1f1f1;
 }
 
 .airtable-th-content {
@@ -120,7 +122,7 @@
 }
 
 .airtable-td {
-  @apply text-shopify-text;
+  color: #303030;
   padding: 10px 12px;
   border-bottom: 1px solid #e4e4e4;
   border-right: 1px solid #f1f1f1;
@@ -149,11 +151,11 @@
 }
 
 .airtable-tr:hover {
-  @apply bg-shopify-surface-hovered;
+  background-color: #f6f6f6;
 }
 
 .airtable-tr:hover .airtable-td {
-  @apply bg-shopify-surface-hovered;
+  background-color: #f6f6f6;
 }
 
 .airtable-tr.clickable {
@@ -161,11 +163,11 @@
 }
 
 .airtable-tr.clickable:hover {
-  @apply bg-shopify-surface-pressed;
+  background-color: #f1f1f1;
 }
 
 .airtable-tr.clickable:hover .airtable-td {
-  @apply bg-shopify-surface-pressed;
+  background-color: #f1f1f1;
 }
 
 /* Cell hover effect - Polaris style with interactive blue */
