@@ -22,6 +22,7 @@ import { DistribucionCostosSettings } from "@/components/configuracion/Distribuc
 import { UserProfileModal } from "@/components/user/UserProfileModal"
 import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
 import { EditUserModal } from "@/components/admin/EditUserModal"
+import { SendInvitationModal } from "@/components/admin/SendInvitationModal"
 import { formatTimeAgo } from "@/lib/utils"
 
 interface Configuracion {
@@ -108,6 +109,7 @@ function AdminUsersSection() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [invitationModalOpen, setInvitationModalOpen] = useState(false)
   const queryClient = useQueryClient()
   const { addToast } = useToast()
 
@@ -162,14 +164,22 @@ function AdminUsersSection() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Gestión de Usuarios</CardTitle>
-          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
-            Super Admin
-          </span>
+          <div>
+            <CardTitle>Gestión de Usuarios</CardTitle>
+            <p className="text-sm text-gray-500 mt-2">
+              Vista y administración de todos los usuarios del sistema
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setInvitationModalOpen(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Enviar Invitación
+            </Button>
+            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
+              Super Admin
+            </span>
+          </div>
         </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Vista y administración de todos los usuarios del sistema
-        </p>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -292,6 +302,8 @@ function AdminUsersSection() {
         onOpenChange={open => !open && setEditingUser(null)}
         user={editingUser}
       />
+
+      <SendInvitationModal open={invitationModalOpen} onOpenChange={setInvitationModalOpen} />
 
       <ConfirmDialog
         open={!!deleteUserId}

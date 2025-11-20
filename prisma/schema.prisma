@@ -262,6 +262,24 @@ model User {
   @@map("users")
 }
 
+// TABLA: INVITACIONES DE USUARIO
+model UserInvitation {
+  id        String   @id @default(cuid())
+  email     String
+  role      String // "limitado" | "admin" | "superadmin"
+  token     String   @unique // Token seguro para el enlace de invitación
+  expiresAt DateTime @map("expires_at") // Expira en 7 días
+  accepted  Boolean  @default(false) // true cuando el usuario completa el registro
+  invitedBy String   @map("invited_by") // Email del super admin que envió la invitación
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+  @@map("user_invitations")
+}
+
 // TABLA 7: PROVEEDORES (CRM)
 model Proveedor {
   id     String @id @default(cuid())
