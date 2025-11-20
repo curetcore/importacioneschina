@@ -22,7 +22,7 @@ const menuItems = [
   { href: "/documentos", label: "Documentos", icon: Folder },
 ]
 
-const bottomMenuItems = [{ href: "/configuracion", label: "Ajustes", icon: Settings }]
+const bottomMenuItems = [{ href: "/configuracion", label: "Configuración", icon: Settings }]
 
 export default function Sidebar() {
   const pathname = usePathname()
