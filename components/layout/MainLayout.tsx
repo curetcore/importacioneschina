@@ -9,9 +9,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Navbar />
       <Sidebar />
       {/* pt-16 para navbar (h-16), pl-60 para sidebar (w-60) */}
-      {/* max-w-7xl (1280px) + mx-auto + px-8 = Shopify style content area */}
       <main className="ml-60 mt-16 min-h-screen">
-        <div className="max-w-7xl mx-auto px-8 py-8">{children}</div>
+        {/* Rounded Content Container - Shopify style with rounded top corners */}
+        <div className="bg-white rounded-t-lg min-h-[calc(100vh-4rem)]">
+          <div className="max-w-7xl mx-auto px-8 py-8">{children}</div>
+        </div>
       </main>
     </div>
   )
