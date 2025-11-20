@@ -255,8 +255,8 @@ export function VirtualizedDataTable<TData, TValue>({
                         data-index={virtualRow.index}
                         ref={node => rowVirtualizer.measureElement(node)}
                         data-state={row.getIsSelected() && "selected"}
-                        className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                          onRowClick ? "cursor-pointer" : ""
+                        className={`border-b border-gray-100 hover:bg-blue-50 hover:shadow-sm transition-all duration-150 ${
+                          onRowClick ? "cursor-pointer hover:scale-[1.001]" : ""
                         }`}
                         onClick={() => onRowClick && onRowClick(row.original)}
                       >

@@ -714,17 +714,12 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditMode ? "Actualizando..." : "Creando..."}
-                </>
-              ) : isEditMode ? (
-                "Actualizar Orden"
-              ) : (
-                "Crear Orden"
-              )}
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              loadingText={isEditMode ? "Actualizando..." : "Creando..."}
+            >
+              {isEditMode ? "Actualizar Orden" : "Crear Orden"}
             </Button>
           </DialogFooter>
         </form>

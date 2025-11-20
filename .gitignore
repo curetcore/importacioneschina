@@ -6,6 +6,18 @@
 # testing
 /coverage
 
+# Playwright E2E tests
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# SQLite test database
+/tests/test.db
+/tests/test.db-journal
+/tests/*.db
+/tests/*.db-journal
+
 # next.js
 /.next/
 /out/

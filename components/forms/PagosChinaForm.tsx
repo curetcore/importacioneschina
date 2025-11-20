@@ -523,23 +523,10 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              onClick={e => {
-                console.log("🔴 BOTÓN CLICKEADO - Evento:", e)
-                console.log("🔴 isSubmitting:", isSubmitting)
-                console.log("🔴 Errores actuales:", errors)
-              }}
+              isLoading={isSubmitting}
+              loadingText={isEditMode ? "Actualizando..." : "Creando..."}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditMode ? "Actualizando..." : "Creando..."}
-                </>
-              ) : isEditMode ? (
-                "Actualizar Pago"
-              ) : (
-                "Crear Pago"
-              )}
+              {isEditMode ? "Actualizar Pago" : "Crear Pago"}
             </Button>
           </DialogFooter>
         </form>

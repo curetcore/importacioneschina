@@ -405,17 +405,12 @@ export function GastosLogisticosForm({
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditMode ? "Actualizando..." : "Creando..."}
-                </>
-              ) : isEditMode ? (
-                "Actualizar Gasto"
-              ) : (
-                "Crear Gasto"
-              )}
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              loadingText={isEditMode ? "Actualizando..." : "Creando..."}
+            >
+              {isEditMode ? "Actualizar Gasto" : "Crear Gasto"}
             </Button>
           </DialogFooter>
         </form>

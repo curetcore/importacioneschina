@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
+import { TableSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 import { getOrdenesColumns, OCChina, OCChinaItem } from "./columns"
 import {
   Plus,
@@ -234,7 +235,17 @@ export default function OrdenesPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
+        <div className="space-y-6">
+          {/* Stats skeleton */}
+          <StatCardSkeleton count={4} />
+
+          {/* Table skeleton */}
+          <Card>
+            <CardContent className="p-6">
+              <TableSkeleton rows={10} columns={7} />
+            </CardContent>
+          </Card>
+        </div>
       </MainLayout>
     )
   }

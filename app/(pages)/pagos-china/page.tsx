@@ -13,6 +13,7 @@ import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
+import { TableSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 import { getPagosColumns, Pago } from "./columns"
 import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
@@ -249,7 +250,17 @@ export default function PagosChinaPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
+        <div className="space-y-6">
+          {/* Stats skeleton */}
+          <StatCardSkeleton count={4} />
+
+          {/* Table skeleton */}
+          <Card>
+            <CardContent className="p-6">
+              <TableSkeleton rows={10} columns={7} />
+            </CardContent>
+          </Card>
+        </div>
       </MainLayout>
     )
   }

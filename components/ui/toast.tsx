@@ -23,15 +23,15 @@ export function useToast() {
     const { type, title, description, duration, details } = options
     const isDev = process.env.NODE_ENV === "development"
 
-    // Configurar iconos personalizados
-    const icons = {
-      success: CheckCircle2,
-      error: AlertCircle,
-      info: Info,
-      warning: AlertTriangle,
+    // Configurar iconos personalizados con colores contextuales
+    const iconConfig = {
+      success: { Icon: CheckCircle2, className: "h-5 w-5 text-green-600" },
+      error: { Icon: AlertCircle, className: "h-5 w-5 text-red-600" },
+      info: { Icon: Info, className: "h-5 w-5 text-blue-600" },
+      warning: { Icon: AlertTriangle, className: "h-5 w-5 text-orange-600" },
     }
 
-    const Icon = icons[type]
+    const { Icon, className } = iconConfig[type]
 
     // Mensaje completo con detalles técnicos en desarrollo
     const fullDescription =
@@ -48,7 +48,7 @@ export function useToast() {
     toastFunctions[type](title, {
       description: fullDescription,
       duration: duration || 5000,
-      icon: <Icon className="h-5 w-5" />,
+      icon: <Icon className={className} />,
     })
   }
 

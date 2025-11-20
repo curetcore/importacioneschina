@@ -27,6 +27,7 @@ const InventarioRecibidoForm = dynamicImport(
 )
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
+import { TableSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 import { getInventarioColumns, InventarioRecibido } from "./columns"
 import { columns as analisisColumns, ProductoCosto } from "../analisis-costos/columns"
 import { getProductosColumns, ProductoRow } from "../productos/columns"
@@ -423,7 +424,19 @@ export default function InventarioRecibidoPage() {
   if (isLoading || analisisLoading || productosLoading) {
     return (
       <MainLayout>
-        <div className="text-center py-12 text-sm text-gray-500">Cargando...</div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="space-y-6">
+            {/* Stats skeleton */}
+            <StatCardSkeleton count={4} />
+
+            {/* Table skeleton */}
+            <Card>
+              <CardContent className="p-6">
+                <TableSkeleton rows={10} columns={8} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </MainLayout>
     )
   }

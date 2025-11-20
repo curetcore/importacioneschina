@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { StatsGrid } from "@/components/ui/stats-grid"
 import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
+import { TableSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 import { columns, ProductoCosto } from "./columns"
 import { formatCurrency } from "@/lib/utils"
 import { exportToExcel } from "@/lib/export-utils"
@@ -91,7 +92,17 @@ export default function AnalisisCostosPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="text-center py-12 text-sm text-gray-500">Cargando análisis...</div>
+        <div className="space-y-6">
+          {/* Stats skeleton */}
+          <StatCardSkeleton count={4} />
+
+          {/* Table skeleton */}
+          <Card>
+            <CardContent className="p-6">
+              <TableSkeleton rows={10} columns={8} />
+            </CardContent>
+          </Card>
+        </div>
       </MainLayout>
     )
   }
