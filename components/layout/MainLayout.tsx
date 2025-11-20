@@ -5,13 +5,13 @@ import Sidebar from "./Sidebar"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-shopify-navbar overflow-x-hidden">
+    <div className="h-screen bg-shopify-navbar overflow-hidden">
       <Navbar />
       <Sidebar />
       {/* Main content con margin-left para el sidebar fijo */}
-      <main className="ml-60 mt-16 min-h-screen">
+      <main className="ml-60 mt-16 h-[calc(100vh-4rem)] overflow-y-auto">
         {/* Rounded Content Container - Shopify style: sidebar + main = bloque unificado */}
-        <div className="bg-white rounded-tr-3xl shadow-sm min-h-[calc(100vh-4rem)]">
+        <div className="bg-white rounded-tr-3xl shadow-sm min-h-full">
           <div className="max-w-7xl mx-auto px-8 py-8">{children}</div>
         </div>
       </main>
