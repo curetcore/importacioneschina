@@ -400,6 +400,7 @@ export default function OrdenesPage() {
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                onRowClick={handleView}
                 maxHeight="70vh"
                 estimatedRowHeight={53}
                 overscan={10}
