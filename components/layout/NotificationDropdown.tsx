@@ -1,82 +1,44 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Bell, Check, CheckCheck, X } from "lucide-react"
+import { Bell, CheckCheck, X, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
-
-interface Notification {
-  id: string
-  tipo: string
-  titulo: string
-  descripcion: string | null
-  icono: string | null
-  url: string | null
-  leida: boolean
-  createdAt: string
-}
+import { useNotifications } from "@/hooks/useNotifications"
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const [notificaciones, setNotificaciones] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  // Fetch notificaciones
-  const fetchNotificaciones = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch("/api/notificaciones?limit=10")
-      const data = await response.json()
+  // Usar el hook de notificaciones con Pusher
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    error,
+    refetch,
+    markAsRead: markAsReadHook,
+    markAllAsRead: markAllAsReadHook,
+    isRealtimeEnabled,
+  } = useNotifications({
+    pollingInterval: 30000, // 30 segundos de fallback
+  })
 
-      if (data.success) {
-        setNotificaciones(data.data)
-        setUnreadCount(data.totalUnread)
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Marcar notificación como leída y navegar
+  const handleNotificationClick = async (id: string, url: string | null) => {
+    await markAsReadHook(id)
 
-  // Marcar notificación como leída
-  const markAsRead = async (id: string, url: string | null) => {
-    try {
-      await fetch(`/api/notificaciones/${id}`, {
-        method: "PUT",
-      })
-
-      // Actualizar estado local
-      setNotificaciones(prev => prev.map(n => (n.id === id ? { ...n, leida: true } : n)))
-      setUnreadCount(prev => Math.max(0, prev - 1))
-
-      // Navegar si hay URL
-      if (url) {
-        router.push(url)
-        setIsOpen(false)
-      }
-    } catch (error) {
-      console.error("Error marking notification as read:", error)
+    // Navegar si hay URL
+    if (url) {
+      router.push(url)
+      setIsOpen(false)
     }
   }
 
   // Marcar todas como leídas
-  const markAllAsRead = async () => {
-    try {
-      await fetch("/api/notificaciones", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      })
-
-      setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })))
-      setUnreadCount(0)
-    } catch (error) {
-      console.error("Error marking all as read:", error)
-    }
+  const handleMarkAllAsRead = async () => {
+    await markAllAsReadHook()
   }
 
   // Cerrar dropdown al hacer click fuera
@@ -96,20 +58,11 @@ export default function NotificationDropdown() {
     }
   }, [isOpen])
 
-  // Fetch inicial y polling cada 30 segundos
-  useEffect(() => {
-    fetchNotificaciones()
-
-    const interval = setInterval(fetchNotificaciones, 30000) // 30 segundos
-
-    return () => clearInterval(interval)
-  }, [])
-
   // Toggle dropdown
   const toggleDropdown = () => {
     setIsOpen(prev => !prev)
     if (!isOpen) {
-      fetchNotificaciones()
+      refetch()
     }
   }
 
@@ -119,12 +72,17 @@ export default function NotificationDropdown() {
       <button
         onClick={toggleDropdown}
         className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        title={isRealtimeEnabled ? "Notificaciones en tiempo real" : "Notificaciones"}
       >
         <Bell size={20} className="text-gray-600" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
+        )}
+        {/* Indicador de tiempo real */}
+        {isRealtimeEnabled && (
+          <span className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full h-2.5 w-2.5 border-2 border-white"></span>
         )}
       </button>
 
@@ -133,14 +91,27 @@ export default function NotificationDropdown() {
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <div>
-              <h3 className="font-semibold text-gray-900">Notificaciones</h3>
-              {unreadCount > 0 && <p className="text-xs text-gray-500">{unreadCount} sin leer</p>}
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900">Notificaciones</h3>
+                {isRealtimeEnabled && (
+                  <span
+                    className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full"
+                    title="Actualizaciones en tiempo real activas"
+                  >
+                    <Zap size={10} />
+                    <span>Tiempo real</span>
+                  </span>
+                )}
+              </div>
+              {unreadCount > 0 && (
+                <p className="text-xs text-gray-500 mt-0.5">{unreadCount} sin leer</p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
-                  onClick={markAllAsRead}
+                  onClick={handleMarkAllAsRead}
                   className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                   title="Marcar todas como leídas"
                 >
@@ -161,16 +132,27 @@ export default function NotificationDropdown() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-2 text-sm">Cargando...</p>
               </div>
-            ) : notificaciones.length === 0 ? (
+            ) : error ? (
+              <div className="p-8 text-center text-red-500">
+                <Bell size={32} className="mx-auto mb-2 text-red-300" />
+                <p className="text-sm">{error}</p>
+                <button
+                  onClick={() => refetch()}
+                  className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Intentar de nuevo
+                </button>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <Bell size={32} className="mx-auto mb-2 text-gray-300" />
                 <p className="text-sm">No hay notificaciones</p>
               </div>
             ) : (
-              notificaciones.map(notif => (
+              notifications.map(notif => (
                 <button
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id, notif.url)}
+                  onClick={() => handleNotificationClick(notif.id, notif.url)}
                   className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                     !notif.leida ? "bg-blue-50" : ""
                   }`}
@@ -204,7 +186,7 @@ export default function NotificationDropdown() {
           </div>
 
           {/* Footer */}
-          {notificaciones.length > 0 && (
+          {notifications.length > 0 && (
             <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => {
