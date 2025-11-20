@@ -4,12 +4,15 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { AttachmentsList } from "@/components/ui/attachments-list"
+import { useEditingPresence } from "@/hooks/useEditingPresence"
+import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 
 interface FileAttachment {
@@ -44,6 +47,7 @@ interface GastoDetail {
 export default function GastoDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session } = useSession()
   const [gasto, setGasto] = useState<GastoDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
@@ -66,6 +70,17 @@ export default function GastoDetailPage() {
   useEffect(() => {
     fetchGasto()
   }, [params.id])
+
+  const { editingUsers } = useEditingPresence({
+    resourceType: "expense",
+    resourceId: params.id as string,
+    currentUser: {
+      id: session?.user?.id || "",
+      name: session?.user?.name || "",
+      email: session?.user?.email || "",
+    },
+    enabled: !!params.id && !!session?.user,
+  })
 
   if (loading) {
     return (
@@ -131,6 +146,8 @@ export default function GastoDetailPage() {
             </Button>
           </div>
         </div>
+
+        <EditingBanner editingUsers={editingUsers} />
 
         {/* Información del Gasto */}
         <Card>

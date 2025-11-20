@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
-import { updateProveedorSchema } from "@/lib/validations/proveedor"
+import { proveedorSchema } from "@/lib/validations/proveedor"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
@@ -11,13 +12,19 @@ export const dynamic = "force-dynamic"
 // GET /api/proveedores/[id] - Obtener proveedor por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Rate limiting para queries - 60 req/60s
+    const rateLimitError = await withRateLimit(request, RateLimits.query)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
+    const { id } = params
+
     const proveedor = await db.proveedor.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!proveedor) {
-      throw Errors.notFound("Proveedor", params.id)
+      throw Errors.notFound("Proveedor", id)
     }
 
     return NextResponse.json({
@@ -32,81 +39,61 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT /api/proveedores/[id] - Actualizar proveedor
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Rate limiting para mutations - 20 req/10s
+    const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+    if (rateLimitError) return rateLimitError
+
     const db = await getPrismaClient()
+    const { id } = params
     const body = await request.json()
 
     // Validar datos
-    const validatedData = updateProveedorSchema.parse(body)
+    const validatedData = proveedorSchema.parse(body)
 
-    // Verificar que el proveedor existe
-    const existingProveedor = await db.proveedor.findUnique({
-      where: { id: params.id },
+    // Obtener proveedor actual para audit
+    const currentProveedor = await db.proveedor.findUnique({
+      where: { id },
     })
 
-    if (!existingProveedor) {
-      throw Errors.notFound("Proveedor", params.id)
-    }
-
-    // Si se está cambiando el código, verificar que no exista
-    if (validatedData.codigo && validatedData.codigo !== existingProveedor.codigo) {
-      const codigoExists = await db.proveedor.findUnique({
-        where: { codigo: validatedData.codigo },
-      })
-
-      if (codigoExists) {
-        throw Errors.conflict("Ya existe un proveedor con ese código")
-      }
+    if (!currentProveedor) {
+      throw Errors.notFound("Proveedor", id)
     }
 
     // Actualizar proveedor
-    const proveedor = await db.proveedor.update({
-      where: { id: params.id },
+    const updatedProveedor = await db.proveedor.update({
+      where: { id },
       data: {
-        ...(validatedData.codigo && { codigo: validatedData.codigo }),
-        ...(validatedData.nombre && { nombre: validatedData.nombre }),
-        ...(validatedData.contactoPrincipal !== undefined && {
-          contactoPrincipal: validatedData.contactoPrincipal,
-        }),
-        ...(validatedData.email !== undefined && { email: validatedData.email || undefined }),
-        ...(validatedData.telefono !== undefined && { telefono: validatedData.telefono }),
-        ...(validatedData.whatsapp !== undefined && { whatsapp: validatedData.whatsapp }),
-        ...(validatedData.wechat !== undefined && { wechat: validatedData.wechat }),
-        ...(validatedData.pais !== undefined && { pais: validatedData.pais }),
-        ...(validatedData.ciudad !== undefined && { ciudad: validatedData.ciudad }),
-        ...(validatedData.direccion !== undefined && { direccion: validatedData.direccion }),
-        ...(validatedData.sitioWeb !== undefined && {
-          sitioWeb: validatedData.sitioWeb || undefined,
-        }),
-        ...(validatedData.categoriaProductos !== undefined && {
-          categoriaProductos: validatedData.categoriaProductos,
-        }),
-        ...(validatedData.tiempoEntregaDias !== undefined && {
-          tiempoEntregaDias: validatedData.tiempoEntregaDias,
-        }),
-        ...(validatedData.monedaPreferida !== undefined && {
-          monedaPreferida: validatedData.monedaPreferida,
-        }),
-        ...(validatedData.terminosPago !== undefined && {
-          terminosPago: validatedData.terminosPago,
-        }),
-        ...(validatedData.minimoOrden !== undefined && { minimoOrden: validatedData.minimoOrden }),
-        ...(validatedData.notas !== undefined && { notas: validatedData.notas }),
-        ...(validatedData.calificacion !== undefined && {
-          calificacion: validatedData.calificacion,
-        }),
-        ...(validatedData.activo !== undefined && { activo: validatedData.activo }),
+        codigo: validatedData.codigo,
+        nombre: validatedData.nombre,
+        contactoPrincipal: validatedData.contactoPrincipal,
+        email: validatedData.email || undefined,
+        telefono: validatedData.telefono,
+        whatsapp: validatedData.whatsapp,
+        wechat: validatedData.wechat,
+        pais: validatedData.pais,
+        ciudad: validatedData.ciudad,
+        direccion: validatedData.direccion,
+        sitioWeb: validatedData.sitioWeb || undefined,
+        categoriaProductos: validatedData.categoriaProductos,
+        tiempoEntregaDias: validatedData.tiempoEntregaDias,
+        monedaPreferida: validatedData.monedaPreferida,
+        terminosPago: validatedData.terminosPago,
+        minimoOrden: validatedData.minimoOrden,
+        notas: validatedData.notas,
+        calificacion: validatedData.calificacion,
+        activo: validatedData.activo,
       },
     })
 
     // Audit log
-    await auditUpdate("Proveedor", existingProveedor as any, proveedor as any, request)
+    await auditUpdate("Proveedor", currentProveedor as any, updatedProveedor as any, request)
 
     // Invalidar cache de proveedores
     await CacheInvalidator.invalidateProveedores()
 
     return NextResponse.json({
       success: true,
-      data: proveedor,
+      data: updatedProveedor,
     })
   } catch (error) {
     return handleApiError(error)
@@ -116,33 +103,39 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE /api/proveedores/[id] - Eliminar proveedor (soft delete)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const db = await getPrismaClient()
+    // Rate limiting para mutations - 20 req/10s
+    const rateLimitError = await withRateLimit(request, RateLimits.mutation)
+    if (rateLimitError) return rateLimitError
 
-    // Verificar que el proveedor existe
+    const db = await getPrismaClient()
+    const { id } = params
+
     const proveedor = await db.proveedor.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!proveedor) {
-      throw Errors.notFound("Proveedor", params.id)
+      throw Errors.notFound("Proveedor", id)
     }
 
-    // Soft delete: marcar como inactivo
-    const proveedorDeleted = await db.proveedor.update({
-      where: { id: params.id },
-      data: { activo: false },
+    // Soft delete - marcar como inactivo
+    const deletedProveedor = await db.proveedor.update({
+      where: { id },
+      data: {
+        activo: false,
+      },
     })
 
     // Audit log
-    await auditDelete("Proveedor", proveedor as any, request)
+    await auditDelete("Proveedor", deletedProveedor as any, request)
 
     // Invalidar cache de proveedores
     await CacheInvalidator.invalidateProveedores()
 
     return NextResponse.json({
       success: true,
-      data: proveedorDeleted,
-      message: "Proveedor marcado como inactivo exitosamente",
+      message: "Proveedor marcado como inactivo",
+      data: deletedProveedor,
     })
   } catch (error) {
     return handleApiError(error)

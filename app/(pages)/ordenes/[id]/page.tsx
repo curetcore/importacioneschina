@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,8 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 import { distribuirGastosLogisticos, calcularResumenFinanciero } from "@/lib/calculations"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { AttachmentsList } from "@/components/ui/attachments-list"
+import { useEditingPresence } from "@/hooks/useEditingPresence"
+import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 
 interface FileAttachment {
@@ -88,6 +91,7 @@ interface OCDetail {
 export default function OCDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session } = useSession()
   const [oc, setOc] = useState<OCDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
@@ -110,6 +114,17 @@ export default function OCDetailPage() {
   useEffect(() => {
     fetchOC()
   }, [params.id])
+
+  const { editingUsers } = useEditingPresence({
+    resourceType: "order",
+    resourceId: params.id as string,
+    currentUser: {
+      id: session?.user?.id || "",
+      name: session?.user?.name || "",
+      email: session?.user?.email || "",
+    },
+    enabled: !!params.id && !!session?.user,
+  })
 
   if (loading) {
     return (
@@ -178,6 +193,8 @@ export default function OCDetailPage() {
             </Button>
           </div>
         </div>
+
+        <EditingBanner editingUsers={editingUsers} />
 
         {/* Tabla de Productos con Costos Distribuidos */}
         <Card>

@@ -173,6 +173,9 @@ export async function createNotificationFromAudit(
         // Entidades con página de detalle
         if (["OCChina", "PagosChina", "GastosLogisticos", "InventarioRecibido"].includes(entidad)) {
           url = `${ENTITY_URLS[entidad]}/${entidadId}`
+        } else if (entidad === "Proveedor") {
+          // Proveedor: abrir modal con ID específico
+          url = `/configuracion?tab=proveedores&proveedorId=${entidadId}`
         } else {
           // Configuración y otras sin detalle
           url = ENTITY_URLS[entidad]

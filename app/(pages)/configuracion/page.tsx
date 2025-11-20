@@ -494,6 +494,28 @@ function ConfiguracionPageContent() {
     }
   }, [searchParams])
 
+  // Handle URL proveedorId parameter - abrir modal del proveedor específico
+  useEffect(() => {
+    const proveedorId = searchParams.get("proveedorId")
+    if (proveedorId) {
+      // Cambiar al tab de proveedores
+      setActiveTab("proveedores")
+
+      // Cargar datos del proveedor y abrir modal
+      fetch(`/api/proveedores/${proveedorId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setProveedorToEdit(data.data)
+            setProveedorFormOpen(true)
+          }
+        })
+        .catch(error => {
+          console.error("Error loading proveedor:", error)
+        })
+    }
+  }, [searchParams])
+
   // Use React Query for data fetching
   const { data: rawData, isLoading } = useApiQuery<Record<string, Configuracion[]>>(
     ["configuracion"],

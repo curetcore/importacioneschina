@@ -4,10 +4,13 @@ export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { useEditingPresence } from "@/hooks/useEditingPresence"
+import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 
 interface InventarioDetail {
@@ -38,6 +41,7 @@ interface InventarioDetail {
 export default function InventarioRecibidoDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session } = useSession()
   const [inventario, setInventario] = useState<InventarioDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -59,6 +63,17 @@ export default function InventarioRecibidoDetailPage() {
   useEffect(() => {
     fetchInventario()
   }, [params.id])
+
+  const { editingUsers } = useEditingPresence({
+    resourceType: "inventory",
+    resourceId: params.id as string,
+    currentUser: {
+      id: session?.user?.id || "",
+      name: session?.user?.name || "",
+      email: session?.user?.email || "",
+    },
+    enabled: !!params.id && !!session?.user,
+  })
 
   if (loading) {
     return (
@@ -119,6 +134,8 @@ export default function InventarioRecibidoDetailPage() {
             </Button>
           </div>
         </div>
+
+        <EditingBanner editingUsers={editingUsers} />
 
         {/* Información de la Recepción */}
         <Card>
