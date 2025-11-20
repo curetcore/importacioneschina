@@ -134,7 +134,12 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
    * Handle new notification from Pusher
    */
   const handleNewNotification = useCallback((data: any) => {
-    if (!isMountedRef.current) return
+    console.log("📬 [PUSHER HOOK] New notification received via Pusher:", data)
+
+    if (!isMountedRef.current) {
+      console.warn("⚠️ [PUSHER HOOK] Component unmounted, ignoring notification")
+      return
+    }
 
     const newNotification: Notification = {
       id: data.id,
@@ -151,23 +156,35 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       leidaAt: null,
     }
 
-    setNotifications(prev => [newNotification, ...prev])
-    setUnreadCount(prev => prev + 1)
+    setNotifications(prev => {
+      const updated = [newNotification, ...prev]
+      console.log("📋 [PUSHER HOOK] Notifications updated. Count:", updated.length)
+      return updated
+    })
+    setUnreadCount(prev => {
+      const newCount = prev + 1
+      console.log("🔔 [PUSHER HOOK] Unread count updated:", newCount)
+      return newCount
+    })
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("📬 New notification received via Pusher:", newNotification.titulo)
-    }
+    console.log("✅ [PUSHER HOOK] Notification processed successfully:", newNotification.titulo)
   }, [])
 
   /**
    * Setup Pusher subscription
    */
   useEffect(() => {
-    if (!isRealtimeEnabled) return
+    if (!isRealtimeEnabled) {
+      console.log("⚠️ [PUSHER HOOK] Realtime disabled, using polling fallback")
+      return
+    }
+
+    console.log("🚀 [PUSHER HOOK] Setting up Pusher subscription...")
 
     try {
       // Canal: por usuario o global
       const channelName = userId ? `private-notifications-${userId}` : "notifications"
+      console.log(`📡 [PUSHER HOOK] Channel name: ${channelName}`)
 
       // Suscribirse al canal
       const channel = subscribeToChannel(channelName)
@@ -175,23 +192,17 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
       // Escuchar evento de nueva notificación
       channel.bind("new-notification", handleNewNotification)
-
-      if (process.env.NODE_ENV === "development") {
-        console.log(`📡 Subscribed to Pusher channel: ${channelName}`)
-      }
+      console.log(`✅ [PUSHER HOOK] Bound to 'new-notification' event on channel: ${channelName}`)
 
       // Cleanup
       return () => {
+        console.log(`📤 [PUSHER HOOK] Cleaning up subscription to: ${channelName}`)
         channel.unbind("new-notification", handleNewNotification)
         unsubscribeFromChannel(channelName)
         channelRef.current = null
-
-        if (process.env.NODE_ENV === "development") {
-          console.log(`📤 Unsubscribed from Pusher channel: ${channelName}`)
-        }
       }
     } catch (err) {
-      console.error("Error setting up Pusher:", err)
+      console.error("❌ [PUSHER HOOK] Error setting up Pusher:", err)
       // Si Pusher falla, caer back a polling (se maneja abajo)
     }
   }, [isRealtimeEnabled, userId, handleNewNotification])

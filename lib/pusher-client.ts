@@ -27,20 +27,30 @@ export function getPusherClient(): PusherClient {
       disabledTransports: ["sockjs", "xhr_polling", "xhr_streaming"], // Deshabilitar fallbacks lentos
     })
 
-    // Eventos de conexión (solo en desarrollo)
-    if (process.env.NODE_ENV === "development") {
-      pusherClientInstance.connection.bind("connected", () => {
-        console.log("✅ Pusher Client connected")
-      })
+    // Eventos de conexión (PRODUCCION - DEBUG TEMPORAL)
+    pusherClientInstance.connection.bind("connected", () => {
+      console.log("✅ [PUSHER CLIENT] Connected successfully")
+    })
 
-      pusherClientInstance.connection.bind("disconnected", () => {
-        console.log("⚠️ Pusher Client disconnected")
-      })
+    pusherClientInstance.connection.bind("disconnected", () => {
+      console.log("⚠️ [PUSHER CLIENT] Disconnected")
+    })
 
-      pusherClientInstance.connection.bind("error", (error: any) => {
-        console.error("❌ Pusher Client error:", error)
-      })
-    }
+    pusherClientInstance.connection.bind("error", (error: any) => {
+      console.error("❌ [PUSHER CLIENT] Connection error:", error)
+    })
+
+    pusherClientInstance.connection.bind("connecting", () => {
+      console.log("🔄 [PUSHER CLIENT] Attempting to connect...")
+    })
+
+    pusherClientInstance.connection.bind("unavailable", () => {
+      console.error("❌ [PUSHER CLIENT] Connection unavailable")
+    })
+
+    pusherClientInstance.connection.bind("failed", () => {
+      console.error("❌ [PUSHER CLIENT] Connection failed")
+    })
   }
 
   return pusherClientInstance
@@ -68,7 +78,19 @@ export function disconnectPusher(): void {
  */
 export function subscribeToChannel(channelName: string) {
   const pusher = getPusherClient()
-  return pusher.subscribe(channelName)
+  console.log(`📡 [PUSHER CLIENT] Subscribing to channel: ${channelName}`)
+  const channel = pusher.subscribe(channelName)
+
+  // Log subscription events (PRODUCCION - DEBUG TEMPORAL)
+  channel.bind("pusher:subscription_succeeded", () => {
+    console.log(`✅ [PUSHER CLIENT] Successfully subscribed to: ${channelName}`)
+  })
+
+  channel.bind("pusher:subscription_error", (error: any) => {
+    console.error(`❌ [PUSHER CLIENT] Subscription error for ${channelName}:`, error)
+  })
+
+  return channel
 }
 
 /**
