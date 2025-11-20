@@ -58,10 +58,10 @@
   }
 }
 
-/* Airtable-style Table Styles */
+/* Airtable-style Table Styles - Shopify Polaris 2025 */
 .airtable-table-container {
-  background: white;
-  border-radius: 8px;
+  @apply bg-shopify-surface rounded-lg;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .airtable-table {
@@ -72,13 +72,12 @@
 }
 
 .airtable-th {
-  background: #f8f9fa;
-  border-bottom: 1.5px solid #e5e7eb;
-  border-right: 1px solid #f0f0f0;
+  @apply bg-shopify-surface-subdued text-shopify-text-subdued;
+  border-bottom: 1.5px solid #e4e4e4;
+  border-right: 1px solid #e4e4e4;
   padding: 10px 12px;
   font-weight: 600;
   font-size: 11px;
-  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
@@ -98,7 +97,7 @@
 }
 
 .airtable-th.sortable:hover {
-  background: #f0f1f3;
+  @apply bg-shopify-surface-pressed;
 }
 
 .airtable-th-content {
@@ -121,10 +120,10 @@
 }
 
 .airtable-td {
+  @apply text-shopify-text;
   padding: 10px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  border-right: 1px solid #f8f9fa;
-  color: #1f2937;
+  border-bottom: 1px solid #e4e4e4;
+  border-right: 1px solid #f1f1f1;
   white-space: nowrap;
   transition: background-color 0.1s ease, box-shadow 0.1s ease;
 }
@@ -150,11 +149,11 @@
 }
 
 .airtable-tr:hover {
-  background-color: #f9fafb;
+  @apply bg-shopify-surface-hovered;
 }
 
 .airtable-tr:hover .airtable-td {
-  background-color: #f9fafb;
+  @apply bg-shopify-surface-hovered;
 }
 
 .airtable-tr.clickable {
@@ -162,17 +161,17 @@
 }
 
 .airtable-tr.clickable:hover {
-  background-color: #f3f4f6;
+  @apply bg-shopify-surface-pressed;
 }
 
 .airtable-tr.clickable:hover .airtable-td {
-  background-color: #f3f4f6;
+  @apply bg-shopify-surface-pressed;
 }
 
-/* Cell hover effect - highlight individual cell */
+/* Cell hover effect - Polaris style with interactive blue */
 .airtable-td:hover {
-  background-color: #eff6ff !important;
-  box-shadow: inset 0 0 0 1px #dbeafe;
+  background-color: #f2f7fe !important;
+  box-shadow: inset 0 0 0 1px #cce0f6;
 }
 
 /* Empty state */
