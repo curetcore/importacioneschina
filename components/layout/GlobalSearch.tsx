@@ -146,7 +146,10 @@ export default function GlobalSearch() {
     <div ref={searchRef} className="relative w-full">
       {/* Search Input */}
       <div className="relative">
-        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search
+          size={18}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-shopify-text-subdued"
+        />
         <input
           ref={inputRef}
           type="text"
@@ -154,12 +157,12 @@ export default function GlobalSearch() {
           onChange={e => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder="Buscar... (Ctrl+K)"
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-400"
+          className="w-full pl-10 pr-10 py-2 border border-shopify-border rounded-lg focus:outline-none focus:ring-2 focus:ring-shopify-interactive focus:border-transparent bg-shopify-surface text-shopify-text placeholder-shopify-text-subdued"
         />
         {query && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-shopify-text-subdued hover:text-shopify-text"
           >
             <X size={18} />
           </button>
@@ -168,15 +171,15 @@ export default function GlobalSearch() {
 
       {/* Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[500px] overflow-y-auto z-50">
+        <div className="absolute top-full mt-2 w-full bg-shopify-surface border border-shopify-border rounded-lg shadow-lg max-h-[500px] overflow-y-auto z-50">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
-              <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+            <div className="p-4 text-center text-shopify-text-subdued">
+              <div className="animate-spin inline-block w-6 h-6 border-2 border-shopify-interactive border-t-transparent rounded-full"></div>
               <p className="mt-2 text-sm">Buscando...</p>
             </div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              <Search size={24} className="mx-auto mb-2 text-gray-400" />
+            <div className="p-4 text-center text-shopify-text-subdued">
+              <Search size={24} className="mx-auto mb-2 text-shopify-text-disabled" />
               <p className="text-sm">
                 {query.length < 2
                   ? "Escribe al menos 2 caracteres"
@@ -188,9 +191,9 @@ export default function GlobalSearch() {
               {Object.entries(groupedResults).map(([type, items]) => (
                 <div key={type} className="mb-2 last:mb-0">
                   {/* Section Header */}
-                  <div className="px-3 py-1 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                  <div className="px-3 py-1 bg-shopify-surface-subdued border-b border-shopify-border-subdued flex items-center gap-2">
                     {TYPE_ICONS[type as SearchResult["type"]]}
-                    <span className="text-xs font-semibold text-gray-600 uppercase">
+                    <span className="text-xs font-semibold text-shopify-text-subdued uppercase">
                       {TYPE_LABELS[type as SearchResult["type"]]} ({items.length})
                     </span>
                   </div>
@@ -200,12 +203,16 @@ export default function GlobalSearch() {
                     <button
                       key={result.id}
                       onClick={() => handleResultClick(result)}
-                      className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-0"
+                      className="w-full px-4 py-2.5 text-left hover:bg-shopify-surface-hovered transition-colors flex items-start gap-3 border-b border-shopify-border-subdued last:border-0"
                     >
                       <div className="mt-0.5">{TYPE_ICONS[result.type]}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 text-sm truncate">{result.title}</p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{result.subtitle}</p>
+                        <p className="font-medium text-shopify-text text-sm truncate">
+                          {result.title}
+                        </p>
+                        <p className="text-xs text-shopify-text-subdued truncate mt-0.5">
+                          {result.subtitle}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -216,7 +223,7 @@ export default function GlobalSearch() {
 
           {/* Footer */}
           {results.length > 0 && (
-            <div className="px-3 py-2 bg-gray-50 border-t border-gray-200 text-xs text-gray-500 text-center">
+            <div className="px-3 py-2 bg-shopify-surface-subdued border-t border-shopify-border-neutral text-xs text-shopify-text-subdued text-center">
               {results.length} resultado{results.length !== 1 ? "s" : ""} encontrado
               {results.length !== 1 ? "s" : ""}
             </div>

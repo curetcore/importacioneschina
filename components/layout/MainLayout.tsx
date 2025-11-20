@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-100 overflow-x-hidden">
+    <div className="min-h-screen bg-shopify-background overflow-x-hidden">
       <Navbar />
       <Sidebar />
       {/* pt-16 para navbar (h-16), pl-60 para sidebar (w-60) */}
