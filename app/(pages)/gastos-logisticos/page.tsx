@@ -342,7 +342,7 @@ function GastosLogisticosPageContent() {
             {/* Layout: Título | Buscador | Botones */}
             <div className="flex items-center justify-between gap-4">
               {/* Título a la izquierda */}
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <FileText size={18} />
                 Gastos ({filteredGastos.length}
                 {searchQuery ? ` de ${gastos.length}` : ""})

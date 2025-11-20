@@ -315,7 +315,7 @@ function OrdenesPageContent() {
             {/* Layout: Título | Buscador | Botones */}
             <div className="flex items-center justify-between gap-4">
               {/* Título a la izquierda */}
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <ClipboardList size={18} />
                 Órdenes ({filteredOcs.length}
                 {searchQuery ? ` de ${ocs.length}` : ""})

@@ -334,7 +334,7 @@ function PagosChinaPageContent() {
             {/* Layout: Título | Buscador | Botones */}
             <div className="flex items-center justify-between gap-4">
               {/* Título a la izquierda */}
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <DollarSign size={18} />
                 Pagos ({filteredPagos.length}
                 {searchQuery ? ` de ${pagos.length}` : ""})

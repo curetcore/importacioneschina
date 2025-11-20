@@ -527,7 +527,7 @@ function InventarioRecibidoPageContent() {
                 {/* Layout: Título | Buscador | Botones */}
                 <div className="flex items-center justify-between gap-4">
                   {/* Título a la izquierda */}
-                  <CardTitle className="flex items-center gap-2 text-base font-medium">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
                     <Inbox size={18} />
                     Inventario ({filteredInventarios.length}
                     {searchQuery ? ` de ${inventarios.length}` : ""})
@@ -696,7 +696,7 @@ function InventarioRecibidoPageContent() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   <Calculator size={18} />
                   Desglose de Costos ({productos.length})
                 </CardTitle>
@@ -795,7 +795,7 @@ function InventarioRecibidoPageContent() {
           <TabsContent value="productos" className="space-y-6 mt-0">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   <Tag size={18} />
                   Catálogo de Productos ({productosData.length})
                 </CardTitle>
