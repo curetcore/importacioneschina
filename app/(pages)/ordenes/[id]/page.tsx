@@ -11,7 +11,7 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 import { distribuirGastosLogisticos, calcularResumenFinanciero } from "@/lib/calculations"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { AttachmentsList } from "@/components/ui/attachments-list"
-import { ArrowLeft, Paperclip } from "lucide-react"
+import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -153,6 +153,20 @@ export default function OCDetailPage() {
             </Button>
             <h1 className="text-2xl font-semibold text-gray-900">Orden {oc.oc}</h1>
             <p className="text-sm text-gray-500 mt-1">{oc.proveedor}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => router.push(`/ordenes?edit=${oc.id}`)}>
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              onClick={() => router.push(`/ordenes?delete=${oc.id}`)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar
+            </Button>
           </div>
         </div>
 

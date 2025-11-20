@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { formatDate, formatCurrency } from "@/lib/utils"
-import { Edit, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -112,35 +112,6 @@ export const getOrdenesColumns = (actions: ColumnActions): ColumnDef<OCChina>[] 
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
         <AttachmentsList attachments={row.original.adjuntos || []} compact />
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    id: "acciones",
-    header: "Acciones",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onEdit(row.original)
-          }}
-        >
-          <Edit className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onDelete(row.original)
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
       </div>
     ),
     enableSorting: false,
