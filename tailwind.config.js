@@ -43,80 +43,98 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // Shopify Design System Colors - Paleta oficial Shopify 2024
+        // Shopify Polaris Design System 2025 - Paleta oficial actualizada
         shopify: {
-          // Primary/Brand - Verde Shopify
+          // Primary/Brand - Gris oscuro (cambio en 2025, antes era verde)
           primary: {
-            DEFAULT: "#008060", // Verde principal
-            hover: "#006e52",
-            pressed: "#005c46",
-            subdued: "#e3f5f1", // Background claro
+            DEFAULT: "#303030", // Gris oscuro principal
+            hover: "#1a1a1a", // Negro en hover
+            pressed: "#1a1a1a",
+            text: "#4a4a4a", // Gris medio para texto
           },
           // Interactive - Azul para links y acciones
           interactive: {
-            DEFAULT: "#2c6ecb",
-            hover: "#1f5199",
-            pressed: "#103262",
-            disabled: "#c9cccf",
+            DEFAULT: "#005bd3", // Azul link
+            hover: "#004c9e",
+            pressed: "#003d7a",
+            disabled: "#b5b5b5",
           },
-          // Success (mismo que primary green)
+          // Success - Verde
           success: {
-            surface: "#aee9d1", // Background claro
-            border: "#00a47c",
-            text: "#008060",
-            icon: "#008060",
+            fill: "#047b5d", // Verde principal
+            surface: "#92fcac", // Background claro
+            border: "#92fcac",
+            text: "#014b40", // Verde oscuro para texto
+            icon: "#047b5d",
           },
-          // Warning
+          // Warning - Amarillo
           warning: {
-            surface: "#ffea8a", // Background claro
-            border: "#ffc453",
-            text: "#916a00", // Marrón texto
-            icon: "#ffc453",
+            fill: "#ffb800", // Amarillo principal
+            surface: "#ffc879", // Background claro
+            border: "#ffc879",
+            text: "#5e4200", // Marrón texto
+            icon: "#ffb800",
           },
-          // Critical/Error
+          // Critical/Error - Rojo
           critical: {
-            surface: "#ffc0b3", // Background claro
-            border: "#d82c0d",
-            text: "#d72c0d",
-            icon: "#d82c0d",
+            fill: "#c70a24", // Rojo principal
+            surface: "#fec1c7", // Background claro
+            border: "#fec1c7",
+            text: "#8e0b21", // Rojo oscuro
+            icon: "#c70a24",
           },
-          // Info
+          // Info - Azul claro
           info: {
-            surface: "#b3e3ff", // Background claro
-            border: "#0074d4",
-            text: "#003d7a", // Azul oscuro
-            icon: "#0074d4",
+            fill: "#91d0ff", // Azul claro principal
+            surface: "#a8d8ff", // Background claro
+            border: "#a8d8ff",
+            text: "#003a5a", // Azul oscuro
+            icon: "#91d0ff",
+          },
+          // Magic (AI) - Morado
+          magic: {
+            fill: "#8051ff", // Morado principal
+            surface: "#e4deff", // Background claro
+            border: "#e4deff",
+            text: "#5700d1", // Morado oscuro
+            icon: "#8051ff",
           },
           // Text colors
           text: {
-            DEFAULT: "#202223", // Casi negro
-            subdued: "#6d7175", // Gris secundario
-            disabled: "#8c9196",
-            onPrimary: "#ffffff", // Blanco sobre verde
+            DEFAULT: "#303030", // Gris oscuro (casi negro)
+            subdued: "#616161", // Gris medio
+            disabled: "#b5b5b5", // Gris claro
+            link: "#005bd3", // Azul para links
+            onPrimary: "#ffffff", // Blanco sobre primary
           },
           // Surface/Background colors
           surface: {
             DEFAULT: "#ffffff", // Blanco puro para cards
-            neutral: "#f6f6f7", // Gris muy claro
-            subdued: "#f1f2f4", // Gris claro
-            disabled: "#fafbfb",
-            hovered: "#f6f6f7",
-            pressed: "#f1f2f4",
-            selected: "#f2f7fe", // Azul claro seleccionado
+            neutral: "#f1f1f1", // Gris muy claro
+            subdued: "#f1f1f1", // Gris claro
+            disabled: "#fafafa",
+            hovered: "#f6f6f6",
+            pressed: "#f1f1f1",
+            selected: "#e4e4e4", // Gris seleccionado
           },
           // Background (page background)
           background: {
-            DEFAULT: "#f1f2f4", // Gris claro page background
-            hover: "#e4e5e7",
-            pressed: "#d2d3d5",
-            selected: "#cce0f6",
+            DEFAULT: "#f1f1f1", // Gris claro page background
+            hover: "#e4e4e4",
+            pressed: "#d2d2d2",
+            selected: "#d2d2d2",
           },
           // Borders
           border: {
-            DEFAULT: "#c9cccf", // Border normal
-            subdued: "#f1f2f4", // Muy sutil
-            neutral: "#e1e3e5", // Sutil
-            strong: "#8c9196", // Fuerte
+            DEFAULT: "#c9c9c9", // Border normal
+            subdued: "#e4e4e4", // Muy sutil
+            neutral: "#d2d2d2", // Sutil
+            strong: "#8c8c8c", // Fuerte
+          },
+          // Inverse (dark backgrounds)
+          inverse: {
+            DEFAULT: "#1a1a1a", // Negro para fondos invertidos
+            text: "#ffffff", // Blanco para texto en fondos oscuros
           },
         },
       },
