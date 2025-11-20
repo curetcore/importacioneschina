@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
@@ -50,7 +50,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function OrdenesPage() {
+function OrdenesPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToast } = useToast()
@@ -463,5 +463,15 @@ export default function OrdenesPage() {
         />
       )}
     </MainLayout>
+  )
+}
+
+export default function OrdenesPage() {
+  return (
+    <Suspense
+      fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}
+    >
+      <OrdenesPageContent />
+    </Suspense>
   )
 }
