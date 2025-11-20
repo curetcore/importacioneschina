@@ -11,7 +11,8 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-shopify-navbar border-b border-shopify-navbar">
-      <div className="flex items-center justify-between gap-6 h-16">
+      <div className="flex items-center h-16 px-4">
+        {/* Logo - Izquierda */}
         <div className="flex items-center justify-center w-60 flex-shrink-0">
           <Image
             src="/images/logo.png"
@@ -22,16 +23,18 @@ export default function Navbar() {
             priority
           />
         </div>
-        <div className="flex items-center justify-between gap-6 flex-1 px-6">
-          {/* Global Search */}
-          <div className="flex-1 max-w-md flex items-center">
+
+        {/* Buscador - Centrado */}
+        <div className="flex-1 flex justify-center px-8">
+          <div className="w-full max-w-2xl">
             <GlobalSearch />
           </div>
+        </div>
 
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <NotificationDropdown />
-            {session?.user && <UserDropdown />}
-          </div>
+        {/* Notificaciones y Usuario - Derecha */}
+        <div className="flex items-center gap-4 flex-shrink-0 pr-4">
+          <NotificationDropdown />
+          {session?.user && <UserDropdown />}
         </div>
       </div>
     </nav>
