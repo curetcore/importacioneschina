@@ -74,9 +74,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Validar datos con Zod
     const validatedData = inventarioRecibidoSchema.parse(body)
 
-    // Extraer adjuntos (no validado por Zod)
-    const { adjuntos } = body
-
     // Verificar que la OC existe y cargar datos necesarios
     const oc = await db.oCChina.findUnique({
       where: { id: validatedData.ocId },
@@ -181,7 +178,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         costoUnitarioFinalRD: new Prisma.Decimal(costoUnitarioFinalRD),
         costoTotalRecepcionRD: new Prisma.Decimal(costoTotalRecepcionRD),
         notas: validatedData.notas,
-        adjuntos: adjuntos || null,
       },
       include: {
         ocChina: {

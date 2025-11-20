@@ -8,17 +8,7 @@ import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
-import { AttachmentsList } from "@/components/ui/attachments-list"
-import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
-
-interface FileAttachment {
-  nombre: string
-  url: string
-  tipo: string
-  size: number
-  uploadedAt: string
-}
+import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 
 interface InventarioDetail {
   id: string
@@ -31,7 +21,6 @@ interface InventarioDetail {
   costoUnitarioFinalRD: number | null
   costoTotalRecepcionRD: number | null
   notas: string | null
-  adjuntos?: FileAttachment[]
   ocChina: {
     id: string
     oc: string
@@ -51,7 +40,6 @@ export default function InventarioRecibidoDetailPage() {
   const router = useRouter()
   const [inventario, setInventario] = useState<InventarioDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
 
   const fetchInventario = () => {
     if (params.id) {
@@ -240,45 +228,7 @@ export default function InventarioRecibidoDetailPage() {
             )}
           </CardContent>
         </Card>
-
-        {/* Sección de Adjuntos */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <Paperclip size={18} />
-              Archivos Adjuntos ({inventario.adjuntos?.length || 0})
-            </CardTitle>
-            <Button
-              onClick={() => setAttachmentsDialogOpen(true)}
-              variant="outline"
-              className="h-8 gap-2"
-            >
-              <Paperclip size={16} />
-              Agregar Archivos
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {!inventario.adjuntos || inventario.adjuntos.length === 0 ? (
-              <div className="text-center py-8 text-sm text-gray-500">
-                No hay archivos adjuntos para esta recepción
-              </div>
-            ) : (
-              <AttachmentsList attachments={inventario.adjuntos} />
-            )}
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Diálogo para agregar adjuntos */}
-      <AddAttachmentsDialog
-        open={attachmentsDialogOpen}
-        onOpenChange={setAttachmentsDialogOpen}
-        module="inventario-recibido"
-        recordId={inventario.id}
-        recordName={`Recepción ${inventario.idRecepcion}`}
-        currentAttachments={inventario.adjuntos || []}
-        onSuccess={fetchInventario}
-      />
     </MainLayout>
   )
 }
