@@ -51,15 +51,15 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-60 bg-shopify-surface-neutral border-r border-shopify-border-subdued overflow-y-auto z-40 flex flex-col rounded-tl-3xl">
+    <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-60 bg-[#E8E9EA] border-r border-shopify-border-subdued overflow-y-auto z-40 flex flex-col rounded-tl-3xl">
       {/* Main menu items */}
       <div className="pt-4 flex-1">
         <nav className="space-y-1 px-3">{menuItems.map(renderMenuItem)}</nav>
       </div>
 
-      {/* Bottom menu items (Settings) - Shopify style */}
-      <div className="border-t border-shopify-border-neutral pb-4">
-        <nav className="space-y-1 px-3 pt-4">{bottomMenuItems.map(renderMenuItem)}</nav>
+      {/* Bottom menu items (Settings) - Shopify style - Comprimido */}
+      <div className="border-t border-shopify-border-neutral py-2">
+        <nav className="space-y-1 px-3">{bottomMenuItems.map(renderMenuItem)}</nav>
       </div>
     </aside>
   )
