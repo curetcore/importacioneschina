@@ -9,7 +9,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Navbar />
       <Sidebar />
       {/* pt-16 para navbar (h-16), pl-60 para sidebar (w-60) */}
-      <main className="pt-16 pl-60 p-8 min-w-0">{children}</main>
+      {/* max-w-7xl (1280px) + mx-auto + px-8 = Shopify style content area */}
+      <main className="ml-60 mt-16 min-h-screen">
+        <div className="max-w-7xl mx-auto px-8 py-8">{children}</div>
+      </main>
     </div>
   )
 }

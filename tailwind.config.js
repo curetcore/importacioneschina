@@ -43,74 +43,80 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // Curet Brand Colors - Paleta oficial
-        curet: {
-          // Azul primario (confianza, profesionalismo)
-          blue: {
-            50: "#eff6ff",
-            100: "#dbeafe",
-            200: "#bfdbfe",
-            300: "#93c5fd",
-            400: "#60a5fa",
-            500: "#3b82f6", // Primary
-            600: "#2563eb",
-            700: "#1d4ed8",
-            800: "#1e40af",
-            900: "#1e3a8a",
-            950: "#172554",
+        // Shopify Design System Colors - Paleta oficial Shopify 2024
+        shopify: {
+          // Primary/Brand - Verde Shopify
+          primary: {
+            DEFAULT: "#008060", // Verde principal
+            hover: "#006e52",
+            pressed: "#005c46",
+            subdued: "#e3f5f1", // Background claro
           },
-          // Naranja acento (acción, importancia)
-          orange: {
-            50: "#fff7ed",
-            100: "#ffedd5",
-            200: "#fed7aa",
-            300: "#fdba74",
-            400: "#fb923c",
-            500: "#f97316", // Accent
-            600: "#ea580c",
-            700: "#c2410c",
-            800: "#9a3412",
-            900: "#7c2d12",
+          // Interactive - Azul para links y acciones
+          interactive: {
+            DEFAULT: "#2c6ecb",
+            hover: "#1f5199",
+            pressed: "#103262",
+            disabled: "#c9cccf",
           },
-          // Verde éxito
-          green: {
-            50: "#f0fdf4",
-            100: "#dcfce7",
-            200: "#bbf7d0",
-            300: "#86efac",
-            400: "#4ade80",
-            500: "#10b981", // Success
-            600: "#059669",
-            700: "#047857",
-            800: "#065f46",
-            900: "#064e3b",
+          // Success (mismo que primary green)
+          success: {
+            surface: "#aee9d1", // Background claro
+            border: "#00a47c",
+            text: "#008060",
+            icon: "#008060",
           },
-          // Rojo peligro
-          red: {
-            50: "#fef2f2",
-            100: "#fee2e2",
-            200: "#fecaca",
-            300: "#fca5a5",
-            400: "#f87171",
-            500: "#ef4444", // Danger
-            600: "#dc2626",
-            700: "#b91c1c",
-            800: "#991b1b",
-            900: "#7f1d1d",
+          // Warning
+          warning: {
+            surface: "#ffea8a", // Background claro
+            border: "#ffc453",
+            text: "#916a00", // Marrón texto
+            icon: "#ffc453",
           },
-          // Grises profesionales (Slate)
-          slate: {
-            50: "#f8fafc",
-            100: "#f1f5f9",
-            200: "#e2e8f0",
-            300: "#cbd5e1",
-            400: "#94a3b8",
-            500: "#64748b",
-            600: "#475569",
-            700: "#334155",
-            800: "#1e293b",
-            900: "#0f172a",
-            950: "#020617",
+          // Critical/Error
+          critical: {
+            surface: "#ffc0b3", // Background claro
+            border: "#d82c0d",
+            text: "#d72c0d",
+            icon: "#d82c0d",
+          },
+          // Info
+          info: {
+            surface: "#b3e3ff", // Background claro
+            border: "#0074d4",
+            text: "#003d7a", // Azul oscuro
+            icon: "#0074d4",
+          },
+          // Text colors
+          text: {
+            DEFAULT: "#202223", // Casi negro
+            subdued: "#6d7175", // Gris secundario
+            disabled: "#8c9196",
+            onPrimary: "#ffffff", // Blanco sobre verde
+          },
+          // Surface/Background colors
+          surface: {
+            DEFAULT: "#ffffff", // Blanco puro para cards
+            neutral: "#f6f6f7", // Gris muy claro
+            subdued: "#f1f2f4", // Gris claro
+            disabled: "#fafbfb",
+            hovered: "#f6f6f7",
+            pressed: "#f1f2f4",
+            selected: "#f2f7fe", // Azul claro seleccionado
+          },
+          // Background (page background)
+          background: {
+            DEFAULT: "#f1f2f4", // Gris claro page background
+            hover: "#e4e5e7",
+            pressed: "#d2d3d5",
+            selected: "#cce0f6",
+          },
+          // Borders
+          border: {
+            DEFAULT: "#c9cccf", // Border normal
+            subdued: "#f1f2f4", // Muy sutil
+            neutral: "#e1e3e5", // Sutil
+            strong: "#8c9196", // Fuerte
           },
         },
       },
