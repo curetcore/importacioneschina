@@ -57,7 +57,7 @@ const ENTITY_URLS: Record<string, string> = {
   PagosChina: "/pagos-china",
   GastosLogisticos: "/gastos-logisticos",
   InventarioRecibido: "/inventario-recibido",
-  Proveedor: "/configuracion",
+  Proveedor: "/configuracion?tab=proveedores",
   Configuracion: "/configuracion",
   ConfiguracionDistribucionCostos: "/configuracion",
 }
