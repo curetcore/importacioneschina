@@ -17,6 +17,19 @@ import {
   BarChart3,
   TrendingDown,
 } from "lucide-react"
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 
 interface DashboardData {
   kpis: {
@@ -70,6 +83,18 @@ interface DashboardData {
     }>
   }
 }
+
+// Colores para gráficos - Shopify inspired
+const CHART_COLORS = [
+  "#1A1A1A", // Negro principal
+  "#4A5568", // Gris oscuro
+  "#718096", // Gris medio
+  "#A0AEC0", // Gris claro
+  "#2D3748", // Gris muy oscuro
+  "#4299E1", // Azul
+  "#48BB78", // Verde
+  "#ED8936", // Naranja
+]
 
 export default function PanelPage() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -198,27 +223,41 @@ export default function PanelPage() {
                 <CreditCard className="w-4 h-4 text-gray-500" />
                 <h3 className="text-sm font-semibold text-gray-900">Pagos por Método</h3>
               </div>
-              <div className="space-y-3">
-                {data.financiero.pagosPorMetodo.map((item, index) => {
-                  const percentage = totalPagos > 0 ? (Number(item.value) / totalPagos) * 100 : 0
-                  return (
-                    <div key={index} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-gray-700">{item.name}</span>
-                        <span className="text-gray-500">{formatCurrency(item.value)}</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                        <div
-                          className="h-1.5 rounded-full bg-gray-900"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400">
-                        {item.cantidad} pagos · {percentage.toFixed(1)}%
-                      </p>
-                    </div>
-                  )
-                })}
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={data.financiero.pagosPorMetodo}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.financiero.pagosPorMetodo.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: any) => formatCurrency(Number(value))}
+                    contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {data.financiero.pagosPorMetodo.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                    />
+                    <span className="text-xs text-gray-600">{item.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -228,27 +267,41 @@ export default function PanelPage() {
                 <FileText className="w-4 h-4 text-gray-500" />
                 <h3 className="text-sm font-semibold text-gray-900">Pagos por Tipo</h3>
               </div>
-              <div className="space-y-3">
-                {data.financiero.pagosPorTipo.map((item, index) => {
-                  const percentage = totalPagos > 0 ? (Number(item.value) / totalPagos) * 100 : 0
-                  return (
-                    <div key={index} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-gray-700">{item.name}</span>
-                        <span className="text-gray-500">{formatCurrency(item.value)}</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                        <div
-                          className="h-1.5 rounded-full bg-gray-900"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400">
-                        {item.cantidad} pagos · {percentage.toFixed(1)}%
-                      </p>
-                    </div>
-                  )
-                })}
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={data.financiero.pagosPorTipo}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.financiero.pagosPorTipo.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: any) => formatCurrency(Number(value))}
+                    contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {data.financiero.pagosPorTipo.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                    />
+                    <span className="text-xs text-gray-600">{item.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -312,25 +365,18 @@ export default function PanelPage() {
             {/* Gastos por Tipo */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Gastos por Tipo</h3>
-              <div className="space-y-2">
-                {data.gastos.gastosPorTipo.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border border-gray-100 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-gray-900" />
-                      <span className="text-xs font-medium text-gray-700">{item.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-semibold text-gray-900">
-                        {formatCurrency(item.value)}
-                      </div>
-                      <div className="text-xs text-gray-400">{item.cantidad} gastos</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data.gastos.gastosPorTipo} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(value: any) => formatCurrency(Number(value))}
+                    contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                  />
+                  <Bar dataKey="value" fill="#1A1A1A" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
             {/* Top Proveedores de Servicios */}
@@ -381,40 +427,24 @@ export default function PanelPage() {
                 <Warehouse className="w-4 h-4 text-gray-500" />
                 <h3 className="text-sm font-semibold text-gray-900">Inventario por Bodega</h3>
               </div>
-              <div className="space-y-3">
-                {data.inventario.inventarioPorBodega.length > 0 ? (
-                  data.inventario.inventarioPorBodega.map((item, index) => {
-                    const total = data.inventario.inventarioPorBodega.reduce(
-                      (sum, b) => sum + b.value,
-                      0
-                    )
-                    const percentage = total > 0 ? (item.value / total) * 100 : 0
-                    return (
-                      <div key={index} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-gray-700">{item.name}</span>
-                          <span className="text-gray-900 font-semibold">
-                            {item.value.toLocaleString()} unidades
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5">
-                          <div
-                            className="h-1.5 rounded-full bg-gray-900"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-gray-400">
-                          {percentage.toFixed(1)}% del inventario
-                        </p>
-                      </div>
-                    )
-                  })
-                ) : (
-                  <div className="text-center py-8 text-xs text-gray-400">
-                    No hay inventario recibido
-                  </div>
-                )}
-              </div>
+              {data.inventario.inventarioPorBodega.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={data.inventario.inventarioPorBodega}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip
+                      formatter={(value: any) => `${Number(value).toLocaleString()} unidades`}
+                      contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                    />
+                    <Bar dataKey="value" fill="#4A5568" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center py-8 text-xs text-gray-400">
+                  No hay inventario recibido
+                </div>
+              )}
             </div>
 
             {/* Estado de OCs */}
@@ -536,37 +566,18 @@ export default function PanelPage() {
               <Users className="w-4 h-4 text-gray-500" />
               <h3 className="text-sm font-semibold text-gray-900">Inversión por Proveedor</h3>
             </div>
-            <div className="space-y-4">
-              {data.proveedores.inversionPorProveedor.map((item, index) => {
-                const total = data.proveedores.inversionPorProveedor.reduce(
-                  (sum, p) => sum + p.inversion,
-                  0
-                )
-                const percentage = total > 0 ? (item.inversion / total) * 100 : 0
-                return (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-gray-700">{item.name}</span>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-900">
-                          {formatCurrency(item.inversion)}
-                        </div>
-                        <div className="text-gray-400">
-                          {item.unidades.toLocaleString()} unidades
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full bg-gray-900"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-400">{percentage.toFixed(1)}% del total</p>
-                  </div>
-                )
-              })}
-            </div>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={data.proveedores.inversionPorProveedor} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
+                <Tooltip
+                  formatter={(value: any) => formatCurrency(Number(value))}
+                  contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                />
+                <Bar dataKey="inversion" fill="#2D3748" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
