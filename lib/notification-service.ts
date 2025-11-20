@@ -50,16 +50,16 @@ const AUDIT_ACTION_ICONS: Record<string, string> = {
 }
 
 /**
- * Mapeo de entidades a URLs
+ * Mapeo de entidades a rutas base (para detalle)
  */
 const ENTITY_URLS: Record<string, string> = {
   OCChina: "/ordenes",
   PagosChina: "/pagos-china",
   GastosLogisticos: "/gastos-logisticos",
   InventarioRecibido: "/inventario-recibido",
-  Proveedor: "/configuracion?tab=proveedores",
+  Proveedor: "/configuracion",
   Configuracion: "/configuracion",
-  ConfiguracionDistribucionCostos: "/configuracion?tab=distribucion",
+  ConfiguracionDistribucionCostos: "/configuracion",
 }
 
 /**
@@ -166,10 +166,21 @@ export async function createNotificationFromAudit(
     // Determinar ícono
     const icono = AUDIT_ACTION_ICONS[accion] || NOTIFICATION_ICONS.audit
 
-    // Generar URL
-    const url = ENTITY_URLS[entidad]
-      ? `${ENTITY_URLS[entidad]}${entidadId ? `?highlight=${entidadId}` : ""}`
-      : undefined
+    // Generar URL de detalle
+    let url: string | undefined
+    if (ENTITY_URLS[entidad]) {
+      if (entidadId) {
+        // Entidades con página de detalle
+        if (["OCChina", "PagosChina", "GastosLogisticos", "InventarioRecibido"].includes(entidad)) {
+          url = `${ENTITY_URLS[entidad]}/${entidadId}`
+        } else {
+          // Configuración y otras sin detalle
+          url = ENTITY_URLS[entidad]
+        }
+      } else {
+        url = ENTITY_URLS[entidad]
+      }
+    }
 
     await createNotification({
       tipo: "audit",
