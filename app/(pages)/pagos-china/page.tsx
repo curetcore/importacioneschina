@@ -2,7 +2,8 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import dynamicImport from "next/dynamic"
@@ -58,7 +59,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function PagosChinaPage() {
+function PagosChinaPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
@@ -69,6 +70,8 @@ export default function PagosChinaPage() {
   const [selectedPagoForAttachments, setSelectedPagoForAttachments] = useState<Pago | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Fetch all pagos
   const { data: pagos = [], isLoading } = useQuery({
@@ -85,9 +88,38 @@ export default function PagosChinaPage() {
     },
   })
 
+  // Detect query params for edit/delete actions
+  useEffect(() => {
+    if (!pagos.length) return // Wait for data to load
+
+    const editId = searchParams.get("edit")
+    const deleteId = searchParams.get("delete")
+
+    if (editId) {
+      const pagoToEdit = pagos.find((pago: Pago) => pago.id === editId)
+      if (pagoToEdit) {
+        setPagoToEdit(pagoToEdit)
+        setFormOpen(true)
+        // Clear query param
+        router.replace("/pagos-china", { scroll: false })
+      }
+    } else if (deleteId) {
+      const pagoToDelete = pagos.find((pago: Pago) => pago.id === deleteId)
+      if (pagoToDelete) {
+        setPagoToDelete(pagoToDelete)
+        // Clear query param
+        router.replace("/pagos-china", { scroll: false })
+      }
+    }
+  }, [searchParams, pagos, router])
+
   const handleEdit = (pago: Pago) => {
     setPagoToEdit(pago)
     setFormOpen(true)
+  }
+
+  const handleView = (pago: Pago) => {
+    router.push(`/pagos-china/${pago.id}`)
   }
 
   const handleAddAttachments = (pago: Pago) => {
@@ -196,9 +228,7 @@ export default function PagosChinaPage() {
   const columns = useMemo(
     () =>
       getPagosColumns({
-        onEdit: handleEdit,
-        onDelete: setPagoToDelete,
-        onAddAttachments: handleAddAttachments,
+        onView: handleView,
       }),
     []
   )
@@ -413,6 +443,7 @@ export default function PagosChinaPage() {
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                onRowClick={handleView}
                 maxHeight="70vh"
                 estimatedRowHeight={53}
                 overscan={10}
@@ -459,5 +490,15 @@ export default function PagosChinaPage() {
         )}
       </div>
     </MainLayout>
+  )
+}
+
+export default function PagosChinaPage() {
+  return (
+    <Suspense
+      fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}
+    >
+      <PagosChinaPageContent />
+    </Suspense>
   )
 }

@@ -1,9 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { formatDate, formatCurrency } from "@/lib/utils"
-import { Edit, Trash2 } from "lucide-react"
 
 export interface InventarioRecibido {
   id: string
@@ -28,8 +26,7 @@ export interface InventarioRecibido {
 }
 
 interface ColumnActions {
-  onEdit: (inventario: InventarioRecibido) => void
-  onDelete: (inventario: InventarioRecibido) => void
+  onView: (inventario: InventarioRecibido) => void
 }
 
 export const getInventarioColumns = (actions: ColumnActions): ColumnDef<InventarioRecibido>[] => [
@@ -114,34 +111,5 @@ export const getInventarioColumns = (actions: ColumnActions): ColumnDef<Inventar
           : "-"}
       </div>
     ),
-  },
-  {
-    id: "acciones",
-    header: "Acciones",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onEdit(row.original)
-          }}
-        >
-          <Edit className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onDelete(row.original)
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </div>
-    ),
-    enableSorting: false,
   },
 ]

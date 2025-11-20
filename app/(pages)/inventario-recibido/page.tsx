@@ -2,9 +2,10 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter, useSearchParams } from "next/navigation"
 import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -71,9 +72,11 @@ const getMethodLabel = (method: string): string => {
   return labels[method] || method
 }
 
-export default function InventarioRecibidoPage() {
+function InventarioRecibidoPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [formOpen, setFormOpen] = useState(false)
   const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
   const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
@@ -97,6 +100,29 @@ export default function InventarioRecibidoPage() {
       return result.data as InventarioRecibido[]
     },
   })
+
+  // Query params detection for edit/delete
+  useEffect(() => {
+    if (!inventarios.length) return
+
+    const editId = searchParams.get("edit")
+    const deleteId = searchParams.get("delete")
+
+    if (editId) {
+      const inventarioToEdit = inventarios.find((inv: InventarioRecibido) => inv.id === editId)
+      if (inventarioToEdit) {
+        setInventarioToEdit(inventarioToEdit)
+        setFormOpen(true)
+        router.replace("/inventario-recibido", { scroll: false })
+      }
+    } else if (deleteId) {
+      const inventarioToDelete = inventarios.find((inv: InventarioRecibido) => inv.id === deleteId)
+      if (inventarioToDelete) {
+        setInventarioToDelete(inventarioToDelete)
+        router.replace("/inventario-recibido", { scroll: false })
+      }
+    }
+  }, [searchParams, inventarios, router])
 
   // Fetch análisis de costos
   const { data: analisisResponse, isLoading: analisisLoading } = useQuery({
@@ -141,6 +167,10 @@ export default function InventarioRecibidoPage() {
   const handleEdit = (inventario: InventarioRecibido) => {
     setInventarioToEdit(inventario)
     setFormOpen(true)
+  }
+
+  const handleView = (inventario: InventarioRecibido) => {
+    router.push(`/inventario-recibido/${inventario.id}`)
   }
 
   const handleDelete = async () => {
@@ -353,8 +383,7 @@ export default function InventarioRecibidoPage() {
   const columns = useMemo(
     () =>
       getInventarioColumns({
-        onEdit: handleEdit,
-        onDelete: setInventarioToDelete,
+        onView: handleView,
       }),
     []
   )
@@ -610,6 +639,7 @@ export default function InventarioRecibidoPage() {
                     showToolbar={false}
                     columnVisibility={columnVisibility}
                     onColumnVisibilityChange={setColumnVisibility}
+                    onRowClick={handleView}
                     maxHeight="70vh"
                     estimatedRowHeight={53}
                     overscan={10}
@@ -853,5 +883,15 @@ export default function InventarioRecibidoPage() {
         producto={selectedProducto}
       />
     </MainLayout>
+  )
+}
+
+export default function InventarioRecibidoPage() {
+  return (
+    <Suspense
+      fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}
+    >
+      <InventarioRecibidoPageContent />
+    </Suspense>
   )
 }

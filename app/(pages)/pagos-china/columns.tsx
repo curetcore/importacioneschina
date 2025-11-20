@@ -1,10 +1,8 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { AttachmentsList } from "@/components/ui/attachments-list"
 import { formatDate, formatCurrency } from "@/lib/utils"
-import { Edit, Trash2, Paperclip } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -35,9 +33,7 @@ export interface Pago {
 }
 
 interface ColumnActions {
-  onEdit: (pago: Pago) => void
-  onDelete: (pago: Pago) => void
-  onAddAttachments: (pago: Pago) => void
+  onView: (pago: Pago) => void
 }
 
 export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
@@ -129,49 +125,7 @@ export const getPagosColumns = (actions: ColumnActions): ColumnDef<Pago>[] => [
     header: "Adjuntos",
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
-        {row.original.adjuntos && row.original.adjuntos.length > 0 ? (
-          <AttachmentsList attachments={row.original.adjuntos} compact />
-        ) : (
-          <Button
-            variant="ghost"
-            className="h-8 px-2 text-gray-400"
-            onClick={e => {
-              e.stopPropagation()
-              actions.onAddAttachments(row.original)
-            }}
-          >
-            <Paperclip className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    id: "acciones",
-    header: "Acciones",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onEdit(row.original)
-          }}
-        >
-          <Edit className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-          onClick={e => {
-            e.stopPropagation()
-            actions.onDelete(row.original)
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        <AttachmentsList attachments={row.original.adjuntos || []} compact />
       </div>
     ),
     enableSorting: false,

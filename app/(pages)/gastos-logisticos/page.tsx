@@ -2,9 +2,10 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter, useSearchParams } from "next/navigation"
 import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,9 +62,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function GastosLogisticosPage() {
+function GastosLogisticosPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [formOpen, setFormOpen] = useState(false)
   const [gastoToEdit, setGastoToEdit] = useState<GastoLogistico | null>(null)
   const [gastoToDelete, setGastoToDelete] = useState<GastoLogistico | null>(null)
@@ -89,9 +92,36 @@ export default function GastosLogisticosPage() {
     },
   })
 
+  // Query params detection for edit/delete
+  useEffect(() => {
+    if (!gastos.length) return
+
+    const editId = searchParams.get("edit")
+    const deleteId = searchParams.get("delete")
+
+    if (editId) {
+      const gastoToEdit = gastos.find((gasto: GastoLogistico) => gasto.id === editId)
+      if (gastoToEdit) {
+        setGastoToEdit(gastoToEdit)
+        setFormOpen(true)
+        router.replace("/gastos-logisticos", { scroll: false })
+      }
+    } else if (deleteId) {
+      const gastoToDelete = gastos.find((gasto: GastoLogistico) => gasto.id === deleteId)
+      if (gastoToDelete) {
+        setGastoToDelete(gastoToDelete)
+        router.replace("/gastos-logisticos", { scroll: false })
+      }
+    }
+  }, [searchParams, gastos, router])
+
   const handleEdit = (gasto: GastoLogistico) => {
     setGastoToEdit(gasto)
     setFormOpen(true)
+  }
+
+  const handleView = (gasto: GastoLogistico) => {
+    router.push(`/gastos-logisticos/${gasto.id}`)
   }
 
   const handleAddAttachments = (gasto: GastoLogistico) => {
@@ -197,9 +227,7 @@ export default function GastosLogisticosPage() {
   const columns = useMemo(
     () =>
       getGastosColumns({
-        onEdit: handleEdit,
-        onDelete: setGastoToDelete,
-        onAddAttachments: handleAddAttachments,
+        onView: handleView,
       }),
     []
   )
@@ -425,6 +453,7 @@ export default function GastosLogisticosPage() {
                 showToolbar={false}
                 columnVisibility={columnVisibility}
                 onColumnVisibilityChange={setColumnVisibility}
+                onRowClick={handleView}
                 maxHeight="70vh"
                 estimatedRowHeight={53}
                 overscan={10}
@@ -471,5 +500,15 @@ export default function GastosLogisticosPage() {
         )}
       </div>
     </MainLayout>
+  )
+}
+
+export default function GastosLogisticosPage() {
+  return (
+    <Suspense
+      fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}
+    >
+      <GastosLogisticosPageContent />
+    </Suspense>
   )
 }
