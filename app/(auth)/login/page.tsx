@@ -4,6 +4,7 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Lock, Mail, Play } from "lucide-react"
@@ -45,8 +46,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-              <Lock className="w-8 h-8 text-blue-600" />
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/isotipo.png"
+                alt="Sistema de Importación"
+                width={80}
+                height={80}
+                className="object-contain"
+                priority
+              />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Sistema de Importación</h1>
             <p className="text-gray-600 mt-2">Inicia sesión para continuar</p>

@@ -1,4 +1,7 @@
-# 🏢 CuretCore - Sistema de Importaciones
+<div align="center">
+  <img src="public/images/isotipo.png" alt="Sistema de Importación Logo" width="120" />
+  <h1>🏢 CuretCore - Sistema de Importaciones</h1>
+</div>
 
 > **Sistema modular de gestión empresarial para retail, distribución e importación**
 > Integrado con Shopify para ventas e inventario en tiempo real.
@@ -292,17 +295,21 @@ npm run lint            # Linter
 
 ### ✅ Estado Actual
 
-**150+ tests automatizados** cubriendo todos los flujos críticos de la aplicación:
+**149 tests automatizados** cubriendo todos los flujos críticos de la aplicación:
 
-| Módulo              | Tests | Estado  | Cobertura                                 |
-| ------------------- | ----- | ------- | ----------------------------------------- |
-| **Autenticación**   | 8     | ✅ 87%  | Login, roles, protección de rutas, sesión |
-| **Dashboard/Panel** | 30    | 🆕 NEW  | KPIs, gráficos, navegación, cálculos      |
-| **Órdenes Compra**  | 30    | ✅ 100% | CRUD completo, validaciones, estados      |
-| **Gastos Logíst.**  | 25    | 🆕 NEW  | Flete, aduana, almacenaje, totales        |
-| **Inventario**      | 25    | 🆕 NEW  | Recibir OC, asignar SKU, reportes         |
-| **Pagos a China**   | 15    | ✅ 80%  | Crear pagos, tasas de cambio, métodos     |
-| **Notificaciones**  | 20    | ✅ 90%  | Real-time, polling, marcado como leído    |
+| Módulo              | Tests | Pasaron | Fallaron | Skipped | % Éxito | Estado         |
+| ------------------- | ----- | ------- | -------- | ------- | ------- | -------------- |
+| **Autenticación**   | 8     | 7       | 1        | 0       | 87%     | ✅ Estable     |
+| **Dashboard/Panel** | 18    | 13      | 5        | 0       | 72%     | ⚠️ Selectores  |
+| **Órdenes Compra**  | 30    | 5       | 16       | 9       | 17%     | ⚠️ Timeouts    |
+| **Gastos Logíst.**  | 25    | 6       | 17       | 2       | 24%     | ⚠️ Formularios |
+| **Inventario**      | 25    | 15      | 6        | 4       | 60%     | ⚠️ Selectores  |
+| **Notificaciones**  | 11    | 4       | 6        | 1       | 36%     | ⚠️ Timeouts    |
+| **Pagos a China**   | 15    | 2       | 9        | 4       | 13%     | ⚠️ Formularios |
+
+**Total: 52 tests pasando (35%), 60 fallando (40%), 37 skipped (25%)**
+
+> **Estado:** Tests creados y funcionales, requieren ajustes de selectores y timeouts. Ver [Issues Conocidos](#-issues-conocidos-tests) abajo.
 
 ### 🚀 Inicio Rápido
 
@@ -603,7 +610,29 @@ jobs:
           path: playwright-report/
 ```
 
-### 📈 Próximos Pasos para Tests
+### 🐛 Issues Conocidos Tests
+
+**Prioridad Alta - En Progreso:**
+
+- [ ] **Arreglar selectores CSS en Dashboard** (2 tests)
+  - Error: `Unexpected token "=" while parsing css selector`
+  - Archivo: `e2e/dashboard.spec.ts:20`
+
+- [ ] **Resolver timeouts de formularios** (20+ tests)
+  - Timeout: 30s esperando submit
+  - Afecta: Gastos Logísticos, Órdenes, Pagos
+  - Posible causa: Validaciones silenciosas o modals que no cierran
+
+- [ ] **Actualizar selectores de UI** (15+ tests)
+  - Elementos no encontrados: KPIs, tabs, botones de editar
+  - Requiere inspeccionar UI real y ajustar selectores
+
+- [ ] **Agregar seed data básica** (37 tests skipped)
+  - Crear 1 OC de ejemplo en setup
+  - Crear 1 gasto logístico de ejemplo
+  - Reducir tests saltados por falta de datos
+
+**Próximos Pasos:**
 
 - [ ] Agregar tests de performance (Lighthouse CI)
 - [ ] Tests de accesibilidad (axe-core)
@@ -615,14 +644,14 @@ jobs:
 
 ## 📊 Estado del Proyecto
 
-| Aspecto                    | Estado  | Notas                       |
-| -------------------------- | ------- | --------------------------- |
-| **Módulo Importaciones**   | 90% ✅  | Funcional, en refinamiento  |
-| **Tests E2E (Playwright)** | 100% ✅ | 150+ tests, cobertura total |
-| **Arquitectura CuretCore** | 100% 📐 | Documentada completamente   |
-| **Plan de Monorepo**       | 100% 📐 | Listo para implementar      |
-| **Integración Shopify**    | 100% 📐 | Arquitectura definida       |
-| **Infraestructura**        | 100% ✅ | Producción en EasyPanel     |
+| Aspecto                    | Estado  | Notas                                   |
+| -------------------------- | ------- | --------------------------------------- |
+| **Módulo Importaciones**   | 90% ✅  | Funcional, en refinamiento              |
+| **Tests E2E (Playwright)** | 35% ⚠️  | 149 tests creados, ajustando selectores |
+| **Arquitectura CuretCore** | 100% 📐 | Documentada completamente               |
+| **Plan de Monorepo**       | 100% 📐 | Listo para implementar                  |
+| **Integración Shopify**    | 100% 📐 | Arquitectura definida                   |
+| **Infraestructura**        | 100% ✅ | Producción en EasyPanel                 |
 
 **Ver historial completo:** [COMPLETED-FEATURES.md](./docs/COMPLETED-FEATURES.md)
 

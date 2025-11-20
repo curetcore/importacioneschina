@@ -14,7 +14,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between gap-6">
         <div className="flex items-center justify-center w-60 flex-shrink-0 py-3">
           <Image
-            src="/logo-importacion.png"
+            src="/images/logo.png"
             alt="Sistema de Importación"
             width={200}
             height={50}
