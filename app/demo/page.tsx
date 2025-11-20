@@ -12,6 +12,19 @@ export default function DemoPage() {
   useEffect(() => {
     async function autoDemoLogin() {
       try {
+        // Primero, verificar/crear usuario demo
+        const checkResponse = await fetch("/api/check-demo")
+        const checkResult = await checkResponse.json()
+
+        if (!checkResult.success) {
+          setError("Error al preparar demo. Por favor intenta nuevamente.")
+          console.error("Demo check error:", checkResult.error)
+          return
+        }
+
+        console.log("Usuario demo:", checkResult.created ? "creado" : "ya existe")
+
+        // Ahora intentar login
         const result = await signIn("credentials", {
           email: "demo@sistema.com",
           password: "Demo123!",
