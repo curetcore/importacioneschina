@@ -2,8 +2,8 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useMemo, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import dynamicImport from "next/dynamic"
@@ -52,6 +52,7 @@ import {
 
 export default function OrdenesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   const [formOpen, setFormOpen] = useState(false)
@@ -75,6 +76,31 @@ export default function OrdenesPage() {
       return result.data as OCChina[]
     },
   })
+
+  // Detect query params for edit/delete actions
+  useEffect(() => {
+    if (!ocs.length) return // Wait for data to load
+
+    const editId = searchParams.get("edit")
+    const deleteId = searchParams.get("delete")
+
+    if (editId) {
+      const ocToEdit = ocs.find((oc: OCChina) => oc.id === editId)
+      if (ocToEdit) {
+        setOcToEdit(ocToEdit)
+        setFormOpen(true)
+        // Clear query param
+        router.replace("/ordenes", { scroll: false })
+      }
+    } else if (deleteId) {
+      const ocToDelete = ocs.find((oc: OCChina) => oc.id === deleteId)
+      if (ocToDelete) {
+        setOcToDelete(ocToDelete)
+        // Clear query param
+        router.replace("/ordenes", { scroll: false })
+      }
+    }
+  }, [searchParams, ocs, router, setOcToEdit, setOcToDelete])
 
   const handleEdit = (oc: OCChina) => {
     setOcToEdit(oc)

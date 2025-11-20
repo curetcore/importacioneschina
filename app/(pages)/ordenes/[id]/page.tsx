@@ -151,7 +151,12 @@ export default function OCDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Órdenes
             </Button>
-            <h1 className="text-2xl font-semibold text-gray-900">Orden {oc.oc}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold text-gray-900">Orden #{oc.oc}</h1>
+              <span className="text-sm text-gray-500">
+                {formatDate(oc.fechaOC)} • {oc.categoriaPrincipal}
+              </span>
+            </div>
             <p className="text-sm text-gray-500 mt-1">{oc.proveedor}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -168,52 +173,6 @@ export default function OCDetailPage() {
               Eliminar
             </Button>
           </div>
-        </div>
-
-        {/* Resumen de la OC */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Fecha OC</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {formatDate(oc.fechaOC)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Categoría</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {oc.categoriaPrincipal}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Productos</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">{oc.items.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Unidades Totales</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {cantidadOrdenada.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-gray-500">Costo FOB Total</div>
-              <div className="text-2xl font-semibold text-gray-900 mt-1">
-                {formatCurrency(costoFOBTotalUSD, "USD")}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Tabla de Productos con Costos Distribuidos */}
