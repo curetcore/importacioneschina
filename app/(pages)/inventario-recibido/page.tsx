@@ -603,11 +603,7 @@ function InventarioRecibidoPageContent() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button
-                      onClick={() => setFormOpen(true)}
-                      variant="outline"
-                      className="gap-1.5 h-8 px-2 text-xs"
-                    >
+                    <Button onClick={() => setFormOpen(true)} className="gap-1.5 h-8 px-2 text-xs">
                       <Plus size={14} />
                       Crear Recepción
                     </Button>
