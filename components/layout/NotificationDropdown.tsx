@@ -33,19 +33,38 @@ const ICON_MAP: Record<string, LucideIcon> = {
   RotateCcw,
 }
 
+// Mapeo de emojis antiguos a iconos lucide-react
+const EMOJI_TO_ICON_MAP: Record<string, LucideIcon> = {
+  "➕": Plus,
+  "✏️": Edit,
+  "🗑️": Trash2,
+  "♻️": RotateCcw,
+  "📝": FileText,
+  "⚠️": AlertTriangle,
+  "❌": XCircle,
+  "✅": CheckCircle,
+  "⚡": Zap,
+}
+
 // Componente para renderizar íconos dinámicamente
 function NotificationIcon({ iconName }: { iconName: string | null }) {
   if (!iconName) {
     return <Bell size={20} className="text-gray-400" />
   }
 
-  const IconComponent = ICON_MAP[iconName]
+  // Intentar mapear por nombre de ícono (lucide-react)
+  let IconComponent = ICON_MAP[iconName]
+
+  // Si no se encuentra, intentar mapear desde emoji
+  if (!IconComponent) {
+    IconComponent = EMOJI_TO_ICON_MAP[iconName]
+  }
 
   if (IconComponent) {
     return <IconComponent size={20} className="text-gray-600" />
   }
 
-  // Fallback: Si el ícono no está en el mapa (notificaciones antiguas con emojis), mostrar ícono por defecto
+  // Fallback: Si el ícono no está en ningún mapa, mostrar ícono por defecto
   return <FileText size={20} className="text-gray-500" />
 }
 
