@@ -11,8 +11,8 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-gray-200">
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex items-center justify-center w-60 flex-shrink-0 py-3">
+      <div className="flex items-center justify-between gap-6 h-20">
+        <div className="flex items-center justify-center w-60 flex-shrink-0">
           <Image
             src="/images/logo.png"
             alt="Sistema de Importación"
@@ -24,7 +24,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center justify-between gap-6 flex-1 px-6">
           {/* Global Search */}
-          <div className="flex-1 max-w-2xl">
+          <div className="flex-1 max-w-2xl flex items-center">
             <GlobalSearch />
           </div>
 
