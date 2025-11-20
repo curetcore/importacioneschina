@@ -79,7 +79,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
   } = useForm<PagosChinaInput>({
     resolver: zodResolver(pagosChinaSchema),
     defaultValues: {
-      idPago: "",
+      idPago: undefined,
       ocId: "",
       fechaPago: undefined,
       tipoPago: "",
@@ -177,7 +177,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
       setAdjuntos(pagoToEdit.adjuntos || [])
     } else {
       reset({
-        idPago: "",
+        idPago: undefined,
         ocId: "",
         fechaPago: undefined,
         tipoPago: "",
@@ -230,7 +230,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
       // Resetear formulario
       reset({
-        idPago: "",
+        idPago: undefined,
         ocId: "",
         fechaPago: undefined,
         tipoPago: "",
@@ -255,7 +255,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
 
   const handleCancel = () => {
     reset({
-      idPago: "",
+      idPago: undefined,
       ocId: "",
       fechaPago: undefined,
       tipoPago: "",
