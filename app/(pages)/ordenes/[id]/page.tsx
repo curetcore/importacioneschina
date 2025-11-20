@@ -154,7 +154,7 @@ export default function OCDetailPage() {
             <div>
               <h1 className="text-2xl font-bold text-shopify-text">Orden #{oc.oc}</h1>
               <p className="text-sm text-shopify-text-subdued mt-1">
-                {formatDate(oc.fechaOC)} • {oc.categoriaPrincipal}
+                {formatDate(oc.fechaOC)} | {oc.categoriaPrincipal}
               </p>
               <p className="text-sm text-shopify-text-subdued mt-0.5 font-medium">{oc.proveedor}</p>
             </div>
