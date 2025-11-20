@@ -3,6 +3,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { gastosLogisticosSchema } from "@/lib/validations"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -159,11 +160,21 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     const existing = await db.gastosLogisticos.findUnique({
       where: { id },
+      include: {
+        ordenesCompra: {
+          select: {
+            ocId: true,
+          },
+        },
+      },
     })
 
     if (!existing) {
       throw Errors.notFound("Gasto", id)
     }
+
+    // Extraer OC IDs para invalidación de cache
+    const ocIds = existing.ordenesCompra.map(rel => rel.ocId)
 
     // Guardar estado anterior para audit log
     const estadoAnterior = { ...existing }
@@ -177,6 +188,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Audit log
     await auditDelete("GastosLogisticos", estadoAnterior as any, request)
+
+    // Invalidar caché
+    await CacheInvalidator.invalidateGastosLogisticos(ocIds)
 
     return NextResponse.json({
       success: true,

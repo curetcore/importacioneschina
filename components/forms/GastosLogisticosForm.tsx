@@ -84,7 +84,7 @@ export function GastosLogisticosForm({
   } = useForm<GastosLogisticosInput>({
     resolver: zodResolver(gastosLogisticosSchema),
     defaultValues: {
-      idGasto: "",
+      idGasto: undefined,
       ocIds: [],
       fechaGasto: undefined,
       tipoGasto: "",
@@ -165,7 +165,7 @@ export function GastosLogisticosForm({
       setAdjuntos(gastoToEdit.adjuntos || [])
     } else {
       reset({
-        idGasto: "",
+        idGasto: undefined,
         ocIds: [],
         fechaGasto: undefined,
         tipoGasto: "",

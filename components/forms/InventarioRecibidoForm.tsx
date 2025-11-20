@@ -69,7 +69,7 @@ export function InventarioRecibidoForm({
   } = useForm<InventarioRecibidoInput>({
     resolver: zodResolver(inventarioRecibidoSchema),
     defaultValues: {
-      idRecepcion: "",
+      idRecepcion: undefined,
       ocId: "",
       itemId: "",
       fechaLlegada: undefined,
@@ -194,7 +194,7 @@ export function InventarioRecibidoForm({
       })
     } else {
       reset({
-        idRecepcion: "",
+        idRecepcion: undefined,
         ocId: "",
         itemId: "",
         fechaLlegada: undefined,

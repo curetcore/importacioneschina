@@ -5,6 +5,7 @@ import { inventarioRecibidoSchema } from "@/lib/validations"
 import { distribuirGastosLogisticos } from "@/lib/calculations"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { CacheInvalidator } from "@/lib/cache-helpers"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -216,6 +217,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Audit log
     await auditDelete("InventarioRecibido", estadoAnterior as any, request)
+
+    // Invalidar caché
+    await CacheInvalidator.invalidateInventario(existing.ocId)
 
     return NextResponse.json({
       success: true,
