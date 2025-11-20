@@ -37,8 +37,8 @@ export default function Sidebar() {
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
           isActive
-            ? "bg-shopify-surface-selected text-shopify-primary font-medium"
-            : "text-shopify-text-subdued hover:bg-shopify-surface-hovered"
+            ? "bg-shopify-surface-selected text-shopify-primary font-semibold"
+            : "text-shopify-text-subdued hover:bg-shopify-surface-hovered font-semibold"
         )}
       >
         <Icon
