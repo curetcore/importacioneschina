@@ -328,7 +328,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         fechaOC: fechaOC, // Prisma acepta string ISO directamente
         descripcionLote: descripcionLote || null,
         categoriaPrincipal: String(categoriaPrincipal),
-        adjuntos: adjuntos || existing.adjuntos || null,
+        adjuntos: adjuntos !== undefined ? adjuntos : existing.adjuntos,
       }
 
       return await tx.oCChina.update({

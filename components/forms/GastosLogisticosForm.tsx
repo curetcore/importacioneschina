@@ -188,7 +188,7 @@ export function GastosLogisticosForm({
 
       const payload = {
         ...data,
-        adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+        adjuntos: adjuntos,
       }
       console.log("📤 Sending payload:", payload)
 

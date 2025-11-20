@@ -211,7 +211,7 @@ export function PagosChinaForm({ open, onOpenChange, onSuccess, pagoToEdit }: Pa
         },
         body: JSON.stringify({
           ...data,
-          adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+          adjuntos: adjuntos,
         }),
       })
 

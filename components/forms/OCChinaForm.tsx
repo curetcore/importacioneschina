@@ -284,7 +284,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
           pesoUnitarioKg: item.pesoUnitarioKg || null,
           volumenUnitarioCBM: item.volumenUnitarioCBM || null,
         })),
-        adjuntos: adjuntos.length > 0 ? adjuntos : undefined,
+        adjuntos: adjuntos,
       }
 
       const result = isEditMode
