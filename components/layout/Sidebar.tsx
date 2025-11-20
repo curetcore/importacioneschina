@@ -51,7 +51,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-60 bg-shopify-surface-neutral border-r border-shopify-border-subdued overflow-y-auto z-40 flex flex-col">
+    <aside className="fixed left-0 top-16 bottom-0 w-60 bg-white border-r border-shopify-border-subdued overflow-y-auto z-40 flex flex-col rounded-tl-3xl">
       {/* Main menu items */}
       <div className="pt-4 flex-1">
         <nav className="space-y-1 px-3">{menuItems.map(renderMenuItem)}</nav>
