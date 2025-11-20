@@ -81,36 +81,37 @@ export default function InventarioRecibidoDetailPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+        <div className="flex items-center justify-between border-b border-shopify-border-subdued pb-6 mb-2">
           <div>
             <Button
-              variant="ghost"
+              variant="plain"
               onClick={() => router.push("/inventario-recibido")}
-              className="mb-2 -ml-2"
+              className="mb-3 -ml-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Inventario
             </Button>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-gray-900">
+            <div>
+              <h1 className="text-2xl font-bold text-shopify-text">
                 Recepción #{inventario.idRecepcion}
               </h1>
-              <span className="text-sm text-gray-500">
-                {formatDate(inventario.fechaLlegada)} • {inventario.bodegaInicial}
-              </span>
+              <p className="text-sm text-shopify-text-subdued mt-1">
+                {formatDate(inventario.fechaLlegada)} | {inventario.bodegaInicial}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
+              size="sm"
               onClick={() => router.push(`/inventario-recibido?edit=${inventario.id}`)}
             >
               <Edit className="w-4 h-4 mr-2" />
               Editar
             </Button>
             <Button
-              variant="outline"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              variant="critical"
+              size="sm"
               onClick={() => router.push(`/inventario-recibido?delete=${inventario.id}`)}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -122,7 +123,7 @@ export default function InventarioRecibidoDetailPage() {
         {/* Información de la Recepción */}
         <Card>
           <CardHeader>
-            <CardTitle>Información de la Recepción</CardTitle>
+            <CardTitle className="font-semibold">Información de la Recepción</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,7 +172,7 @@ export default function InventarioRecibidoDetailPage() {
         {/* Orden de Compra Asociada */}
         <Card>
           <CardHeader>
-            <CardTitle>Orden de Compra Asociada</CardTitle>
+            <CardTitle className="font-semibold">Orden de Compra Asociada</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -205,7 +206,7 @@ export default function InventarioRecibidoDetailPage() {
         {/* Producto Vinculado */}
         <Card>
           <CardHeader>
-            <CardTitle>Producto Vinculado</CardTitle>
+            <CardTitle className="font-semibold">Producto Vinculado</CardTitle>
           </CardHeader>
           <CardContent>
             {!inventario.item ? (
