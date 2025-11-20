@@ -219,10 +219,17 @@ export function InventarioRecibidoForm({
         notas: data.notas || null,
       }
 
+      console.log("=== INVENTARIO RECIBIDO - ENVIANDO DATOS ===")
+      console.log("Modo:", isEditMode ? "EDICIÓN" : "CREACIÓN")
+      console.log("Payload:", JSON.stringify(payload, null, 2))
+
       const url = isEditMode
         ? `/api/inventario-recibido/${inventarioToEdit.id}`
         : "/api/inventario-recibido"
       const method = isEditMode ? "PUT" : "POST"
+
+      console.log("URL:", url)
+      console.log("Method:", method)
 
       const response = await fetch(url, {
         method,
@@ -230,13 +237,24 @@ export function InventarioRecibidoForm({
         body: JSON.stringify(payload),
       })
 
+      console.log("Response status:", response.status)
+      console.log("Response ok:", response.ok)
+
       const result = await response.json()
 
+      console.log("=== RESPUESTA DEL SERVIDOR ===")
+      console.log("Success:", result.success)
+      console.log("Resultado completo:", JSON.stringify(result, null, 2))
+
       if (!result.success) {
+        console.error("❌ ERROR DEL SERVIDOR:", result.error)
+        console.error("Detalles completos:", result)
         throw new Error(
           result.error || `Error al ${isEditMode ? "actualizar" : "crear"} el inventario`
         )
       }
+
+      console.log("✅ Recepción creada exitosamente:", result.data)
 
       addToast({
         type: "success",
@@ -247,6 +265,12 @@ export function InventarioRecibidoForm({
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
+      console.error("=== ERROR EN SUBMIT ===")
+      console.error("Tipo de error:", error.constructor.name)
+      console.error("Mensaje:", error.message)
+      console.error("Stack:", error.stack)
+      console.error("Error completo:", error)
+
       addToast({
         type: "error",
         title: "Error",
