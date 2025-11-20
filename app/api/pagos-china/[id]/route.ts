@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { CacheInvalidator } from "@/lib/cache-helpers"
+import { triggerRecordUpdated, triggerRecordDeleted, CHANNELS } from "@/lib/pusher-events"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -113,6 +114,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Audit log
     await auditUpdate("PagosChina", estadoAnterior as any, updatedPago as any, request)
 
+    // Trigger real-time event
+    await triggerRecordUpdated(CHANNELS.PAYMENTS, updatedPago)
+
     return NextResponse.json({
       success: true,
       data: updatedPago,
@@ -152,6 +156,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Invalidar caché de la lista de pagos
     await CacheInvalidator.invalidatePagosChina(existing.ocId)
+
+    // Trigger real-time event
+    await triggerRecordDeleted(CHANNELS.PAYMENTS, {
+      id: estadoAnterior.id,
+      idPago: estadoAnterior.idPago,
+    })
 
     return NextResponse.json({
       success: true,

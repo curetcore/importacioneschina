@@ -61,6 +61,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRealtimeTable } from "@/hooks/useRealtimeTable"
+import { CHANNELS } from "@/lib/pusher-events"
 
 function GastosLogisticosPageContent() {
   const { addToast } = useToast()
@@ -89,6 +91,20 @@ function GastosLogisticosPageContent() {
       }
 
       return result.data as GastoLogistico[]
+    },
+  })
+
+  // Real-time updates via Pusher
+  useRealtimeTable({
+    channel: CHANNELS.EXPENSES,
+    onCreated: () => {
+      queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
+    },
+    onUpdated: () => {
+      queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
+    },
+    onDeleted: () => {
+      queryClient.invalidateQueries({ queryKey: ["gastos-logisticos"] })
     },
   })
 

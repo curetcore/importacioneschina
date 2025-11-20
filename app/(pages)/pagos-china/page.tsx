@@ -58,6 +58,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRealtimeTable } from "@/hooks/useRealtimeTable"
+import { CHANNELS } from "@/lib/pusher-events"
 
 function PagosChinaPageContent() {
   const { addToast } = useToast()
@@ -85,6 +87,20 @@ function PagosChinaPageContent() {
       }
 
       return result.data as Pago[]
+    },
+  })
+
+  // Real-time updates via Pusher
+  useRealtimeTable({
+    channel: CHANNELS.PAYMENTS,
+    onCreated: () => {
+      queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
+    },
+    onUpdated: () => {
+      queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
+    },
+    onDeleted: () => {
+      queryClient.invalidateQueries({ queryKey: ["pagos-china"] })
     },
   })
 

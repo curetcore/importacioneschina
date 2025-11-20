@@ -6,6 +6,7 @@ import { distribuirGastosLogisticos } from "@/lib/calculations"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { CacheInvalidator } from "@/lib/cache-helpers"
+import { triggerRecordUpdated, triggerRecordDeleted, CHANNELS } from "@/lib/pusher-events"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -193,6 +194,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Audit log
     await auditUpdate("InventarioRecibido", estadoAnterior as any, updated as any, request)
 
+    // Trigger real-time event
+    await triggerRecordUpdated(CHANNELS.INVENTORY, updated)
+
     return NextResponse.json({
       success: true,
       data: updated,
@@ -230,6 +234,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Invalidar caché
     await CacheInvalidator.invalidateInventario(existing.ocId)
+
+    // Trigger real-time event
+    await triggerRecordDeleted(CHANNELS.INVENTORY, {
+      id: estadoAnterior.id,
+      idRecepcion: estadoAnterior.idRecepcion,
+    })
 
     return NextResponse.json({
       success: true,

@@ -60,6 +60,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRealtimeTable } from "@/hooks/useRealtimeTable"
+import { CHANNELS } from "@/lib/pusher-events"
 
 // Helper function to get distribution method labels
 const getMethodLabel = (method: string): string => {
@@ -98,6 +100,20 @@ function InventarioRecibidoPageContent() {
       }
 
       return result.data as InventarioRecibido[]
+    },
+  })
+
+  // Real-time updates via Pusher
+  useRealtimeTable({
+    channel: CHANNELS.INVENTORY,
+    onCreated: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventario-recibido"] })
+    },
+    onUpdated: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventario-recibido"] })
+    },
+    onDeleted: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventario-recibido"] })
     },
   })
 
