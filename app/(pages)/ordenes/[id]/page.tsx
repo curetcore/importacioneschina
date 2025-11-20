@@ -151,13 +151,13 @@ export default function OCDetailPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver a Órdenes
             </Button>
-            <div className="flex items-center gap-3">
+            <div>
               <h1 className="text-2xl font-bold text-shopify-text">Orden #{oc.oc}</h1>
-              <span className="text-sm text-shopify-text-subdued">
+              <p className="text-sm text-shopify-text-subdued mt-1">
                 {formatDate(oc.fechaOC)} • {oc.categoriaPrincipal}
-              </span>
+              </p>
+              <p className="text-sm text-shopify-text-subdued mt-0.5 font-medium">{oc.proveedor}</p>
             </div>
-            <p className="text-sm text-shopify-text-subdued mt-1 font-medium">{oc.proveedor}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
