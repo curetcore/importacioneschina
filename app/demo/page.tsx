@@ -12,6 +12,16 @@ export default function DemoPage() {
   useEffect(() => {
     async function autoDemoLogin() {
       try {
+        // Primero, intentar inicializar la base de datos demo si no existe
+        try {
+          await fetch("/api/seed-demo", {
+            method: "POST",
+          })
+        } catch (seedError) {
+          console.warn("Seed demo warning (puede ser que ya exista):", seedError)
+        }
+
+        // Intentar login demo
         const result = await signIn("credentials", {
           email: "demo@sistema.com",
           password: "Demo123!",
