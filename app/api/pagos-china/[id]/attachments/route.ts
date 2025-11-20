@@ -125,6 +125,19 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const existingAttachments = (pago.adjuntos as unknown as FileAttachment[]) || []
     const updatedAttachments = existingAttachments.filter(att => att.url !== fileUrl)
 
+    // Verificar si el archivo existe en los adjuntos actuales
+    const fileExists = existingAttachments.length !== updatedAttachments.length
+
+    // Si el archivo no existe, aún invalidamos cache y retornamos éxito con mensaje apropiado
+    if (!fileExists) {
+      await CacheInvalidator.invalidatePagosChina(pago.ocId)
+      return NextResponse.json({
+        success: true,
+        data: pago,
+        message: "El archivo ya fue eliminado previamente",
+      })
+    }
+
     // Actualizar en la base de datos
     const updated = await db.pagosChina.update({
       where: { id },
