@@ -179,8 +179,8 @@ export function VirtualizedDataTable<TData, TValue>({
         </div>
       )}
 
-      {/* Virtualized Table */}
-      <div className="rounded-md border border-gray-200 bg-white overflow-hidden">
+      {/* Virtualized Table - Shopify Polaris 2025 Style */}
+      <div className="rounded-lg border border-shopify-border-card bg-white overflow-hidden shadow-sm">
         <div
           ref={tableContainerRef}
           className="overflow-auto"
@@ -188,16 +188,16 @@ export function VirtualizedDataTable<TData, TValue>({
             maxHeight,
           }}
         >
-          <table className="w-full">
-            {/* Header - Fixed, not virtualized */}
-            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+          <table className="w-full border-collapse">
+            {/* Header - Fixed, not virtualized - Shopify style */}
+            <thead className="bg-[#f1f1f1] border-b-2 border-[#e4e4e4] sticky top-0 z-10">
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => {
                     return (
                       <th
                         key={header.id}
-                        className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide"
+                        className="text-left py-2.5 px-3 text-[11px] font-semibold text-[#616161] uppercase tracking-wider border-r border-[#e4e4e4] last:border-r-0"
                       >
                         {header.isPlaceholder ? null : (
                           <div
@@ -255,13 +255,18 @@ export function VirtualizedDataTable<TData, TValue>({
                         data-index={virtualRow.index}
                         ref={node => rowVirtualizer.measureElement(node)}
                         data-state={row.getIsSelected() && "selected"}
-                        className={`border-b border-gray-100 hover:bg-green-50 hover:shadow-sm transition-all duration-150 ${
-                          onRowClick ? "cursor-pointer hover:scale-[1.001]" : ""
+                        className={`border-b border-[#e4e4e4] ${
+                          virtualRow.index % 2 === 0 ? "bg-white" : "bg-[#fafafa]"
+                        } hover:bg-[#f6f6f6] transition-colors ${
+                          onRowClick ? "cursor-pointer" : ""
                         }`}
                         onClick={() => onRowClick && onRowClick(row.original)}
                       >
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id} className="py-3 px-4 text-sm text-gray-700">
+                          <td
+                            key={cell.id}
+                            className="py-2.5 px-3 text-sm text-[#303030] border-r border-[#f1f1f1] last:border-r-0 hover:bg-[#f2f7fe]"
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}
