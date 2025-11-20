@@ -15,7 +15,7 @@ export default function Navbar() {
         {/* Logo - Izquierda */}
         <div className="flex items-center justify-center w-60 flex-shrink-0">
           <Image
-            src="/images/logo.png"
+            src="/images/logotipo-importacion-grisclaro.png"
             alt="Sistema de Importación"
             width={200}
             height={50}
