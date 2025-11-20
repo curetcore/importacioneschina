@@ -150,6 +150,15 @@
   transition: background-color 0.15s ease;
 }
 
+/* Efecto zebra - Filas alternas */
+.airtable-tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.airtable-tr:nth-child(even) .airtable-td {
+  background-color: #fafafa;
+}
+
 .airtable-tr:hover {
   background-color: #f6f6f6;
 }

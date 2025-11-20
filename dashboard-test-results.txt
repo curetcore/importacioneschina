@@ -1,0 +1,205 @@
+[2m[WebServer] [22m[33m[1mwarn[22m[39m The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+[2m[WebServer] [22mFor more information, see: [4mhttps://pris.ly/prisma-config[24m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[2mEnvironment variables loaded from .env[22m
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+Running 26 tests using 1 worker
+
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✓   1 [chromium] › e2e/dashboard.spec.ts:45:7 › Dashboard/Panel - Carga Inicial › debe cargar el panel exitosamente (6.9s)
+  ✘   2 [chromium] › e2e/dashboard.spec.ts:54:7 › Dashboard/Panel - Carga Inicial › debe mostrar todas las secciones principales (4.1s)
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✘   3 [chromium] › e2e/dashboard.spec.ts:54:7 › Dashboard/Panel - Carga Inicial › debe mostrar todas las secciones principales (retry #1) (4.4s)
+  ✓   4 [chromium] › e2e/dashboard.spec.ts:73:7 › Dashboard - KPIs Principales › debe mostrar KPI de Inversión Total (4.0s)
+  ✓   5 [chromium] › e2e/dashboard.spec.ts:81:7 › Dashboard - KPIs Principales › debe mostrar KPI de Unidades Ordenadas (3.9s)
+  ✓   6 [chromium] › e2e/dashboard.spec.ts:86:7 › Dashboard - KPIs Principales › debe mostrar KPI de Unidades Recibidas (3.7s)
+  ✓   7 [chromium] › e2e/dashboard.spec.ts:91:7 › Dashboard - KPIs Principales › debe mostrar KPI de Comisiones Bancarias (3.7s)
+  ✓   8 [chromium] › e2e/dashboard.spec.ts:104:7 › Dashboard - Análisis Financiero › debe mostrar sección de Pagos por Método (4.0s)
+  ✓   9 [chromium] › e2e/dashboard.spec.ts:108:7 › Dashboard - Análisis Financiero › debe mostrar sección de Pagos por Tipo (3.8s)
+  ✓  10 [chromium] › e2e/dashboard.spec.ts:112:7 › Dashboard - Análisis Financiero › debe mostrar sección de Pagos por Moneda (4.4s)
+  ✓  11 [chromium] › e2e/dashboard.spec.ts:116:7 › Dashboard - Análisis Financiero › debe mostrar sección de Tasas de Cambio Promedio (4.4s)
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✓  12 [chromium] › e2e/dashboard.spec.ts:128:7 › Dashboard - Gastos Logísticos › debe mostrar sección Gastos por Tipo (5.5s)
+  ✓  13 [chromium] › e2e/dashboard.spec.ts:132:7 › Dashboard - Gastos Logísticos › debe mostrar sección Top Proveedores de Servicios (4.4s)
+✓ Mensaje de "no hay proveedores" mostrado correctamente
+  ✓  14 [chromium] › e2e/dashboard.spec.ts:136:7 › Dashboard - Gastos Logísticos › debe mostrar mensaje cuando no hay proveedores (4.0s)
+  ✓  15 [chromium] › e2e/dashboard.spec.ts:156:7 › Dashboard - Inventario & Operaciones › debe mostrar sección Inventario por Bodega (4.1s)
+  ✓  16 [chromium] › e2e/dashboard.spec.ts:160:7 › Dashboard - Inventario & Operaciones › debe mostrar sección Estado de OCs (4.1s)
+  ✓  17 [chromium] › e2e/dashboard.spec.ts:168:7 › Dashboard - Inventario & Operaciones › debe mostrar sección Top 5 Productos (4.4s)
+  ✓  18 [chromium] › e2e/dashboard.spec.ts:172:7 › Dashboard - Inventario & Operaciones › debe mostrar sección Compras por Categoría (4.6s)
+  ✓  19 [chromium] › e2e/dashboard.spec.ts:176:7 › Dashboard - Inventario & Operaciones › debe mostrar mensaje cuando no hay inventario (4.6s)
+  ✓  20 [chromium] › e2e/dashboard.spec.ts:184:7 › Dashboard - Inventario & Operaciones › debe mostrar mensaje cuando no hay productos (4.2s)
+  ✓  21 [chromium] › e2e/dashboard.spec.ts:200:7 › Dashboard - Proveedores › debe mostrar sección Inversión por Proveedor (4.5s)
+  ✓  22 [chromium] › e2e/dashboard.spec.ts:212:7 › Dashboard - Top Rankings › debe mostrar tabla Top 5 OCs más Costosas (4.9s)
+  ✓  23 [chromium] › e2e/dashboard.spec.ts:225:7 › Dashboard - Top Rankings › debe mostrar sección Últimas 10 Transacciones (4.4s)
+  ✘  24 [chromium] › e2e/dashboard.spec.ts:236:7 › Dashboard - Navegación › debe navegar a Órdenes desde menú lateral (14.2s)
+  ✘  25 [chromium] › e2e/dashboard.spec.ts:236:7 › Dashboard - Navegación › debe navegar a Órdenes desde menú lateral (retry #1) (13.6s)
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✓  26 [chromium] › e2e/dashboard.spec.ts:242:7 › Dashboard - Navegación › debe navegar a Pagos desde menú lateral (8.4s)
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✓  27 [chromium] › e2e/dashboard.spec.ts:248:7 › Dashboard - Navegación › debe navegar a Gastos desde menú lateral (7.6s)
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[2m[WebServer] [22m [33m[1m⚠[22m[39m metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  ✓  28 [chromium] › e2e/dashboard.spec.ts:254:7 › Dashboard - Navegación › debe navegar a Inventario desde menú lateral (6.6s)
+
+
+  1) [chromium] › e2e/dashboard.spec.ts:54:7 › Dashboard/Panel - Carga Inicial › debe mostrar todas las secciones principales 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('heading', { name: /proveedores/i })
+    Expected: visible
+    Error: strict mode violation: getByRole('heading', { name: /proveedores/i }) resolved to 2 elements:
+        1) <h3 class="text-sm font-semibold text-gray-900 mb-4">Top Proveedores de Servicios</h3> aka getByRole('heading', { name: 'Top Proveedores de Servicios' })
+        2) <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Proveedores</h2> aka getByRole('heading', { name: 'Proveedores', exact: true })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('heading', { name: /proveedores/i })[22m
+
+
+      58 |     await expect(page.getByRole('heading', { name: /gastos logísticos/i })).toBeVisible()
+      59 |     await expect(page.getByRole('heading', { name: /inventario.*operaciones/i })).toBeVisible()
+    > 60 |     await expect(page.getByRole('heading', { name: /proveedores/i })).toBeVisible()
+         |                                                                       ^
+      61 |     await expect(page.getByRole('heading', { name: /top rankings/i })).toBeVisible()
+      62 |   })
+      63 | })
+        at /Users/ronaldopaulino/curet-importaciones/e2e/dashboard.spec.ts:60:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('heading', { name: /proveedores/i })
+    Expected: visible
+    Error: strict mode violation: getByRole('heading', { name: /proveedores/i }) resolved to 2 elements:
+        1) <h3 class="text-sm font-semibold text-gray-900 mb-4">Top Proveedores de Servicios</h3> aka getByRole('heading', { name: 'Top Proveedores de Servicios' })
+        2) <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Proveedores</h2> aka getByRole('heading', { name: 'Proveedores', exact: true })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('heading', { name: /proveedores/i })[22m
+
+
+      58 |     await expect(page.getByRole('heading', { name: /gastos logísticos/i })).toBeVisible()
+      59 |     await expect(page.getByRole('heading', { name: /inventario.*operaciones/i })).toBeVisible()
+    > 60 |     await expect(page.getByRole('heading', { name: /proveedores/i })).toBeVisible()
+         |                                                                       ^
+      61 |     await expect(page.getByRole('heading', { name: /top rankings/i })).toBeVisible()
+      62 |   })
+      63 | })
+        at /Users/ronaldopaulino/curet-importaciones/e2e/dashboard.spec.ts:60:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/dashboard-Dashboard-Panel--a6879-s-las-secciones-principales-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/dashboard.spec.ts:236:7 › Dashboard - Navegación › debe navegar a Órdenes desde menú lateral 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('nav').locator('text=/órdenes/i')[22m
+
+
+      235 |
+      236 |   test('debe navegar a Órdenes desde menú lateral', async ({ page }) => {
+    > 237 |     await page.click('nav >> text=/órdenes/i')
+          |                ^
+      238 |     await page.waitForURL(/\/ordenes/, { timeout: 5000 })
+      239 |     await expect(page).toHaveURL(/\/ordenes/)
+      240 |   })
+        at /Users/ronaldopaulino/curet-importaciones/e2e/dashboard.spec.ts:237:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('nav').locator('text=/órdenes/i')[22m
+
+
+      235 |
+      236 |   test('debe navegar a Órdenes desde menú lateral', async ({ page }) => {
+    > 237 |     await page.click('nav >> text=/órdenes/i')
+          |                ^
+      238 |     await page.waitForURL(/\/ordenes/, { timeout: 5000 })
+      239 |     await expect(page).toHaveURL(/\/ordenes/)
+      240 |   })
+        at /Users/ronaldopaulino/curet-importaciones/e2e/dashboard.spec.ts:237:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/dashboard-Dashboard---Nave-470aa--Órdenes-desde-menú-lateral-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › e2e/dashboard.spec.ts:54:7 › Dashboard/Panel - Carga Inicial › debe mostrar todas las secciones principales 
+    [chromium] › e2e/dashboard.spec.ts:236:7 › Dashboard - Navegación › debe navegar a Órdenes desde menú lateral 
+  24 passed (2.9m)

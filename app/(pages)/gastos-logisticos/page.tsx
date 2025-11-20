@@ -338,84 +338,94 @@ function GastosLogisticosPageContent() {
         </StatsGrid>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="flex items-center gap-2 text-base font-medium">
-              <FileText size={18} />
-              Gastos ({filteredGastos.length}
-              {searchQuery ? ` de ${gastos.length}` : ""})
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar ID, OC, proveedor..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 w-64 text-xs"
-                />
+          <CardHeader className="space-y-0 pb-4">
+            {/* Layout: Título | Buscador | Botones */}
+            <div className="flex items-center justify-between gap-4">
+              {/* Título a la izquierda */}
+              <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <FileText size={18} />
+                Gastos ({filteredGastos.length}
+                {searchQuery ? ` de ${gastos.length}` : ""})
+              </CardTitle>
+
+              {/* Buscador centrado */}
+              <div className="flex-1 max-w-md mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar ID, OC, proveedor..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-8 h-8 w-full text-xs"
+                  />
+                </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-8 px-3 text-xs">
-                    <Settings2 className="mr-2 h-4 w-4" />
-                    Columnas
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  {columns
-                    .filter(
-                      column => "accessorKey" in column && typeof column.accessorKey === "string"
-                    )
-                    .map(column => {
-                      const id = (column as any).accessorKey as string
-                      return (
-                        <DropdownMenuCheckboxItem
-                          key={id}
-                          className="capitalize"
-                          checked={columnVisibility[id] !== false}
-                          onCheckedChange={value =>
-                            setColumnVisibility(prev => ({
-                              ...prev,
-                              [id]: value,
-                            }))
-                          }
-                        >
-                          {id}
-                        </DropdownMenuCheckboxItem>
+
+              {/* Botones a la derecha (más compactos) */}
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-8 px-2 text-xs">
+                      <Settings2 className="mr-1.5 h-4 w-4" />
+                      Columnas
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px]">
+                    {columns
+                      .filter(
+                        column => "accessorKey" in column && typeof column.accessorKey === "string"
                       )
-                    })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="gap-1.5 h-8 px-3 text-xs"
-                    disabled={gastos.length === 0}
-                  >
-                    <Download size={14} />
-                    Exportar
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
-                    <FileSpreadsheet size={16} />
-                    Exportar a Excel
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
-                    <FileText size={16} />
-                    Exportar a PDF
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button
-                onClick={() => setFormOpen(true)}
-                variant="outline"
-                className="gap-1.5 h-8 px-3 text-xs"
-              >
-                <Plus size={14} />
-                Crear Gasto
-              </Button>
+                      .map(column => {
+                        const id = (column as any).accessorKey as string
+                        return (
+                          <DropdownMenuCheckboxItem
+                            key={id}
+                            className="capitalize"
+                            checked={columnVisibility[id] !== false}
+                            onCheckedChange={value =>
+                              setColumnVisibility(prev => ({
+                                ...prev,
+                                [id]: value,
+                              }))
+                            }
+                          >
+                            {id}
+                          </DropdownMenuCheckboxItem>
+                        )
+                      })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="gap-1.5 h-8 px-2 text-xs"
+                      disabled={gastos.length === 0}
+                    >
+                      <Download size={14} />
+                      Exportar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                      <FileSpreadsheet size={16} />
+                      Exportar a Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                      <FileText size={16} />
+                      Exportar a PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  onClick={() => setFormOpen(true)}
+                  variant="outline"
+                  className="gap-1.5 h-8 px-2 text-xs"
+                >
+                  <Plus size={14} />
+                  Crear Gasto
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
