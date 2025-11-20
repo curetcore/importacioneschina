@@ -29,24 +29,24 @@ export interface CreateNotificationInput {
 }
 
 /**
- * Mapeo de íconos por tipo de notificación
+ * Mapeo de íconos por tipo de notificación (lucide-react)
  */
 const NOTIFICATION_ICONS: Record<NotificationType, string> = {
-  audit: "📝",
-  alert: "⚠️",
-  error: "❌",
-  success: "✅",
-  warning: "⚡",
+  audit: "FileText",
+  alert: "AlertTriangle",
+  error: "XCircle",
+  success: "CheckCircle",
+  warning: "Zap",
 }
 
 /**
- * Mapeo de íconos por acción de audit
+ * Mapeo de íconos por acción de audit (lucide-react)
  */
 const AUDIT_ACTION_ICONS: Record<string, string> = {
-  CREATE: "➕",
-  UPDATE: "✏️",
-  DELETE: "🗑️",
-  RESTORE: "♻️",
+  CREATE: "Plus",
+  UPDATE: "Edit",
+  DELETE: "Trash2",
+  RESTORE: "RotateCcw",
 }
 
 /**

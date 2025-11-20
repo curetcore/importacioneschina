@@ -1,10 +1,53 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Bell, CheckCheck, X, Zap } from "lucide-react"
+import {
+  Bell,
+  CheckCheck,
+  X,
+  Zap,
+  FileText,
+  AlertTriangle,
+  XCircle,
+  CheckCircle,
+  Plus,
+  Edit,
+  Trash2,
+  RotateCcw,
+  type LucideIcon,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
 import { useNotifications } from "@/hooks/useNotifications"
+
+// Mapeo de nombres de íconos a componentes lucide-react
+const ICON_MAP: Record<string, LucideIcon> = {
+  FileText,
+  AlertTriangle,
+  XCircle,
+  CheckCircle,
+  Zap,
+  Plus,
+  Edit,
+  Trash2,
+  RotateCcw,
+}
+
+// Componente para renderizar íconos dinámicamente
+function NotificationIcon({ iconName }: { iconName: string | null }) {
+  if (!iconName) {
+    return <Bell size={20} className="text-gray-400" />
+  }
+
+  const IconComponent = ICON_MAP[iconName]
+
+  if (IconComponent) {
+    return <IconComponent size={20} className="text-gray-600" />
+  }
+
+  // Fallback: Si el ícono no está en el mapa, mostrar como texto (compatibilidad con emojis antiguos)
+  return <span className="text-xl">{iconName}</span>
+}
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false)
@@ -158,7 +201,9 @@ export default function NotificationDropdown() {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-xl flex-shrink-0">{notif.icono || "📬"}</span>
+                    <div className="flex-shrink-0 mt-0.5">
+                      <NotificationIcon iconName={notif.icono} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p
