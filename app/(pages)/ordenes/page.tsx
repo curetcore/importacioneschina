@@ -49,6 +49,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRealtimeTable } from "@/hooks/useRealtimeTable"
+import { CHANNELS } from "@/lib/pusher-events"
 
 function OrdenesPageContent() {
   const router = useRouter()
@@ -74,6 +76,20 @@ function OrdenesPageContent() {
       }
 
       return result.data as OCChina[]
+    },
+  })
+
+  // Real-time updates via Pusher
+  useRealtimeTable({
+    channel: CHANNELS.ORDERS,
+    onCreated: () => {
+      queryClient.invalidateQueries({ queryKey: ["oc-china"] })
+    },
+    onUpdated: () => {
+      queryClient.invalidateQueries({ queryKey: ["oc-china"] })
+    },
+    onDeleted: () => {
+      queryClient.invalidateQueries({ queryKey: ["oc-china"] })
     },
   })
 

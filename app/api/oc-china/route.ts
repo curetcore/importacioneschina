@@ -10,6 +10,7 @@ import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { loggers, logWarning } from "@/lib/logger"
 import { QueryCache, CacheInvalidator } from "@/lib/cache-helpers"
 import { CacheTTL } from "@/lib/redis"
+import { triggerRecordCreated, CHANNELS } from "@/lib/pusher-events"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -299,6 +300,9 @@ export async function POST(request: NextRequest) {
 
     // Invalidar cache
     await CacheInvalidator.invalidateOCChina(nuevaOC.id)
+
+    // Trigger real-time event (fail-safe, won't block if Pusher is down)
+    await triggerRecordCreated(CHANNELS.ORDERS, nuevaOC)
 
     return NextResponse.json(
       {

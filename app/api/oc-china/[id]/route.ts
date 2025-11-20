@@ -5,6 +5,7 @@ import type { InputJsonValue } from "@prisma/client/runtime/library"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
+import { triggerRecordUpdated, triggerRecordDeleted, CHANNELS } from "@/lib/pusher-events"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -348,6 +349,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Audit log
     await auditUpdate("OCChina", estadoAnterior as any, updatedOC as any, request)
 
+    // Trigger real-time event (fail-safe, won't block if Pusher is down)
+    await triggerRecordUpdated(CHANNELS.ORDERS, updatedOC)
+
     return NextResponse.json({
       success: true,
       data: updatedOC,
@@ -541,6 +545,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Audit log
     await auditDelete("OCChina", estadoAnterior as any, request)
+
+    // Trigger real-time event (fail-safe, won't block if Pusher is down)
+    await triggerRecordDeleted(CHANNELS.ORDERS, { id: estadoAnterior.id, oc: estadoAnterior.oc })
 
     return NextResponse.json({
       success: true,
