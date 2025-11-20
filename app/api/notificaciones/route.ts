@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: notificaciones,
-      totalUnread,
+      notifications: notificaciones, // Cambio: data → notifications
+      unreadCount: totalUnread, // Cambio: totalUnread → unreadCount
     })
   } catch (error) {
     return handleApiError(error)
