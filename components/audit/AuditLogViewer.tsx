@@ -11,7 +11,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { History, Search, Filter, ChevronLeft, ChevronRight, Calendar, User } from "lucide-react"
+import {
+  History,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  User,
+  Plus,
+  Edit,
+  Trash2,
+  RotateCcw,
+  FileText,
+  type LucideIcon,
+} from "lucide-react"
 import { formatTimeAgo } from "@/lib/utils"
 
 interface AuditLog {
@@ -21,6 +35,7 @@ interface AuditLog {
   accion: string
   descripcion: string | null
   usuarioEmail: string | null
+  usuarioNombre?: string
   ipAddress: string | null
   cambiosAntes: any
   cambiosDespues: any
@@ -60,11 +75,18 @@ const ACTION_COLORS: Record<string, string> = {
   RESTORE: "bg-purple-100 text-purple-700",
 }
 
-const ACTION_ICONS: Record<string, string> = {
-  CREATE: "➕",
-  UPDATE: "✏️",
-  DELETE: "🗑️",
-  RESTORE: "♻️",
+// Mapeo de iconos lucide-react
+const ACTION_ICON_MAP: Record<string, LucideIcon> = {
+  CREATE: Plus,
+  UPDATE: Edit,
+  DELETE: Trash2,
+  RESTORE: RotateCcw,
+}
+
+// Componente para renderizar íconos de acción
+function ActionIcon({ accion }: { accion: string }) {
+  const IconComponent = ACTION_ICON_MAP[accion] || FileText
+  return <IconComponent size={20} className="text-gray-600" />
 }
 
 // Función para obtener el label de una acción
@@ -99,7 +121,15 @@ function formatValor(valor: any): string {
     // Si es una fecha ISO
     if (/^\d{4}-\d{2}-\d{2}T/.test(valor)) {
       try {
-        return new Date(valor).toLocaleString("es-ES")
+        const fecha = new Date(valor)
+        return fecha.toLocaleString("es-ES", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
       } catch {
         return valor
       }
@@ -213,13 +243,13 @@ export function AuditLogViewer({
                 Todas las acciones
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setAccionFilter("CREATE")}>
-                ➕ Creaciones
+                Creaciones
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setAccionFilter("UPDATE")}>
-                ✏️ Actualizaciones
+                Actualizaciones
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setAccionFilter("DELETE")}>
-                🗑️ Eliminaciones
+                Eliminaciones
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -258,9 +288,9 @@ export function AuditLogViewer({
                 >
                   <div className="flex items-start gap-3 flex-1">
                     {/* Icon */}
-                    <span className="text-xl flex-shrink-0">
-                      {ACTION_ICONS[log.accion] || "📝"}
-                    </span>
+                    <div className="flex-shrink-0 mt-0.5">
+                      <ActionIcon accion={log.accion} />
+                    </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
@@ -287,10 +317,10 @@ export function AuditLogViewer({
                           <Calendar size={12} />
                           {formatTimeAgo(new Date(log.createdAt))}
                         </span>
-                        {log.usuarioEmail && (
+                        {log.usuarioNombre && (
                           <span className="flex items-center gap-1">
                             <User size={12} />
-                            {log.usuarioEmail}
+                            {log.usuarioNombre}
                           </span>
                         )}
                         {log.camposModificados.length > 0 && (
@@ -367,12 +397,19 @@ export function AuditLogViewer({
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500">Usuario</label>
-                  <p className="text-sm mt-1">{selectedLog.usuarioEmail || "Sistema"}</p>
+                  <p className="text-sm mt-1">{selectedLog.usuarioNombre || "Sistema"}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500">Fecha</label>
                   <p className="text-sm mt-1">
-                    {new Date(selectedLog.createdAt).toLocaleString("es-ES")}
+                    {new Date(selectedLog.createdAt).toLocaleString("es-ES", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
                   </p>
                 </div>
                 {selectedLog.ipAddress && (
