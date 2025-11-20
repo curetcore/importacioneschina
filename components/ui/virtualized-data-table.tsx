@@ -197,7 +197,7 @@ export function VirtualizedDataTable<TData, TValue>({
                     return (
                       <th
                         key={header.id}
-                        className="text-left py-2.5 px-3 text-[11px] font-semibold text-[#616161] uppercase tracking-wider border-r border-[#e4e4e4] last:border-r-0"
+                        className="text-left py-2.5 px-3 text-[11px] font-semibold text-[#616161] uppercase tracking-wider border-r border-[#e4e4e4] last:border-r-0 whitespace-nowrap"
                       >
                         {header.isPlaceholder ? null : (
                           <div
