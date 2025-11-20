@@ -8,6 +8,16 @@ import bcrypt from "bcryptjs"
  */
 export async function POST(req: Request) {
   try {
+    // Paso 1: Asegurar que el esquema esté actualizado
+    // Agregar columna last_name si no existe
+    try {
+      await prismaDemo.$executeRaw`
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_name" TEXT;
+      `
+    } catch (schemaError) {
+      console.warn("Schema update warning (puede ser que la columna ya exista):", schemaError)
+    }
+
     // Verificar si ya existe el usuario demo
     const existingUser = await prismaDemo.user.findUnique({
       where: { email: "demo@sistema.com" },
