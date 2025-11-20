@@ -48,7 +48,11 @@ export async function DELETE(request: NextRequest) {
 
     // Verificar que el archivo existe
     if (!existsSync(normalizedFilepath)) {
-      throw Errors.notFound("Archivo")
+      // Si el archivo no existe, retornar éxito (ya fue eliminado previamente)
+      return NextResponse.json({
+        success: true,
+        message: "El archivo ya fue eliminado previamente",
+      })
     }
 
     // Eliminar archivo
