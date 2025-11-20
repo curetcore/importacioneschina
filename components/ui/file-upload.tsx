@@ -15,7 +15,7 @@ interface FileAttachment {
 }
 
 interface FileUploadProps {
-  module: "oc-china" | "pagos-china" | "gastos-logisticos"
+  module: "oc-china" | "pagos-china" | "gastos-logisticos" | "inventario-recibido"
   attachments: FileAttachment[]
   onChange: (attachments: FileAttachment[]) => void
   maxFiles?: number

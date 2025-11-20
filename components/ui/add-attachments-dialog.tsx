@@ -16,7 +16,7 @@ interface FileAttachment {
 interface AddAttachmentsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  module: "oc-china" | "pagos-china" | "gastos-logisticos"
+  module: "oc-china" | "pagos-china" | "gastos-logisticos" | "inventario-recibido"
   recordId: string
   recordName: string // Para mostrar en el título
   currentAttachments: FileAttachment[]
