@@ -506,28 +506,13 @@ function InventarioRecibidoPageContent() {
 
   return (
     <MainLayout>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="space-y-6">
         <Tabs
           defaultValue="inventario"
           value={activeTab}
           onValueChange={handleTabChange}
-          className="w-full space-y-6"
+          className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="inventario" className="gap-2">
-              <Inbox className="w-4 h-4" />
-              Inventario Recibido
-            </TabsTrigger>
-            <TabsTrigger value="costos" className="gap-2">
-              <Calculator className="w-4 h-4" />
-              Análisis de Costos
-            </TabsTrigger>
-            <TabsTrigger value="productos" className="gap-2">
-              <Tag className="w-4 h-4" />
-              Productos
-            </TabsTrigger>
-          </TabsList>
-
           {/* Tab 1: Inventario Recibido */}
           <TabsContent value="inventario" className="space-y-6 mt-0">
             {/* KPIs Section */}
@@ -563,90 +548,110 @@ function InventarioRecibidoPageContent() {
 
             <Card>
               <CardHeader className="space-y-0 pb-4">
-                {/* Layout: Título | Buscador | Botones */}
-                <div className="flex items-center justify-between gap-4">
-                  {/* Título a la izquierda */}
-                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                    <Inbox size={18} />
-                    Inventario ({filteredInventarios.length}
-                    {searchQuery ? ` de ${inventarios.length}` : ""})
-                  </CardTitle>
+                {/* Layout optimizado: Título en línea con filtros */}
+                <div className="space-y-4">
+                  {/* Primera fila: Título + Buscador + Botones */}
+                  <div className="flex items-center gap-3">
+                    {/* Título a la izquierda */}
+                    <CardTitle className="flex items-center gap-2 text-base font-semibold whitespace-nowrap">
+                      <Inbox size={18} />
+                      Inventario ({filteredInventarios.length}
+                      {searchQuery ? ` de ${inventarios.length}` : ""})
+                    </CardTitle>
 
-                  {/* Buscador centrado */}
-                  <div className="flex-1 max-w-md mx-auto">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    {/* Buscador */}
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
                         placeholder="Buscar ID, OC, SKU, producto..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        className="pl-8 h-8 w-full text-xs"
+                        className="pl-9 h-9 text-sm"
                       />
+                    </div>
+
+                    {/* Botones a la derecha */}
+                    <div className="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="h-8 px-2 text-xs">
+                            <Settings2 className="mr-1.5 h-4 w-4" />
+                            Columnas
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px]">
+                          {columns
+                            .filter(
+                              column =>
+                                "accessorKey" in column && typeof column.accessorKey === "string"
+                            )
+                            .map(column => {
+                              const id = (column as any).accessorKey as string
+                              return (
+                                <DropdownMenuCheckboxItem
+                                  key={id}
+                                  className="capitalize"
+                                  checked={columnVisibility[id] !== false}
+                                  onCheckedChange={value =>
+                                    setColumnVisibility(prev => ({
+                                      ...prev,
+                                      [id]: value,
+                                    }))
+                                  }
+                                >
+                                  {id}
+                                </DropdownMenuCheckboxItem>
+                              )
+                            })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="gap-1.5 h-8 px-2 text-xs"
+                            disabled={inventarios.length === 0}
+                          >
+                            <Download size={14} />
+                            Exportar
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
+                            <FileSpreadsheet size={16} />
+                            Exportar a Excel
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                            <FileText size={16} />
+                            Exportar a PDF
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button
+                        onClick={() => setFormOpen(true)}
+                        className="gap-1.5 h-8 px-2 text-xs"
+                      >
+                        <Plus size={14} />
+                        Crear Recepción
+                      </Button>
                     </div>
                   </div>
 
-                  {/* Botones a la derecha (más compactos) */}
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-8 px-2 text-xs">
-                          <Settings2 className="mr-1.5 h-4 w-4" />
-                          Columnas
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[200px]">
-                        {columns
-                          .filter(
-                            column =>
-                              "accessorKey" in column && typeof column.accessorKey === "string"
-                          )
-                          .map(column => {
-                            const id = (column as any).accessorKey as string
-                            return (
-                              <DropdownMenuCheckboxItem
-                                key={id}
-                                className="capitalize"
-                                checked={columnVisibility[id] !== false}
-                                onCheckedChange={value =>
-                                  setColumnVisibility(prev => ({
-                                    ...prev,
-                                    [id]: value,
-                                  }))
-                                }
-                              >
-                                {id}
-                              </DropdownMenuCheckboxItem>
-                            )
-                          })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="gap-1.5 h-8 px-2 text-xs"
-                          disabled={inventarios.length === 0}
-                        >
-                          <Download size={14} />
-                          Exportar
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleExportExcel} className="gap-2">
-                          <FileSpreadsheet size={16} />
-                          Exportar a Excel
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
-                          <FileText size={16} />
-                          Exportar a PDF
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button onClick={() => setFormOpen(true)} className="gap-1.5 h-8 px-2 text-xs">
-                      <Plus size={14} />
-                      Crear Recepción
-                    </Button>
-                  </div>
+                  {/* Segunda fila: Tabs */}
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="inventario" className="gap-2">
+                      <Inbox className="w-4 h-4" />
+                      Inventario
+                    </TabsTrigger>
+                    <TabsTrigger value="costos" className="gap-2">
+                      <Calculator className="w-4 h-4" />
+                      Análisis de Costos
+                    </TabsTrigger>
+                    <TabsTrigger value="productos" className="gap-2">
+                      <Tag className="w-4 h-4" />
+                      Productos
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
               </CardHeader>
               <CardContent>
@@ -730,21 +735,40 @@ function InventarioRecibidoPageContent() {
             </StatsGrid>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                  <Calculator size={18} />
-                  Desglose de Costos ({productos.length})
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleExportAnalisis}
-                    variant="outline"
-                    className="gap-1.5 h-8 px-3 text-xs"
-                    disabled={productos.length === 0}
-                  >
-                    <Download size={14} />
-                    Exportar
-                  </Button>
+              <CardHeader className="space-y-0 pb-4">
+                <div className="space-y-4">
+                  {/* Primera fila: Título + Botón */}
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                      <Calculator size={18} />
+                      Desglose de Costos ({productos.length})
+                    </CardTitle>
+                    <Button
+                      onClick={handleExportAnalisis}
+                      variant="outline"
+                      className="gap-1.5 h-8 px-3 text-xs"
+                      disabled={productos.length === 0}
+                    >
+                      <Download size={14} />
+                      Exportar
+                    </Button>
+                  </div>
+
+                  {/* Segunda fila: Tabs */}
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="inventario" className="gap-2">
+                      <Inbox className="w-4 h-4" />
+                      Inventario
+                    </TabsTrigger>
+                    <TabsTrigger value="costos" className="gap-2">
+                      <Calculator className="w-4 h-4" />
+                      Análisis de Costos
+                    </TabsTrigger>
+                    <TabsTrigger value="productos" className="gap-2">
+                      <Tag className="w-4 h-4" />
+                      Productos
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
               </CardHeader>
               <CardContent>
@@ -829,21 +853,40 @@ function InventarioRecibidoPageContent() {
           {/* Tab 3: Productos */}
           <TabsContent value="productos" className="space-y-6 mt-0">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                  <Tag size={18} />
-                  Catálogo de Productos ({productosData.length})
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleExportProductos}
-                    variant="outline"
-                    className="gap-1.5 h-8 px-3 text-xs"
-                    disabled={productosData.length === 0}
-                  >
-                    <Download size={14} />
-                    Exportar
-                  </Button>
+              <CardHeader className="space-y-0 pb-4">
+                <div className="space-y-4">
+                  {/* Primera fila: Título + Botón */}
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                      <Tag size={18} />
+                      Catálogo de Productos ({productosData.length})
+                    </CardTitle>
+                    <Button
+                      onClick={handleExportProductos}
+                      variant="outline"
+                      className="gap-1.5 h-8 px-3 text-xs"
+                      disabled={productosData.length === 0}
+                    >
+                      <Download size={14} />
+                      Exportar
+                    </Button>
+                  </div>
+
+                  {/* Segunda fila: Tabs */}
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="inventario" className="gap-2">
+                      <Inbox className="w-4 h-4" />
+                      Inventario
+                    </TabsTrigger>
+                    <TabsTrigger value="costos" className="gap-2">
+                      <Calculator className="w-4 h-4" />
+                      Análisis de Costos
+                    </TabsTrigger>
+                    <TabsTrigger value="productos" className="gap-2">
+                      <Tag className="w-4 h-4" />
+                      Productos
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
               </CardHeader>
               <CardContent>
