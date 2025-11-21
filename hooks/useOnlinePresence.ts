@@ -9,13 +9,14 @@ export interface OnlineUser {
   email: string
   profilePhoto?: string | null
   lastActiveAt?: string
-  // Actividad del usuario (Fase 1 + Fase 4)
+  // Actividad del usuario (Fase 1 + Fase 4 + Fase 6)
   activity?: {
     page: string // Ruta: "/ordenes"
     pageName: string // Nombre: "Órdenes de Compra"
     pageIcon: string // Emoji: "📋"
     timestamp: number // Cuando se actualizó
     entityName?: string // Fase 4: Nombre de entidad específica: "OC-2024-001"
+    action?: string // Fase 6: Acción: "Viendo", "Editando", "Creando", "En"
   }
 }
 

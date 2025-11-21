@@ -165,6 +165,35 @@ export async function fetchEntityName(type: string, id: string): Promise<string 
 }
 
 /**
+ * Detectar la acción que está realizando el usuario (Fase 6)
+ */
+export function detectAction(pathname: string, searchParams?: URLSearchParams): string {
+  // Rutas de creación (páginas "nuevo")
+  if (
+    pathname === "/ordenes/nuevo" ||
+    pathname === "/pagos-china/nuevo" ||
+    pathname === "/gastos-logisticos/nuevo" ||
+    pathname === "/inventario-recibido/nuevo"
+  ) {
+    return "Creando"
+  }
+
+  // Detectar modo edición desde query params
+  if (searchParams?.get("mode") === "edit" || searchParams?.get("edit") === "true") {
+    return "Editando"
+  }
+
+  // Si está viendo una entidad específica, es "Viendo"
+  const entityInfo = extractEntityId(pathname)
+  if (entityInfo) {
+    return "Viendo"
+  }
+
+  // Por defecto, está navegando la página
+  return "En"
+}
+
+/**
  * Tipos de actividad del usuario
  */
 export interface UserActivity {
@@ -173,5 +202,6 @@ export interface UserActivity {
   pageIcon: string // Emoji: "📋"
   pageColor: string // Color: "text-purple-600"
   entityName?: string // Nombre de entidad: "OC-2024-001"
+  action?: string // Fase 6: "Viendo", "Editando", "Creando", "En"
   timestamp: number // Timestamp de última actividad
 }

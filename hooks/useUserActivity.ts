@@ -1,34 +1,41 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   getPageConfig,
   extractEntityId,
   fetchEntityName,
+  detectAction,
   type UserActivity,
 } from "@/lib/activity-helpers"
 
 /**
  * Hook para rastrear la actividad del usuario en tiempo real
- * Detecta la página actual y opcionalmente la entidad que está viendo
+ * Detecta la página actual, la entidad que está viendo, y la acción que está realizando
  */
 export function useUserActivity(): UserActivity {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const [activity, setActivity] = useState<UserActivity>(() => {
     const config = getPageConfig(pathname)
+    // Don't use searchParams in initial state to avoid SSR issues
+    const action = detectAction(pathname, undefined)
     return {
       page: pathname,
       pageName: config.name,
       pageIcon: config.icon,
       pageColor: config.color,
+      action,
       timestamp: Date.now(),
     }
   })
 
-  // Actualizar actividad cuando cambia la ruta (Fase 4: incluye detección de entidad)
+  // Actualizar actividad cuando cambia la ruta o query params (Fase 4 + Fase 6)
   useEffect(() => {
     const config = getPageConfig(pathname)
+    const action = detectAction(pathname, searchParams)
 
     // Crear actividad base
     const baseActivity: UserActivity = {
@@ -36,6 +43,7 @@ export function useUserActivity(): UserActivity {
       pageName: config.name,
       pageIcon: config.icon,
       pageColor: config.color,
+      action,
       timestamp: Date.now(),
     }
 
@@ -54,7 +62,7 @@ export function useUserActivity(): UserActivity {
         }
       })
     }
-  }, [pathname])
+  }, [pathname, searchParams])
 
   return activity
 }

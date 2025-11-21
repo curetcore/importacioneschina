@@ -64,20 +64,25 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     return () => clearInterval(interval)
   }, [])
 
-  // Obtener actividad del usuario (Fase 2 + Fase 4 + Fase 5)
+  // Obtener actividad del usuario (Fase 2 + Fase 4 + Fase 5 + Fase 6)
   const getActivityText = () => {
     if (!isOnline || !user.activity) {
       return null
     }
 
     let baseText = ""
+    const action = user.activity.action || "En"
 
-    // Fase 4: Si hay nombre de entidad, mostrar "Viendo [entidad]"
+    // Fase 6 + Fase 4: Combinar acción con entidad o página
     if (user.activity.entityName) {
-      baseText = `${user.activity.pageIcon} Viendo ${user.activity.entityName}`
+      // Con entidad: "Editando OC-2024-001", "Viendo OC-2024-001", "Creando nueva orden"
+      baseText = `${user.activity.pageIcon} ${action} ${user.activity.entityName}`
+    } else if (action === "Creando") {
+      // Creando sin entidad específica: "Creando nueva orden"
+      baseText = `${user.activity.pageIcon} ${action} ${user.activity.pageName.toLowerCase()}`
     } else {
-      // Fase 2: Mostrar "En [página]"
-      baseText = `${user.activity.pageIcon} En ${user.activity.pageName}`
+      // Fase 2: Sin entidad, mostrar acción + página: "En Órdenes de Compra"
+      baseText = `${user.activity.pageIcon} ${action} ${user.activity.pageName}`
     }
 
     // Fase 5: Agregar timestamp relativo
