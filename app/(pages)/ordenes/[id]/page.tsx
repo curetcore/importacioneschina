@@ -17,6 +17,7 @@ import { useEditingPresence } from "@/hooks/useEditingPresence"
 import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 import { showToast } from "@/lib/toast"
+import { CommentsSection } from "@/components/comments/CommentsSection"
 
 interface FileAttachment {
   nombre: string
@@ -715,6 +716,9 @@ export default function OCDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Sección de Comentarios */}
+        <CommentsSection entityType="OCChina" entityId={oc.id} />
       </div>
 
       {/* Diálogo para agregar adjuntos */}

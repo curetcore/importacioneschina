@@ -251,6 +251,7 @@ model User {
 
   // Relaciones
   auditLogs AuditLog[]
+  comments  Comment[]
 
   // Timestamps
   createdAt DateTime  @default(now()) @map("created_at")
@@ -430,4 +431,33 @@ model Notificacion {
   @@index([leida, createdAt]) // Índice compuesto para queries comunes
   @@index([usuarioId, leida, createdAt]) // Índice compuesto para notificaciones de usuario
   @@map("notificaciones")
+}
+
+// TABLA 11: COMENTARIOS - Sistema de comentarios en registros
+model Comment {
+  id String @id @default(cuid())
+
+  // Usuario que comenta
+  userId String @map("usuario_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Entidad comentada (polimórfico - puede ser OC, Pago, Gasto, etc.)
+  entityType String @map("entity_type") // "OCChina", "PagosChina", "GastosLogisticos", "InventarioRecibido", "Producto"
+  entityId   String @map("entity_id") // ID del registro comentado
+
+  // Contenido del comentario
+  content String @db.Text
+
+  // Edición
+  editedAt DateTime? @map("edited_at") // Si fue editado, cuándo
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([entityType, entityId]) // Índice compuesto para buscar comentarios de una entidad específica
+  @@index([entityType, entityId, createdAt]) // Índice compuesto para ordenar por fecha
+  @@index([createdAt])
+  @@map("comments")
 }
