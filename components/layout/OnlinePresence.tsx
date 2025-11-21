@@ -64,6 +64,7 @@ export function OnlinePresence() {
                   name: session.user.name!,
                   lastName: session.user.lastName ?? undefined,
                   email: session.user.email!,
+                  profilePhoto: session.user.profilePhoto ?? undefined,
                 }}
                 isOnline={true}
                 isSelf={true}

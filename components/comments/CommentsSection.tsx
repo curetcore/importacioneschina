@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast"
 import { MessageSquare, Send, Edit2, Trash2, X, Check } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
+import Image from "next/image"
 
 interface Comment {
   id: string
@@ -25,6 +26,7 @@ interface Comment {
     name: string
     lastName: string | null
     email: string
+    profilePhoto: string | null
   }
 }
 
@@ -252,9 +254,19 @@ export function CommentsSection({
               >
                 {/* Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
-                    {getUserInitials(comment.user)}
-                  </div>
+                  {comment.user.profilePhoto ? (
+                    <Image
+                      src={comment.user.profilePhoto}
+                      alt={getUserDisplayName(comment.user)}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
+                      {getUserInitials(comment.user)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Comment Content */}

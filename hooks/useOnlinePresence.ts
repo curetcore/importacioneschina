@@ -7,6 +7,7 @@ export interface OnlineUser {
   name: string
   lastName?: string
   email: string
+  profilePhoto?: string | null
   lastActiveAt?: string
 }
 

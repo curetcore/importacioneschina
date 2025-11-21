@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useQueryClient } from "@tanstack/react-query"
 import {
@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/toast"
+import { Camera, Trash2, Upload, User } from "lucide-react"
+import Image from "next/image"
 
 interface UserProfileModalProps {
   open: boolean
@@ -23,11 +25,129 @@ interface UserProfileModalProps {
 export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) {
   const { data: session, update } = useSession()
   const queryClient = useQueryClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: session?.user?.name || "",
     lastName: session?.user?.lastName || "",
   })
+
+  const currentPhoto = session?.user?.profilePhoto || null
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      showToast.error("Archivo inválido", {
+        description: "Solo se permiten imágenes (JPG, PNG, WEBP)",
+      })
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error("Archivo muy grande", {
+        description: "El tamaño máximo es 5MB",
+      })
+      return
+    }
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleUploadPhoto = async () => {
+    const file = fileInputRef.current?.files?.[0]
+    if (!file) return
+
+    setUploadingPhoto(true)
+    try {
+      const formData = new FormData()
+      formData.append("photo", file)
+
+      const response = await fetch("/api/user/profile-photo", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al subir foto")
+      }
+
+      // Update session
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          profilePhoto: result.data.url,
+        },
+      })
+
+      showToast.success("Foto actualizada", {
+        description: "Tu foto de perfil ha sido actualizada",
+      })
+
+      setPhotoPreview(null)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] })
+    } catch (error: any) {
+      console.error("Error uploading photo:", error)
+      showToast.error("Error al subir foto", {
+        description: error.message || "No se pudo subir la imagen",
+      })
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  const handleRemovePhoto = async () => {
+    if (!currentPhoto) return
+
+    setUploadingPhoto(true)
+    try {
+      const response = await fetch("/api/user/profile-photo", {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || "Error al eliminar foto")
+      }
+
+      // Update session
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          profilePhoto: null,
+        },
+      })
+
+      showToast.success("Foto eliminada", {
+        description: "Tu foto de perfil ha sido eliminada",
+      })
+
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] })
+    } catch (error: any) {
+      console.error("Error removing photo:", error)
+      showToast.error("Error al eliminar foto", {
+        description: error.message || "No se pudo eliminar la imagen",
+      })
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,6 +201,97 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
+          {/* Profile Photo Section */}
+          <div className="space-y-3">
+            <Label>Foto de Perfil</Label>
+            <div className="flex items-center gap-4">
+              {/* Avatar Preview */}
+              <div className="relative flex-shrink-0">
+                {photoPreview || currentPhoto ? (
+                  <Image
+                    src={photoPreview || currentPhoto || ""}
+                    alt="Profile"
+                    width={80}
+                    height={80}
+                    className="rounded-full object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold border-2 border-gray-200">
+                    <User size={32} />
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Controls */}
+              <div className="flex-1 space-y-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+
+                {!photoPreview ? (
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhoto || loading}
+                      className="gap-2"
+                    >
+                      <Camera size={16} />
+                      {currentPhoto ? "Cambiar Foto" : "Subir Foto"}
+                    </Button>
+
+                    {currentPhoto && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemovePhoto}
+                        disabled={uploadingPhoto || loading}
+                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 size={16} />
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleUploadPhoto}
+                      disabled={uploadingPhoto || loading}
+                      className="gap-2"
+                    >
+                      <Upload size={16} />
+                      {uploadingPhoto ? "Subiendo..." : "Confirmar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPhotoPreview(null)
+                        if (fileInputRef.current) fileInputRef.current.value = ""
+                      }}
+                      disabled={uploadingPhoto || loading}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500">Formatos: JPG, PNG, WEBP • Máximo 5MB</p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={session?.user?.email || ""} disabled className="bg-gray-50" />

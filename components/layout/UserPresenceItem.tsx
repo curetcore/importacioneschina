@@ -1,6 +1,7 @@
 import { OnlineUser } from "@/hooks/useOnlinePresence"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
+import Image from "next/image"
 
 interface UserPresenceItemProps {
   user: OnlineUser
@@ -55,9 +56,19 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     <div className="flex items-center gap-3 py-2 px-1 rounded-md hover:bg-gray-50 transition-colors">
       {/* Avatar con badge de estado */}
       <div className="relative flex-shrink-0">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-          {initials}
-        </div>
+        {user.profilePhoto ? (
+          <Image
+            src={user.profilePhoto}
+            alt={displayName}
+            width={40}
+            height={40}
+            className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+            {initials}
+          </div>
+        )}
 
         {/* Badge de estado (verde = online, gris = offline) */}
         <div

@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
           name: session.user.name || "",
           lastName: (session.user as any).lastName || "",
           email: session.user.email || "",
+          profilePhoto: (session.user as any).profilePhoto || null,
         },
       }
 
