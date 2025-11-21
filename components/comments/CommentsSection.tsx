@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import { es } from "date-fns/locale"
 import Image from "next/image"
 import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
+import { subscribeToChannel, unsubscribeFromChannel } from "@/lib/pusher-client"
 
 interface Comment {
   id: string
@@ -203,6 +204,46 @@ export function CommentsSection({
       .toUpperCase()
       .slice(0, 2)
   }
+
+  // Subscribe to Pusher channel for real-time updates
+  useEffect(() => {
+    const channelName = `comments-${entityType}-${entityId}`
+    const channel = subscribeToChannel(channelName)
+
+    // Listen for new comments
+    channel.bind("new-comment", (data: Comment) => {
+      queryClient.setQueryData<Comment[]>(["comments", entityType, entityId], old => {
+        if (!old) return [data]
+        // Avoid duplicates
+        if (old.some(c => c.id === data.id)) return old
+        return [...old, data]
+      })
+    })
+
+    // Listen for updated comments
+    channel.bind("comment-updated", (data: Comment) => {
+      queryClient.setQueryData<Comment[]>(["comments", entityType, entityId], old => {
+        if (!old) return [data]
+        return old.map(comment => (comment.id === data.id ? data : comment))
+      })
+    })
+
+    // Listen for deleted comments
+    channel.bind("comment-deleted", (data: { id: string }) => {
+      queryClient.setQueryData<Comment[]>(["comments", entityType, entityId], old => {
+        if (!old) return []
+        return old.filter(comment => comment.id !== data.id)
+      })
+    })
+
+    // Cleanup on unmount
+    return () => {
+      channel.unbind("new-comment")
+      channel.unbind("comment-updated")
+      channel.unbind("comment-deleted")
+      unsubscribeFromChannel(channelName)
+    }
+  }, [entityType, entityId, queryClient])
 
   return (
     <Card>

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { auditCreate } from "@/lib/audit-logger"
+import { triggerPusherEvent } from "@/lib/pusher-server"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -132,6 +133,21 @@ export async function POST(request: NextRequest) {
       request,
       session.user.email || ""
     )
+
+    // Trigger Pusher event for real-time updates
+    try {
+      const channelName = `comments-${entityType}-${entityId}`
+      await triggerPusherEvent(channelName, "new-comment", {
+        ...comment,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+        editedAt: comment.editedAt ? comment.editedAt.toISOString() : null,
+      })
+      console.log(`✅ [Comments] Pusher event sent to channel: ${channelName}`)
+    } catch (pusherError) {
+      // Don't fail the request if Pusher fails
+      console.error("⚠️ [Comments] Pusher event failed:", pusherError)
+    }
 
     return NextResponse.json({ success: true, data: comment }, { status: 201 })
   } catch (error) {

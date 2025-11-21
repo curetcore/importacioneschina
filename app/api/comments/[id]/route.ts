@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
+import { triggerPusherEvent } from "@/lib/pusher-server"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -73,6 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             name: true,
             lastName: true,
             email: true,
+            profilePhoto: true,
           },
         },
       },
@@ -86,6 +88,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       request,
       session.user.email || ""
     )
+
+    // Trigger Pusher event for real-time updates
+    try {
+      const channelName = `comments-${comment.entityType}-${comment.entityId}`
+      await triggerPusherEvent(channelName, "comment-updated", {
+        ...comment,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+        editedAt: comment.editedAt ? comment.editedAt.toISOString() : null,
+      })
+      console.log(`✅ [Comments] Update event sent to channel: ${channelName}`)
+    } catch (pusherError) {
+      console.error("⚠️ [Comments] Pusher update event failed:", pusherError)
+    }
 
     return NextResponse.json({ success: true, data: comment })
   } catch (error) {
@@ -146,6 +162,19 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       request,
       session.user.email || ""
     )
+
+    // Trigger Pusher event for real-time updates
+    try {
+      const channelName = `comments-${existingComment.entityType}-${existingComment.entityId}`
+      await triggerPusherEvent(channelName, "comment-deleted", {
+        id: commentId,
+        entityType: existingComment.entityType,
+        entityId: existingComment.entityId,
+      })
+      console.log(`✅ [Comments] Delete event sent to channel: ${channelName}`)
+    } catch (pusherError) {
+      console.error("⚠️ [Comments] Pusher delete event failed:", pusherError)
+    }
 
     return NextResponse.json({ success: true, message: "Comment deleted successfully" })
   } catch (error) {
