@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
-import { auditCreate, AuditAction } from "@/lib/audit-logger"
+import { auditCreate } from "@/lib/audit-logger"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -119,18 +119,17 @@ export async function POST(request: NextRequest) {
     })
 
     // Create audit log
-    await auditCreate({
-      entidad: "Comment",
-      entidadId: comment.id,
-      accion: AuditAction.CREATE,
-      usuarioEmail: session.user.email || "",
-      cambiosDespues: {
+    await auditCreate(
+      "Comment",
+      {
+        id: comment.id,
         entityType,
         entityId,
         content,
       },
-      descripcion: `Comentario agregado en ${entityType}`,
-    })
+      request,
+      session.user.email || ""
+    )
 
     return NextResponse.json({ success: true, data: comment }, { status: 201 })
   } catch (error) {

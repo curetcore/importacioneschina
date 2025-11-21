@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
-import { auditUpdate, auditDelete, AuditAction } from "@/lib/audit-logger"
+import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -79,20 +79,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     // Create audit log
-    await auditUpdate({
-      entidad: "Comment",
-      entidadId: comment.id,
-      accion: AuditAction.UPDATE,
-      usuarioEmail: session.user.email || "",
-      cambiosAntes: {
-        content: existingComment.content,
-      },
-      cambiosDespues: {
-        content,
-      },
-      camposModificados: ["content"],
-      descripcion: `Comentario editado`,
-    })
+    await auditUpdate(
+      "Comment",
+      { id: comment.id, content: existingComment.content },
+      { id: comment.id, content },
+      request,
+      session.user.email || ""
+    )
 
     return NextResponse.json({ success: true, data: comment })
   } catch (error) {
@@ -142,18 +135,17 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     })
 
     // Create audit log
-    await auditDelete({
-      entidad: "Comment",
-      entidadId: commentId,
-      accion: AuditAction.DELETE,
-      usuarioEmail: session.user.email || "",
-      cambiosAntes: {
+    await auditDelete(
+      "Comment",
+      {
+        id: commentId,
         content: existingComment.content,
         entityType: existingComment.entityType,
         entityId: existingComment.entityId,
       },
-      descripcion: `Comentario eliminado`,
-    })
+      request,
+      session.user.email || ""
+    )
 
     return NextResponse.json({ success: true, message: "Comment deleted successfully" })
   } catch (error) {
