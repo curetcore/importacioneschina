@@ -65,6 +65,13 @@ export async function POST(request: NextRequest) {
           lastName: (session.user as any).lastName || "",
           email: session.user.email || "",
           profilePhoto: (session.user as any).profilePhoto || null,
+          // Actividad del usuario (se actualizará en Fase 3 con eventos custom)
+          activity: {
+            page: "/dashboard",
+            pageName: "Conectándose",
+            pageIcon: "🌐",
+            timestamp: Date.now(),
+          },
         },
       }
 

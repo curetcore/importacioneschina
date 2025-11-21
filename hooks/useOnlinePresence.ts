@@ -9,6 +9,13 @@ export interface OnlineUser {
   email: string
   profilePhoto?: string | null
   lastActiveAt?: string
+  // Actividad del usuario (Fase 1)
+  activity?: {
+    page: string // Ruta: "/ordenes"
+    pageName: string // Nombre: "Órdenes de Compra"
+    pageIcon: string // Emoji: "📋"
+    timestamp: number // Cuando se actualizó
+  }
 }
 
 export interface PresenceMember {
