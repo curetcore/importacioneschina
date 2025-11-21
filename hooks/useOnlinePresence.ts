@@ -144,6 +144,33 @@ export function useOnlinePresence() {
           console.error("❌ [OnlinePresence] Subscription error:", error)
         })
 
+        // Listen for activity updates (Fase 3)
+        channel.bind(
+          "activity-updated",
+          (data: { userId: string; activity: OnlineUser["activity"] }) => {
+            // Don't update own activity from broadcasts
+            if (data.userId === session.user?.id) {
+              return
+            }
+
+            // Update the user's activity in the online users list
+            setOnlineUsers(prev =>
+              prev.map(user =>
+                user.id === data.userId
+                  ? {
+                      ...user,
+                      activity: data.activity,
+                    }
+                  : user
+              )
+            )
+
+            console.log(
+              `✅ [OnlinePresence] Activity updated for user ${data.userId}: ${data.activity?.pageIcon} ${data.activity?.pageName}`
+            )
+          }
+        )
+
         return channel
       } catch (error) {
         console.error("❌ [OnlinePresence] Error setting up presence:", error)

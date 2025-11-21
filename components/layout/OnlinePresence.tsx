@@ -5,6 +5,7 @@ import { Users } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useOnlinePresence } from "@/hooks/useOnlinePresence"
+import { useActivityBroadcast } from "@/hooks/useActivityBroadcast"
 import { UserPresenceItem } from "./UserPresenceItem"
 
 /**
@@ -14,6 +15,9 @@ export function OnlinePresence() {
   const [open, setOpen] = useState(false)
   const { data: session } = useSession()
   const { onlineUsers, recentUsers } = useOnlinePresence()
+
+  // Fase 3: Broadcast automático de cambios de actividad
+  useActivityBroadcast()
 
   // Total incluye al usuario actual + otros usuarios conectados
   const totalOnline = onlineUsers.length + (session?.user ? 1 : 0)
