@@ -169,6 +169,7 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
           className={`text-xs truncate ${
             isOnline ? "text-green-600 font-medium" : "text-gray-500"
           }`}
+          suppressHydrationWarning
         >
           {getLastActiveText()}
         </p>
@@ -179,7 +180,9 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
             {activityData.Icon && (
               <activityData.Icon className={`w-3 h-3 flex-shrink-0 ${activityData.color}`} />
             )}
-            <p className="text-xs text-gray-500 truncate">{activityData.text}</p>
+            <p className="text-xs text-gray-500 truncate" suppressHydrationWarning>
+              {activityData.text}
+            </p>
           </div>
         )}
       </div>

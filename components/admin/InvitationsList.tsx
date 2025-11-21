@@ -191,7 +191,7 @@ export function InvitationsList() {
                       Invitado por: <span className="font-medium">{invitation.invitedBy}</span>
                     </span>
                     <span>•</span>
-                    <span>
+                    <span suppressHydrationWarning>
                       Enviada{" "}
                       {formatDistanceToNow(new Date(invitation.createdAt), {
                         addSuffix: true,
@@ -201,7 +201,7 @@ export function InvitationsList() {
                     {invitation.status === "pending" && (
                       <>
                         <span>•</span>
-                        <span>
+                        <span suppressHydrationWarning>
                           Expira{" "}
                           {formatDistanceToNow(new Date(invitation.expiresAt), {
                             addSuffix: true,
@@ -213,7 +213,7 @@ export function InvitationsList() {
                     {invitation.status === "expired" && (
                       <>
                         <span>•</span>
-                        <span className="text-red-600">
+                        <span className="text-red-600" suppressHydrationWarning>
                           Expiró{" "}
                           {formatDistanceToNow(new Date(invitation.expiresAt), {
                             addSuffix: true,

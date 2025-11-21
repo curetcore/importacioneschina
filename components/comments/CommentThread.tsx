@@ -116,7 +116,7 @@ export function CommentThread({
               <span className="font-semibold text-sm text-gray-900">
                 {comment.user.name} {comment.user.lastName || ""}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500" suppressHydrationWarning>
                 {formatDistanceToNow(new Date(comment.createdAt), {
                   addSuffix: true,
                   locale: es,
