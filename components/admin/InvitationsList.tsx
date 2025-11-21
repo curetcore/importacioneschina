@@ -110,7 +110,7 @@ export function InvitationsList() {
     const { icon: Icon, label, className } = config[status]
 
     return (
-      <Badge variant="default" className={`${className} flex items-center gap-1 w-fit`}>
+      <Badge variant="default" className={`${className} inline-flex items-center gap-1`}>
         <Icon className="w-3 h-3" />
         {label}
       </Badge>
