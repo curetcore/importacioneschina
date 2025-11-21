@@ -30,12 +30,12 @@ export default function UserDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
-          <User size={16} className="text-gray-600" />
-          <span className="text-sm text-gray-700 font-medium">{fullName || session.user.name}</span>
+        <button className="flex items-center gap-2 px-3 py-1.5 bg-shopify-navbar-search border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors group">
+          <User size={16} className="text-white" />
+          <span className="text-sm text-white font-medium">{fullName || session.user.name}</span>
           <ChevronDown
             size={14}
-            className="text-gray-400 transition-transform group-data-[state=open]:rotate-180"
+            className="text-gray-300 transition-transform group-data-[state=open]:rotate-180"
           />
         </button>
       </DropdownMenuTrigger>
