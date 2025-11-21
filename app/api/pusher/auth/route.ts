@@ -43,12 +43,27 @@ export async function POST(request: NextRequest) {
 
     console.log("🔐 [Pusher Auth] Authenticating:", {
       user: session.user.email,
+      userId: session.user.id,
       channel: channelName,
       socketId,
     })
 
     // Presence channel authentication
     if (channelName.startsWith("presence-")) {
+      // CRITICAL: Verify user.id exists (user needs to re-login after auth-options update)
+      if (!session.user.id) {
+        console.error(
+          "❌ [Pusher Auth] Missing user.id in session. User needs to logout and login again!"
+        )
+        return NextResponse.json(
+          {
+            success: false,
+            error: "User session missing ID. Please logout and login again.",
+          },
+          { status: 401 }
+        )
+      }
+
       const presenceData = {
         user_id: session.user.id,
         user_info: {
@@ -58,6 +73,8 @@ export async function POST(request: NextRequest) {
           email: session.user.email || "",
         },
       }
+
+      console.log("📋 [Pusher Auth] Presence data:", presenceData)
 
       const auth = pusher.authorizeChannel(socketId, channelName, presenceData)
 
