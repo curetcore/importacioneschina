@@ -54,8 +54,9 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
 
     // Validate file size (20MB)
     if (file.size > 20 * 1024 * 1024) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2)
       showToast.error("Archivo muy grande", {
-        description: "El tamaño máximo es 20MB",
+        description: `Tu foto pesa ${fileSizeMB}MB. El tamaño máximo permitido es 20MB. Por favor selecciona una imagen más pequeña.`,
       })
       return
     }
