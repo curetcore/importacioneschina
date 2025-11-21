@@ -15,10 +15,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes - datos frescos durante 5 min (optimizado)
-            gcTime: 10 * 60 * 1000, // 10 minutes - mantener en cache 10 min
-            retry: 2, // Reintentar 2 veces si falla (mejorado de 1 a 2)
-            refetchOnWindowFocus: false, // No refetch al cambiar de pestaña
+            staleTime: 30 * 1000, // 30 seconds - datos frescos durante 30 seg para mejor UX
+            gcTime: 5 * 60 * 1000, // 5 minutes - mantener en cache 5 min
+            retry: 2, // Reintentar 2 veces si falla
+            refetchOnWindowFocus: true, // Refetch al cambiar de pestaña para datos actualizados
             refetchOnReconnect: true, // Refetch al reconectar internet
           },
           mutations: {
