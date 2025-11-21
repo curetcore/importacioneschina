@@ -103,63 +103,6 @@ export function DistribucionCostosSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Header card explaining the feature */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calculator className="w-5 h-5" />
-            ¿Cómo funciona la distribución de costos?
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm text-blue-900">
-            <p>
-              <strong>Por Peso:</strong> Los costos se distribuyen proporcionalmente al peso de cada
-              producto. Ideal para fletes que cobran por kilogramo.
-            </p>
-            <p>
-              <strong>Por Volumen:</strong> Los costos se distribuyen proporcionalmente al volumen
-              (CBM) de cada producto. Ideal para fletes que cobran por metro cúbico.
-            </p>
-            <p>
-              <strong>Por Valor FOB:</strong> Los costos se distribuyen proporcionalmente al valor
-              del producto. Ideal para aduanas, seguros, y comisiones.
-            </p>
-            <p>
-              <strong>Por Unidades:</strong> Los costos se distribuyen igualmente entre todas las
-              unidades. Se usa como respaldo cuando no hay datos de peso/volumen.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Important note about payments */}
-      <Card className="bg-green-50 border-green-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <DollarSign className="w-5 h-5" />
-            Pagos a Proveedor - Asignación Automática
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-green-900">
-            <p>
-              Los <strong>Pagos a Proveedor</strong> NO requieren configuración de distribución.
-            </p>
-            <p className="mt-2">
-              Se asignan <strong>automáticamente y directamente</strong> por valor FOB: cada producto
-              recibe exactamente la porción de los pagos que corresponde a su costo FOB, sin
-              necesidad de distribución adicional.
-            </p>
-            <p className="mt-2 text-xs">
-              Ejemplo: Si el Producto A cuesta $1,000 USD y el Producto B cuesta $2,000 USD del
-              total de $3,000 USD pagados, el Producto A recibe 33.3% de los pagos y el Producto B
-              recibe 66.7%.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Cost type configuration cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {Object.entries(costTypeLabels).map(([tipoCosto, info]) => {
@@ -200,6 +143,65 @@ export function DistribucionCostosSettings() {
             </Card>
           )
         })}
+      </div>
+
+      {/* Documentation cards - moved to the end */}
+      <div className="space-y-4 mt-6">
+        {/* Info card: How it works */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-blue-900">
+              <Calculator className="w-5 h-5" />
+              ¿Cómo funciona la distribución de costos?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-blue-800 space-y-2">
+            <p>
+              Cada tipo de costo (flete, aduana, transporte local, comisiones) se distribuye entre
+              todos los productos de una importación según el método seleccionado:
+            </p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li>
+                <strong>Por Peso:</strong> Productos más pesados absorben mayor proporción del costo
+              </li>
+              <li>
+                <strong>Por Volumen:</strong> Productos con mayor CBM absorben más costo (ideal para
+                flete)
+              </li>
+              <li>
+                <strong>Por Valor FOB:</strong> Productos más costosos absorben más (ideal para
+                seguros)
+              </li>
+              <li>
+                <strong>Por Unidades:</strong> Distribución igualitaria entre todos los productos
+              </li>
+            </ul>
+            <p className="pt-2 text-xs italic">
+              💡 Tip: El método por volumen es recomendado para gastos de flete internacional,
+              mientras que por valor FOB es ideal para gastos de aduana y comisiones.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Info card: Supplier payments */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-green-900">
+              <DollarSign className="w-5 h-5" />
+              Pagos a Proveedor - Asignación Automática
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-green-800 space-y-2">
+            <p>
+              <strong>Los pagos al proveedor NO se distribuyen</strong> - se asignan directamente a
+              cada producto según su valor FOB individual.
+            </p>
+            <p className="text-xs">
+              Ejemplo: Si pagas $5,000 al proveedor y tienes 3 productos con valores FOB de $2,000,
+              $2,000 y $1,000, cada producto absorberá exactamente esa proporción del pago.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

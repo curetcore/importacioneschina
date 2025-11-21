@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/chart-colors"
 import { BarChart, Bar } from "recharts"
 import { PieChart, Pie, Cell } from "recharts"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
@@ -63,9 +64,6 @@ interface DashboardData {
     }>
   }
 }
-
-// Color palette for charts
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658"]
 
 const kpiCards = [
   {
@@ -203,7 +201,7 @@ export default function DashboardPage() {
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="inversion" fill="#0088FE" />
+                  <Bar dataKey="inversion" fill={CHART_COLORS[0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -228,7 +226,10 @@ export default function DashboardPage() {
                     dataKey="value"
                   >
                     {data.gastos.gastosPorTipo.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
@@ -258,7 +259,7 @@ export default function DashboardPage() {
                     formatter={(value: number) => [value.toLocaleString(), "Unidades"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="value" fill="#00C49F" />
+                  <Bar dataKey="value" fill={CHART_COLORS[1]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -283,7 +284,10 @@ export default function DashboardPage() {
                     dataKey="value"
                   >
                     {data.financiero.pagosPorMetodo.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
@@ -325,7 +329,7 @@ export default function DashboardPage() {
                       return producto ? `${producto.sku} - ${producto.nombre}` : label
                     }}
                   />
-                  <Bar dataKey="unidades" fill="#FFBB28" />
+                  <Bar dataKey="unidades" fill={CHART_COLORS[2]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -355,7 +359,7 @@ export default function DashboardPage() {
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="inversion" fill="#FF8042" />
+                  <Bar dataKey="inversion" fill={CHART_COLORS[3]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

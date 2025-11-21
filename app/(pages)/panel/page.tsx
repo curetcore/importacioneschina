@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import MainLayout from "@/components/layout/MainLayout"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { CHART_COLORS } from "@/lib/chart-colors"
 import {
   TrendingUp,
   Package,
@@ -83,18 +84,6 @@ interface DashboardData {
     }>
   }
 }
-
-// Colores para gráficos - Shopify inspired
-const CHART_COLORS = [
-  "#1A1A1A", // Negro principal
-  "#4A5568", // Gris oscuro
-  "#718096", // Gris medio
-  "#A0AEC0", // Gris claro
-  "#2D3748", // Gris muy oscuro
-  "#4299E1", // Azul
-  "#48BB78", // Verde
-  "#ED8936", // Naranja
-]
 
 export default function PanelPage() {
   const [data, setData] = useState<DashboardData | null>(null)
