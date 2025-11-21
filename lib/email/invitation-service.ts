@@ -179,7 +179,7 @@ export async function sendUserInvitation(input: SendInvitationInput) {
 
     console.log("📧 [Invitation] Resend API response:", JSON.stringify(result, null, 2))
     console.log(`✅ [Invitation] Email sent successfully to ${input.email}`)
-    console.log(`✅ [Invitation] Email ID:`, result?.id || "no-id")
+    console.log(`✅ [Invitation] Email ID:`, result.data?.id || "no-id")
   } catch (error) {
     console.error("❌ [Invitation] Error sending email - Full error:", error)
     console.error("❌ [Invitation] Error name:", error instanceof Error ? error.name : "unknown")
