@@ -76,20 +76,40 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
   }
 
   if (compact) {
-    // Vista compacta para tablas
+    // Vista compacta para tablas - solo miniaturas clicables
     return (
       <>
-        <div className="flex items-center gap-1 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap" onClick={e => e.stopPropagation()}>
           {attachments.map((file, index) => (
             <button
               key={index}
-              onClick={() => handleFileClick(file)}
-              className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs transition-colors group"
+              onClick={e => {
+                e.stopPropagation()
+                handleFileClick(file)
+              }}
+              className="relative group"
               title={`${file.nombre} (${formatFileSize(file.size)})`}
             >
-              {renderThumbnail(file)}
-              <span className="max-w-[100px] truncate">{file.nombre}</span>
-              <Eye size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              {file.tipo.startsWith("image/") ? (
+                <div className="relative">
+                  <img
+                    src={file.url}
+                    alt={file.nombre}
+                    className="w-10 h-10 object-cover rounded border-2 border-gray-200 group-hover:border-blue-400 transition-all shadow-sm"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded transition-all flex items-center justify-center">
+                    <Eye
+                      size={16}
+                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-10 h-10 bg-gray-100 border-2 border-gray-200 group-hover:border-blue-400 rounded flex items-center justify-center transition-all">
+                  {getFileIcon(file.tipo)}
+                </div>
+              )}
             </button>
           ))}
         </div>
@@ -105,47 +125,45 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
         {attachments.map((file, index) => {
           const isImage = file.tipo.startsWith("image/")
           return (
-            <div
+            <button
               key={index}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+              onClick={e => {
+                e.stopPropagation()
+                handleFileClick(file)
+              }}
+              className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group text-left"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {isImage ? (
-                  <div className="flex-shrink-0">
-                    <img
-                      src={file.url}
-                      alt={file.nombre}
-                      className="w-16 h-16 object-cover rounded border border-gray-200 shadow-sm"
-                      loading="lazy"
+              {isImage ? (
+                <div className="flex-shrink-0 relative">
+                  <img
+                    src={file.url}
+                    alt={file.nombre}
+                    className="w-16 h-16 object-cover rounded border border-gray-200 shadow-sm group-hover:shadow-md transition-shadow"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded transition-all flex items-center justify-center">
+                    <Eye
+                      size={20}
+                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                   </div>
-                ) : (
-                  <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
-                    {getFileIcon(file.tipo)}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate">{file.nombre}</div>
-                  <div className="text-xs text-gray-500">{formatFileSize(file.size)}</div>
                 </div>
+              ) : (
+                <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                  {getFileIcon(file.tipo)}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-700 transition-colors">
+                  {file.nombre}
+                </div>
+                <div className="text-xs text-gray-500">{formatFileSize(file.size)}</div>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleFileClick(file)}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium px-3 py-1.5 hover:bg-blue-50 rounded flex items-center gap-1.5"
-                >
-                  <Eye size={14} />
-                  Ver
-                </button>
-                <a
-                  href={file.url}
-                  download={file.nombre}
-                  className="text-xs text-gray-600 hover:text-gray-700 font-medium px-3 py-1.5 hover:bg-gray-100 rounded flex items-center"
-                >
-                  <Download size={14} />
-                </a>
-              </div>
-            </div>
+              <Eye
+                size={18}
+                className="text-gray-400 group-hover:text-blue-600 transition-colors"
+              />
+            </button>
           )
         })}
       </div>

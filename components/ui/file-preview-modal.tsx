@@ -88,7 +88,7 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
               <img
                 src={file.url}
                 alt={file.nombre}
-                className="max-w-full max-h-[70vh] object-contain"
+                className="max-w-full max-h-[70vh] object-contain rounded shadow-lg"
               />
             </div>
           )}
@@ -113,6 +113,27 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Botones de acción en el footer del modal */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="text-sm text-gray-500">
+            {isImage && "Haz clic derecho para copiar o guardar"}
+            {isPDF && "Usa los controles del visor para navegar"}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDownload} className="gap-2">
+              <Download size={16} />
+              Descargar
+            </Button>
+            {(isImage || isPDF) && (
+              <a href={file.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="gap-2">
+                  Abrir en nueva pestaña
+                </Button>
+              </a>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
