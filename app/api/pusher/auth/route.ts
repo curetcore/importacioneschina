@@ -41,13 +41,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log("🔐 [Pusher Auth] Authenticating:", {
-      user: session.user.email,
-      userId: session.user.id,
-      channel: channelName,
-      socketId,
-    })
-
     // Presence channel authentication
     if (channelName.startsWith("presence-")) {
       // CRITICAL: Verify user.id exists (user needs to re-login after auth-options update)
@@ -74,11 +67,7 @@ export async function POST(request: NextRequest) {
         },
       }
 
-      console.log("📋 [Pusher Auth] Presence data:", presenceData)
-
       const auth = pusher.authorizeChannel(socketId, channelName, presenceData)
-
-      console.log("✅ [Pusher Auth] Presence channel authorized")
 
       return NextResponse.json(auth)
     }
@@ -86,8 +75,6 @@ export async function POST(request: NextRequest) {
     // Private channel authentication
     if (channelName.startsWith("private-")) {
       const auth = pusher.authorizeChannel(socketId, channelName)
-
-      console.log("✅ [Pusher Auth] Private channel authorized")
 
       return NextResponse.json(auth)
     }

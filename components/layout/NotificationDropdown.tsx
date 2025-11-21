@@ -133,7 +133,7 @@ export default function NotificationDropdown() {
       {/* Bell Button con Badge */}
       <button
         onClick={toggleDropdown}
-        className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
+        className="relative p-2 bg-shopify-navbar-search border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
         title="Notificaciones"
       >
         <Bell size={20} className="text-white" />

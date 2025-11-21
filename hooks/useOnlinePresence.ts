@@ -26,15 +26,8 @@ export function useOnlinePresence() {
 
   useEffect(() => {
     if (!pusher || !session?.user) {
-      console.log("📡 [OnlinePresence] Pusher or session not available", {
-        hasPusher: !!pusher,
-        hasSession: !!session,
-        hasUser: !!session?.user,
-      })
       return
     }
-
-    console.log("🚀 [OnlinePresence] Setting up presence channel for user:", session.user.email)
 
     // Wait for Pusher to connect before subscribing
     const setupPresenceChannel = () => {
@@ -42,74 +35,41 @@ export function useOnlinePresence() {
         // Subscribe to global presence channel
         const channel = pusher.subscribe("presence-online-users") as any
 
-        // Log subscription state
-        console.log("📡 [OnlinePresence] Channel subscription state:", channel.subscriptionState)
-
         // When subscription succeeds, get initial member list
         channel.bind("pusher:subscription_succeeded", (members: any) => {
-          console.log("✅ [OnlinePresence] Subscription succeeded!")
-
-          const allMembers: any[] = []
           const otherMembers: OnlineUser[] = []
 
           members.each((member: PresenceMember) => {
-            allMembers.push({ id: member.id, info: member.info })
-
             if (member.id !== session.user?.id) {
               otherMembers.push(member.info)
             }
           })
 
-          console.log("👥 [OnlinePresence] All members:", allMembers)
-          console.log("👥 [OnlinePresence] Other members (excluding me):", otherMembers)
-          console.log("👤 [OnlinePresence] My ID:", session.user?.id)
-
           setOnlineUsers(otherMembers)
-          console.log(`✅ [OnlinePresence] State updated: ${otherMembers.length} users online`)
         })
 
         // When someone joins
         channel.bind("pusher:member_added", (member: PresenceMember) => {
-          console.log("➕ [OnlinePresence] User joined:", {
-            id: member.id,
-            info: member.info,
-            isMe: member.id === session.user?.id,
-          })
-
           if (member.id === session.user?.id) {
-            console.log("⏭️  [OnlinePresence] Ignoring self join event")
             return
           }
 
           setOnlineUsers(prev => {
             // Avoid duplicates
             if (prev.some(u => u.id === member.id)) {
-              console.log("⚠️  [OnlinePresence] User already in list, skipping")
               return prev
             }
-            const updated = [...prev, member.info]
-            console.log(`✅ [OnlinePresence] Added user, new count: ${updated.length}`)
-            return updated
+            return [...prev, member.info]
           })
         })
 
         // When someone leaves
         channel.bind("pusher:member_removed", (member: PresenceMember) => {
-          console.log("➖ [OnlinePresence] User left:", {
-            id: member.id,
-            info: member.info,
-          })
-
           if (member.id === session.user?.id) {
-            console.log("⏭️  [OnlinePresence] Ignoring self leave event")
             return
           }
 
-          setOnlineUsers(prev => {
-            const updated = prev.filter(u => u.id !== member.id)
-            console.log(`✅ [OnlinePresence] Removed user, new count: ${updated.length}`)
-            return updated
-          })
+          setOnlineUsers(prev => prev.filter(u => u.id !== member.id))
 
           // Add to recent users list
           setRecentUsers(prev => {
@@ -138,20 +98,14 @@ export function useOnlinePresence() {
 
     // Check connection state and setup channel accordingly
     const connectionState = pusher.connection.state
-    console.log("📊 [OnlinePresence] Pusher connection state:", connectionState)
-
     let channel: any = null
 
     if (connectionState === "connected") {
       // Already connected, setup immediately
-      console.log("✅ [OnlinePresence] Pusher already connected, subscribing now")
       channel = setupPresenceChannel()
     } else {
       // Wait for connection
-      console.log("⏳ [OnlinePresence] Waiting for Pusher to connect...")
-
       const handleConnected = () => {
-        console.log("✅ [OnlinePresence] Pusher connected, subscribing now")
         channel = setupPresenceChannel()
       }
 
@@ -161,7 +115,6 @@ export function useOnlinePresence() {
       return () => {
         pusher.connection.unbind("connected", handleConnected)
         if (channel) {
-          console.log("📤 [OnlinePresence] Cleaning up presence channel")
           channel.unbind_all()
           pusher.unsubscribe("presence-online-users")
         }
@@ -171,7 +124,6 @@ export function useOnlinePresence() {
     // Cleanup for when already connected
     return () => {
       if (channel) {
-        console.log("📤 [OnlinePresence] Cleaning up presence channel")
         channel.unbind_all()
         pusher.unsubscribe("presence-online-users")
       }
