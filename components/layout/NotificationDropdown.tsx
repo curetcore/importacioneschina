@@ -14,11 +14,13 @@ import {
   Edit,
   Trash2,
   RotateCcw,
+  User,
   type LucideIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
 import { useNotifications } from "@/hooks/useNotifications"
+import Image from "next/image"
 
 // Mapeo de nombres de íconos a componentes lucide-react
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -46,8 +48,46 @@ const EMOJI_TO_ICON_MAP: Record<string, LucideIcon> = {
   "⚡": Zap,
 }
 
-// Componente para renderizar íconos dinámicamente
-function NotificationIcon({ iconName }: { iconName: string | null }) {
+// Componente para renderizar íconos dinámicamente o foto de perfil del actor
+function NotificationIcon({
+  iconName,
+  actor,
+}: {
+  iconName: string | null
+  actor?: {
+    id: string
+    name: string
+    lastName?: string | null
+    profilePhoto?: string | null
+  } | null
+}) {
+  // Si hay un actor con foto de perfil, mostrar la foto
+  if (actor?.profilePhoto) {
+    return (
+      <div className="relative w-10 h-10 flex-shrink-0">
+        <Image
+          src={actor.profilePhoto}
+          alt={actor.name}
+          width={40}
+          height={40}
+          className="rounded-full object-cover border border-gray-200"
+          unoptimized
+        />
+      </div>
+    )
+  }
+
+  // Si hay un actor sin foto, mostrar iniciales
+  if (actor) {
+    const initials = `${actor.name[0]}${actor.lastName?.[0] || ""}`.toUpperCase()
+    return (
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold border border-gray-200">
+        {initials}
+      </div>
+    )
+  }
+
+  // Si no hay actor, mostrar ícono como antes
   if (!iconName) {
     return <Bell size={20} className="text-gray-400" />
   }
@@ -206,7 +246,7 @@ export default function NotificationDropdown() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
-                      <NotificationIcon iconName={notif.icono} />
+                      <NotificationIcon iconName={notif.icono} actor={notif.actor} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">

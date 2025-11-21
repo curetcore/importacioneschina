@@ -135,6 +135,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             entidadId: comment.entityId,
             url: `/${comment.entityType.toLowerCase()}/${comment.entityId}#comment-${commentId}`,
             usuarioId: comment.userId,
+            actorId: session.user.id, // Usuario que reaccionó
             prioridad: "low",
           })
           console.log(`✅ [Reactions] Created notification for comment author: ${comment.userId}`)

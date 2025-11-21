@@ -251,9 +251,10 @@ model User {
   profilePhoto String? @map("profile_photo") // URL de la foto de perfil
 
   // Relaciones
-  auditLogs AuditLog[]
-  comments  Comment[]
-  reactions Reaction[]
+  auditLogs               AuditLog[]
+  comments                Comment[]
+  reactions               Reaction[]
+  notificationsTriggered  Notificacion[] @relation("NotificationActor") // Notificaciones donde este usuario fue el actor
 
   // Timestamps
   createdAt DateTime  @default(now()) @map("created_at")
@@ -413,6 +414,10 @@ model Notificacion {
   // Usuario destinatario (futuro: multi-usuario)
   usuarioId String? @map("usuario_id") // null = todos los usuarios
 
+  // Usuario que realizó la acción (para mostrar foto de perfil)
+  actorId String? @map("actor_id") // Usuario que disparó la notificación
+  actor   User?   @relation("NotificationActor", fields: [actorId], references: [id])
+
   // Prioridad (futuro)
   prioridad String @default("normal") // "low", "normal", "high", "urgent"
 
@@ -426,6 +431,7 @@ model Notificacion {
   @@index([tipo])
   @@index([leida])
   @@index([usuarioId])
+  @@index([actorId])
   @@index([createdAt])
   @@index([expiresAt]) // Índice para limpiar notificaciones expiradas
   @@index([entidad, entidadId])

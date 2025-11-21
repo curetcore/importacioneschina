@@ -24,6 +24,7 @@ export interface CreateNotificationInput {
   url?: string
   auditLogId?: string
   usuarioId?: string
+  actorId?: string // Usuario que realizó la acción
   prioridad?: NotificationPriority
   expiresAt?: Date
 }
@@ -90,6 +91,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
         url: input.url,
         auditLogId: input.auditLogId,
         usuarioId: input.usuarioId,
+        actorId: input.actorId,
         prioridad: input.prioridad || "normal",
         expiresAt: input.expiresAt,
       },

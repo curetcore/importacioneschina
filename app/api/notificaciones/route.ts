@@ -41,6 +41,16 @@ export async function GET(request: NextRequest) {
           createdAt: "desc",
         },
         take: Math.min(limit, 50), // Máximo 50
+        include: {
+          actor: {
+            select: {
+              id: true,
+              name: true,
+              lastName: true,
+              profilePhoto: true,
+            },
+          },
+        },
       }),
       db.notificacion.count({
         where: {
