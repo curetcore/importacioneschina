@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { AttachmentsList } from "@/components/ui/attachments-list"
+import { RenameAttachmentModal } from "@/components/ui/rename-attachment-modal"
 import { useEditingPresence } from "@/hooks/useEditingPresence"
 import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
+import { showToast } from "@/lib/toast"
 
 interface FileAttachment {
   nombre: string
@@ -53,6 +55,8 @@ export default function PagoDetailPage() {
   const [pago, setPago] = useState<PagoDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [fileToRename, setFileToRename] = useState<FileAttachment | null>(null)
 
   const fetchPago = () => {
     if (params.id) {
@@ -72,6 +76,39 @@ export default function PagoDetailPage() {
   useEffect(() => {
     fetchPago()
   }, [params.id])
+
+  const handleRenameAttachment = (file: FileAttachment) => {
+    setFileToRename(file)
+    setRenameModalOpen(true)
+  }
+
+  const handleDeleteAttachment = async (file: FileAttachment) => {
+    if (!confirm(`¿Estás seguro de eliminar "${file.nombre}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/pagos-china/${pago?.id}/attachments?fileUrl=${encodeURIComponent(file.url)}`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar adjunto")
+      }
+
+      showToast.success("Adjunto eliminado", {
+        description: `${file.nombre} ha sido eliminado`,
+      })
+      fetchPago()
+    } catch (error) {
+      showToast.error("Error al eliminar", {
+        description: "No se pudo eliminar el adjunto",
+      })
+    }
+  }
 
   const { editingUsers } = useEditingPresence({
     resourceType: "payment",
@@ -257,7 +294,11 @@ export default function PagoDetailPage() {
                 No hay archivos adjuntos para este pago
               </div>
             ) : (
-              <AttachmentsList attachments={pago.adjuntos} />
+              <AttachmentsList
+                attachments={pago.adjuntos}
+                onRename={handleRenameAttachment}
+                onDelete={handleDeleteAttachment}
+              />
             )}
           </CardContent>
         </Card>
@@ -273,6 +314,22 @@ export default function PagoDetailPage() {
         currentAttachments={pago.adjuntos || []}
         onSuccess={fetchPago}
       />
+
+      {/* Diálogo para renombrar adjuntos */}
+      {fileToRename && (
+        <RenameAttachmentModal
+          open={renameModalOpen}
+          onOpenChange={setRenameModalOpen}
+          module="pagos-china"
+          recordId={pago.id}
+          fileUrl={fileToRename.url}
+          currentName={fileToRename.nombre}
+          onSuccess={() => {
+            fetchPago()
+            setFileToRename(null)
+          }}
+        />
+      )}
     </MainLayout>
   )
 }

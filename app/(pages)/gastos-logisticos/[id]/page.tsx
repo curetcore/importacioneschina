@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { AddAttachmentsDialog } from "@/components/ui/add-attachments-dialog"
 import { AttachmentsList } from "@/components/ui/attachments-list"
+import { RenameAttachmentModal } from "@/components/ui/rename-attachment-modal"
 import { useEditingPresence } from "@/hooks/useEditingPresence"
 import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
+import { showToast } from "@/lib/toast"
 
 interface FileAttachment {
   nombre: string
@@ -51,6 +53,8 @@ export default function GastoDetailPage() {
   const [gasto, setGasto] = useState<GastoDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [attachmentsDialogOpen, setAttachmentsDialogOpen] = useState(false)
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [fileToRename, setFileToRename] = useState<FileAttachment | null>(null)
 
   const fetchGasto = () => {
     if (params.id) {
@@ -70,6 +74,39 @@ export default function GastoDetailPage() {
   useEffect(() => {
     fetchGasto()
   }, [params.id])
+
+  const handleRenameAttachment = (file: FileAttachment) => {
+    setFileToRename(file)
+    setRenameModalOpen(true)
+  }
+
+  const handleDeleteAttachment = async (file: FileAttachment) => {
+    if (!confirm(`¿Estás seguro de eliminar "${file.nombre}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `/api/gastos-logisticos/${gasto?.id}/attachments?fileUrl=${encodeURIComponent(file.url)}`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar adjunto")
+      }
+
+      showToast.success("Adjunto eliminado", {
+        description: `${file.nombre} ha sido eliminado`,
+      })
+      fetchGasto()
+    } catch (error) {
+      showToast.error("Error al eliminar", {
+        description: "No se pudo eliminar el adjunto",
+      })
+    }
+  }
 
   const { editingUsers } = useEditingPresence({
     resourceType: "expense",
@@ -264,7 +301,11 @@ export default function GastoDetailPage() {
                 No hay archivos adjuntos para este gasto
               </div>
             ) : (
-              <AttachmentsList attachments={gasto.adjuntos} />
+              <AttachmentsList
+                attachments={gasto.adjuntos}
+                onRename={handleRenameAttachment}
+                onDelete={handleDeleteAttachment}
+              />
             )}
           </CardContent>
         </Card>
@@ -280,6 +321,22 @@ export default function GastoDetailPage() {
         currentAttachments={gasto.adjuntos || []}
         onSuccess={fetchGasto}
       />
+
+      {/* Diálogo para renombrar adjuntos */}
+      {fileToRename && (
+        <RenameAttachmentModal
+          open={renameModalOpen}
+          onOpenChange={setRenameModalOpen}
+          module="gastos-logisticos"
+          recordId={gasto.id}
+          fileUrl={fileToRename.url}
+          currentName={fileToRename.nombre}
+          onSuccess={() => {
+            fetchGasto()
+            setFileToRename(null)
+          }}
+        />
+      )}
     </MainLayout>
   )
 }
