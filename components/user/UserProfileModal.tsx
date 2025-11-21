@@ -18,6 +18,7 @@ import { Camera, Trash2, User } from "lucide-react"
 import Image from "next/image"
 import { ProfilePhotoEditor } from "./ProfilePhotoEditor"
 import { readFile } from "@/lib/image-crop-helper"
+import { disconnectPusher } from "@/lib/pusher-client"
 
 interface UserProfileModalProps {
   open: boolean
@@ -100,6 +101,14 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       setImageSrc(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
+
+      // Force Pusher reconnection to update presence photo
+      disconnectPusher()
+
+      // Reload page to reconnect Pusher with fresh photo
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } catch (error: any) {
       console.error("Error uploading photo:", error)
       showToast.error("Error al subir foto", {
@@ -139,6 +148,14 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       })
 
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
+
+      // Force Pusher reconnection to update presence photo
+      disconnectPusher()
+
+      // Reload page to reconnect Pusher with fresh photo
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } catch (error: any) {
       console.error("Error removing photo:", error)
       showToast.error("Error al eliminar foto", {
@@ -174,7 +191,15 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         description: "Tu información ha sido actualizada exitosamente",
       })
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
-      onOpenChange(false)
+
+      // Force Pusher reconnection to update presence data with new name
+      // This ensures "Usuarios Conectados" shows updated user info immediately
+      disconnectPusher()
+
+      // Reload page to reconnect Pusher with fresh user data
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } catch (error: any) {
       console.error("Error updating profile:", error)
       showToast.error("Error al actualizar perfil", {
