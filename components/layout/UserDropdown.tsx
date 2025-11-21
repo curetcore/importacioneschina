@@ -17,7 +17,8 @@ export default function UserDropdown() {
 
   if (!session?.user) return null
 
-  const fullName = [session.user.name, session.user.lastName].filter(Boolean).join(" ")
+  // Solo mostrar el nombre (sin apellido)
+  const displayName = session.user.name
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" })
@@ -32,7 +33,7 @@ export default function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 px-3 py-1.5 bg-shopify-navbar-search border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors group">
           <User size={16} className="text-white" />
-          <span className="text-sm text-white font-medium">{fullName || session.user.name}</span>
+          <span className="text-sm text-white font-medium">{displayName}</span>
           <ChevronDown
             size={14}
             className="text-gray-300 transition-transform group-data-[state=open]:rotate-180"

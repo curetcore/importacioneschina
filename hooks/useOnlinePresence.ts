@@ -15,6 +15,48 @@ export interface PresenceMember {
   info: OnlineUser
 }
 
+const RECENT_USERS_KEY = "online_presence_recent_users"
+const DAYS_TO_KEEP = 14
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
+ * Cargar usuarios recientes desde localStorage
+ */
+function loadRecentUsers(): OnlineUser[] {
+  if (typeof window === "undefined") return []
+
+  try {
+    const stored = localStorage.getItem(RECENT_USERS_KEY)
+    if (!stored) return []
+
+    const users: OnlineUser[] = JSON.parse(stored)
+    const now = Date.now()
+    const cutoff = now - DAYS_TO_KEEP * MS_PER_DAY
+
+    // Filtrar usuarios más antiguos de 14 días
+    return users.filter(user => {
+      if (!user.lastActiveAt) return false
+      const lastActive = new Date(user.lastActiveAt).getTime()
+      return lastActive > cutoff
+    })
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Guardar usuarios recientes en localStorage
+ */
+function saveRecentUsers(users: OnlineUser[]) {
+  if (typeof window === "undefined") return
+
+  try {
+    localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(users))
+  } catch (error) {
+    console.error("Failed to save recent users:", error)
+  }
+}
+
 /**
  * Hook para trackear usuarios conectados en tiempo real usando Pusher presence channel
  */
@@ -22,7 +64,7 @@ export function useOnlinePresence() {
   const pusher = usePusher()
   const { data: session } = useSession()
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([])
-  const [recentUsers, setRecentUsers] = useState<OnlineUser[]>([])
+  const [recentUsers, setRecentUsers] = useState<OnlineUser[]>(() => loadRecentUsers())
 
   useEffect(() => {
     if (!pusher || !session?.user) {
@@ -71,16 +113,21 @@ export function useOnlinePresence() {
 
           setOnlineUsers(prev => prev.filter(u => u.id !== member.id))
 
-          // Add to recent users list
+          // Add to recent users list (mantener historial de 14 días)
           setRecentUsers(prev => {
+            const userWithTimestamp = {
+              ...member.info,
+              lastActiveAt: new Date().toISOString(),
+            }
+
+            // Filtrar usuario actual de la lista
             const filtered = prev.filter(u => u.id !== member.id)
-            return [
-              {
-                ...member.info,
-                lastActiveAt: new Date().toISOString(),
-              },
-              ...filtered,
-            ].slice(0, 5) // Keep last 5 recent users
+
+            // Agregar al inicio y guardar en localStorage
+            const updated = [userWithTimestamp, ...filtered]
+            saveRecentUsers(updated)
+
+            return updated
           })
         })
 
@@ -129,6 +176,19 @@ export function useOnlinePresence() {
       }
     }
   }, [pusher, session?.user])
+
+  // Limpiar usuarios expirados periódicamente
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        const cleaned = loadRecentUsers()
+        setRecentUsers(cleaned)
+      },
+      60 * 60 * 1000
+    ) // Cada hora
+
+    return () => clearInterval(interval)
+  }, [])
 
   return {
     onlineUsers,
