@@ -535,7 +535,8 @@ export default function OCDetailPage() {
                     {oc.pagosChina.map(pago => (
                       <tr
                         key={pago.id}
-                        className="border-b border-[#e4e4e4] hover:bg-[#f6f6f6] transition-colors"
+                        onClick={() => router.push(`/pagos-china/${pago.id}`)}
+                        className="border-b border-[#e4e4e4] hover:bg-blue-50 transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4 text-sm font-medium text-gray-900 border-r border-[#f1f1f1] last:border-r-0">
                           {pago.idPago}
@@ -619,7 +620,8 @@ export default function OCDetailPage() {
                       return (
                         <tr
                           key={gasto.id}
-                          className="border-b border-[#e4e4e4] hover:bg-[#f6f6f6] transition-colors"
+                          onClick={() => router.push(`/gastos-logisticos/${gasto.id}`)}
+                          className="border-b border-[#e4e4e4] hover:bg-blue-50 transition-colors cursor-pointer"
                         >
                           <td className="py-3 px-4 text-sm font-medium text-gray-900 border-r border-[#f1f1f1] last:border-r-0">
                             {gasto.idGasto}
@@ -721,7 +723,8 @@ export default function OCDetailPage() {
                     {oc.inventarioRecibido.map(inv => (
                       <tr
                         key={inv.id}
-                        className="border-b border-[#e4e4e4] hover:bg-[#f6f6f6] transition-colors"
+                        onClick={() => router.push(`/inventario-recibido/${inv.id}`)}
+                        className="border-b border-[#e4e4e4] hover:bg-blue-50 transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4 text-sm font-medium text-gray-900 border-r border-[#f1f1f1] last:border-r-0">
                           {inv.idRecepcion}
