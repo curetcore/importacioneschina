@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/components/ui/toast"
-import { Mail, Clock, CheckCircle, XCircle, Trash2, AlertCircle } from "lucide-react"
+import { Mail, Trash2, AlertCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -92,27 +92,23 @@ export function InvitationsList() {
   const StatusBadge = ({ status }: { status: Invitation["status"] }) => {
     const config = {
       pending: {
-        icon: Clock,
         label: "Pendiente",
         className: "bg-yellow-100 text-yellow-800 border-yellow-300",
       },
       accepted: {
-        icon: CheckCircle,
         label: "Aceptada",
         className: "bg-green-100 text-green-800 border-green-300",
       },
       expired: {
-        icon: XCircle,
         label: "Expirada",
         className: "bg-red-100 text-red-800 border-red-300",
       },
     }
 
-    const { icon: Icon, label, className } = config[status]
+    const { label, className } = config[status]
 
     return (
-      <Badge variant="default" className={`${className} inline-flex items-center gap-1`}>
-        <Icon className="w-3 h-3" />
+      <Badge variant="default" className={className}>
         {label}
       </Badge>
     )
