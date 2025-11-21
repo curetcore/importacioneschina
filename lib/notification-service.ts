@@ -130,6 +130,9 @@ export async function createNotification(input: CreateNotificationInput): Promis
 
 /**
  * Crear notificación desde audit log
+ * Implementa filtrado inteligente por rol de usuario:
+ * - Superadmin/Admin: Reciben TODAS las notificaciones (global)
+ * - Limitado: Solo reciben notificaciones de entidades que ellos crearon/poseen
  */
 export async function createNotificationFromAudit(
   auditLogId: string,
@@ -185,17 +188,86 @@ export async function createNotificationFromAudit(
       }
     }
 
-    await createNotification({
-      tipo: "audit",
-      titulo,
-      descripcion,
-      icono,
-      entidad,
-      entidadId,
-      url,
-      auditLogId,
-      prioridad: accion === "DELETE" ? "high" : "normal",
+    // ========================================
+    // FILTRADO INTELIGENTE POR ROL
+    // ========================================
+
+    // 1. Obtener todos los usuarios activos
+    const allUsers = await db.user.findMany({
+      where: { activo: true },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+      },
     })
+
+    // 2. Determinar el owner de la entidad (quien la creó)
+    let entityOwnerId: string | null = null
+
+    try {
+      // Mapeo de entidades a su campo de usuario/owner
+      const entityUserFields: Record<string, string> = {
+        OCChina: "usuarioId",
+        PagosChina: "usuarioId",
+        GastosLogisticos: "usuarioId",
+        InventarioRecibido: "usuarioId",
+        Comment: "userId",
+      }
+
+      const userField = entityUserFields[entidad]
+
+      if (userField) {
+        // Obtener el owner de la entidad
+        const entityData: any = await (db as any)[
+          entidad.charAt(0).toLowerCase() + entidad.slice(1)
+        ]
+          .findUnique({
+            where: { id: entidadId },
+            select: { [userField]: true },
+          })
+          .catch(() => null)
+
+        if (entityData) {
+          entityOwnerId = entityData[userField]
+        }
+      }
+    } catch (error) {
+      console.log("⚠️ [Notification] Could not determine entity owner:", error)
+    }
+
+    // 3. Crear notificaciones según el rol del usuario
+    for (const user of allUsers) {
+      let shouldReceiveNotification = false
+
+      if (user.role === "superadmin" || user.role === "admin") {
+        // Superadmin y Admin reciben TODAS las notificaciones
+        shouldReceiveNotification = true
+      } else if (user.role === "limitado") {
+        // Limitados solo reciben notificaciones de entidades que poseen
+        if (entityOwnerId && entityOwnerId === user.id) {
+          shouldReceiveNotification = true
+        }
+      }
+
+      // 4. Crear notificación individual si corresponde
+      if (shouldReceiveNotification) {
+        await createNotification({
+          tipo: "audit",
+          titulo,
+          descripcion,
+          icono,
+          entidad,
+          entidadId,
+          url,
+          auditLogId,
+          usuarioId: user.id, // ← Notificación INDIVIDUAL
+          prioridad: accion === "DELETE" ? "high" : "normal",
+        })
+      }
+    }
+
+    console.log(`✅ [Notification] Created filtered notifications for ${allUsers.length} users`)
   } catch (error) {
     console.error("Error creating notification from audit:", error)
   }

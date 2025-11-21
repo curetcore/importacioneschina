@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth-options"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { handleApiError } from "@/lib/api-error-handler"
 import { markAllNotificationsAsRead } from "@/lib/notification-service"
@@ -6,9 +8,15 @@ import { withRateLimit, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 
-// GET /api/notificaciones - Obtener notificaciones del usuario
+// GET /api/notificaciones - Obtener notificaciones del usuario autenticado
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "No autorizado" }, { status: 401 })
+    }
+
     // Rate limiting para queries - 60 req/60s
     const rateLimitError = await withRateLimit(request, RateLimits.query)
     if (rateLimitError) return rateLimitError
@@ -19,11 +27,11 @@ export async function GET(request: NextRequest) {
     // Parámetros de consulta
     const limit = parseInt(searchParams.get("limit") || "20")
     const onlyUnread = searchParams.get("unread") === "true"
-    const usuarioId = searchParams.get("usuarioId") || undefined
 
+    // IMPORTANTE: Solo devolver notificaciones del usuario autenticado
     const where = {
+      usuarioId: session.user.id,
       ...(onlyUnread && { leida: false }),
-      ...(usuarioId && { usuarioId }),
     }
 
     const [notificaciones, totalUnread] = await Promise.all([
@@ -36,16 +44,16 @@ export async function GET(request: NextRequest) {
       }),
       db.notificacion.count({
         where: {
+          usuarioId: session.user.id,
           leida: false,
-          ...(usuarioId && { usuarioId }),
         },
       }),
     ])
 
     return NextResponse.json({
       success: true,
-      notifications: notificaciones, // Cambio: data → notifications
-      unreadCount: totalUnread, // Cambio: totalUnread → unreadCount
+      notifications: notificaciones,
+      unreadCount: totalUnread,
     })
   } catch (error) {
     return handleApiError(error)
