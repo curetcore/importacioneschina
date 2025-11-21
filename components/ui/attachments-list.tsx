@@ -4,6 +4,7 @@ import { useState } from "react"
 import { FileText, Image as ImageIcon, Download, Eye } from "lucide-react"
 import { Button } from "./button"
 import { FilePreviewModal } from "./file-preview-modal"
+import { PDFThumbnail } from "./pdf-thumbnail"
 
 interface FileAttachment {
   nombre: string
@@ -48,17 +49,33 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
     return <FileText size={14} className="text-gray-500" />
   }
 
-  const renderThumbnail = (file: FileAttachment) => {
+  const renderThumbnail = (file: FileAttachment, size: "small" | "large" = "small") => {
+    const dimensions = size === "small" ? { w: 40, h: 40 } : { w: 64, h: 64 }
+
     if (file.tipo.startsWith("image/")) {
       return (
         <img
           src={file.url}
           alt={file.nombre}
-          className="w-8 h-8 object-cover rounded border border-gray-200"
+          className={`object-cover rounded border border-gray-200 ${
+            size === "small" ? "w-10 h-10" : "w-16 h-16"
+          }`}
           loading="lazy"
         />
       )
     }
+
+    if (file.tipo === "application/pdf") {
+      return (
+        <PDFThumbnail
+          url={file.url}
+          width={dimensions.w}
+          height={dimensions.h}
+          className="shadow-sm"
+        />
+      )
+    }
+
     return getFileIcon(file.tipo)
   }
 
@@ -80,38 +97,40 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
     return (
       <>
         <div className="flex items-center gap-1.5 flex-wrap" onClick={e => e.stopPropagation()}>
-          {attachments.map((file, index) => (
-            <button
-              key={index}
-              onClick={e => {
-                e.stopPropagation()
-                handleFileClick(file)
-              }}
-              className="relative group"
-              title={`${file.nombre} (${formatFileSize(file.size)})`}
-            >
-              {file.tipo.startsWith("image/") ? (
-                <div className="relative">
-                  <img
-                    src={file.url}
-                    alt={file.nombre}
-                    className="w-10 h-10 object-cover rounded border-2 border-gray-200 group-hover:border-blue-400 transition-all shadow-sm"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded transition-all flex items-center justify-center">
-                    <Eye
-                      size={16}
-                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    />
+          {attachments.map((file, index) => {
+            const isImage = file.tipo.startsWith("image/")
+            const isPDF = file.tipo === "application/pdf"
+
+            return (
+              <button
+                key={index}
+                onClick={e => {
+                  e.stopPropagation()
+                  handleFileClick(file)
+                }}
+                className="relative group"
+                title={`${file.nombre} (${formatFileSize(file.size)})`}
+              >
+                {isImage || isPDF ? (
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded border-2 border-gray-200 group-hover:border-blue-400 transition-all shadow-sm overflow-hidden">
+                      {renderThumbnail(file, "small")}
+                    </div>
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded transition-all flex items-center justify-center">
+                      <Eye
+                        size={16}
+                        className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg"
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="w-10 h-10 bg-gray-100 border-2 border-gray-200 group-hover:border-blue-400 rounded flex items-center justify-center transition-all">
-                  {getFileIcon(file.tipo)}
-                </div>
-              )}
-            </button>
-          ))}
+                ) : (
+                  <div className="w-10 h-10 bg-gray-100 border-2 border-gray-200 group-hover:border-blue-400 rounded flex items-center justify-center transition-all">
+                    {getFileIcon(file.tipo)}
+                  </div>
+                )}
+              </button>
+            )
+          })}
         </div>
         <FilePreviewModal file={selectedFile} open={previewOpen} onOpenChange={setPreviewOpen} />
       </>
@@ -124,6 +143,9 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
       <div className="space-y-2">
         {attachments.map((file, index) => {
           const isImage = file.tipo.startsWith("image/")
+          const isPDF = file.tipo === "application/pdf"
+          const hasPreview = isImage || isPDF
+
           return (
             <button
               key={index}
@@ -133,18 +155,15 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
               }}
               className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group text-left"
             >
-              {isImage ? (
+              {hasPreview ? (
                 <div className="flex-shrink-0 relative">
-                  <img
-                    src={file.url}
-                    alt={file.nombre}
-                    className="w-16 h-16 object-cover rounded border border-gray-200 shadow-sm group-hover:shadow-md transition-shadow"
-                    loading="lazy"
-                  />
+                  <div className="w-16 h-16 rounded border border-gray-200 shadow-sm group-hover:shadow-md transition-shadow overflow-hidden">
+                    {renderThumbnail(file, "large")}
+                  </div>
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded transition-all flex items-center justify-center">
                     <Eye
                       size={20}
-                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg"
                     />
                   </div>
                 </div>
