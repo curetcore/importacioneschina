@@ -35,9 +35,9 @@ export function getPusherClient(): PusherClient {
         },
       },
       // Configurar authorizer personalizado para incluir credentials
-      authorizer: (channel: { name: string }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      authorizer: ((channel: { name: string }) => {
         return {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           authorize: (socketId: string, callback: (error: Error | null, data: any) => void) => {
             fetch("/api/pusher/auth", {
               method: "POST",
@@ -65,7 +65,7 @@ export function getPusherClient(): PusherClient {
               })
           },
         }
-      },
+      }) as any,
     })
 
     // Eventos de conexión (PRODUCCION - DEBUG TEMPORAL)
