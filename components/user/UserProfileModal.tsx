@@ -52,10 +52,10 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       return
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (20MB)
+    if (file.size > 20 * 1024 * 1024) {
       showToast.error("Archivo muy grande", {
-        description: "El tamaño máximo es 5MB",
+        description: "El tamaño máximo es 20MB",
       })
       return
     }
@@ -284,7 +284,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
                   </div>
 
                   <p className="text-xs text-gray-500">
-                    Formatos: JPG, PNG, WEBP • Máximo 5MB
+                    Formatos: JPG, PNG, WEBP • Máximo 20MB
                     <br />
                     Podrás ajustar y recortar la imagen después de seleccionarla
                   </p>
