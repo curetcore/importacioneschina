@@ -92,7 +92,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       }
 
       // Update session - NextAuth will fetch fresh data from database
-      await update()
+      // IMPORTANTE: Pasar objeto vacío para triggerar el JWT callback con trigger="update"
+      await update({})
 
       showToast.success("Foto actualizada", {
         description: "Tu foto de perfil ha sido actualizada",
@@ -141,7 +142,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       }
 
       // Update session - NextAuth will fetch fresh data from database
-      await update()
+      // IMPORTANTE: Pasar objeto vacío para triggerar el JWT callback con trigger="update"
+      await update({})
 
       showToast.success("Foto eliminada", {
         description: "Tu foto de perfil ha sido eliminada",
@@ -185,7 +187,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       const data = await response.json()
 
       // Actualizar sesión de NextAuth - will fetch fresh data from database
-      await update()
+      // IMPORTANTE: Pasar objeto vacío para triggerar el JWT callback con trigger="update"
+      await update({})
 
       showToast.success("Perfil actualizado", {
         description: "Tu información ha sido actualizada exitosamente",
