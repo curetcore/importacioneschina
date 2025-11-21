@@ -13,7 +13,8 @@ export interface OnlineUser {
   activity?: {
     page: string // Ruta: "/ordenes"
     pageName: string // Nombre: "Órdenes de Compra"
-    pageIcon: string // Emoji: "📋"
+    pageIcon: string // Ícono lucide-react: "ClipboardList"
+    pageColor?: string // Color del ícono: "text-purple-600"
     timestamp: number // Cuando se actualizó
     entityName?: string // Fase 4: Nombre de entidad específica: "OC-2024-001"
     action?: string // Fase 6: Acción: "Viendo", "Editando", "Creando", "En"
