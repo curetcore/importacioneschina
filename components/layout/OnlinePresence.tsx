@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useOnlinePresence } from "@/hooks/useOnlinePresence"
 import { UserPresenceItem } from "./UserPresenceItem"
@@ -19,15 +18,19 @@ export function OnlinePresence() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+        <button
+          className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
+          title="Usuarios conectados en tiempo real"
         >
-          <Users className="h-4 w-4" />
-          <span className="text-sm font-medium">{totalOnline}</span>
-          <span className="text-xs text-gray-500">online</span>
-        </Button>
+          <Users size={20} className="text-white" />
+          {totalOnline > 0 && (
+            <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {totalOnline > 9 ? "9+" : totalOnline}
+            </span>
+          )}
+          {/* Indicador de tiempo real activo */}
+          <span className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full h-2.5 w-2.5 border-2 border-white"></span>
+        </button>
       </PopoverTrigger>
 
       <PopoverContent className="w-80" align="end" side="bottom">
