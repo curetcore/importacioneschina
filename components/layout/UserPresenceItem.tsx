@@ -97,6 +97,12 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
       return null
     }
 
+    // ⚠️ NO mostrar actividad si solo está "En línea" (es redundante con "Activo ahora")
+    // Solo mostrar cuando el usuario está HACIENDO ALGO específico
+    if (user.activity.pageName === "En línea" && !user.activity.entityName) {
+      return null
+    }
+
     // Obtener el ícono correspondiente
     const Icon = ICON_MAP[user.activity.pageIcon] || Globe
     const color = user.activity.pageColor || "text-gray-500"
