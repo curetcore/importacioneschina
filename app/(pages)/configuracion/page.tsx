@@ -765,56 +765,56 @@ function ConfiguracionPageContent() {
             </TabsContent>
 
             <TabsContent value="cuenta" className="space-y-6 mt-6">
-              {isSuperAdmin ? (
+              {/* Perfil Personal - Visible para TODOS los usuarios incluyendo superadmin */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información Personal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Administra tu información personal y preferencias de cuenta
+                    </p>
+                    <Button
+                      onClick={() => setProfileModalOpen(true)}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <UserCircle className="w-4 h-4 mr-2" />
+                      Editar Perfil
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Seguridad</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Cambia tu contraseña para mantener tu cuenta segura
+                    </p>
+                    <Button
+                      onClick={() => setPasswordModalOpen(true)}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      Cambiar Contraseña
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Secciones de Administración - Solo para superadmin */}
+              {isSuperAdmin && (
                 <>
                   <AdminUsersSection />
                   <InvitationsSection />
-                  <UserActivitySection />
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Información Personal</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-500 mb-4">
-                          Administra tu información personal y preferencias de cuenta
-                        </p>
-                        <Button
-                          onClick={() => setProfileModalOpen(true)}
-                          className="w-full"
-                          variant="outline"
-                        >
-                          <UserCircle className="w-4 h-4 mr-2" />
-                          Editar Perfil
-                        </Button>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Seguridad</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-500 mb-4">
-                          Cambia tu contraseña para mantener tu cuenta segura
-                        </p>
-                        <Button
-                          onClick={() => setPasswordModalOpen(true)}
-                          className="w-full"
-                          variant="outline"
-                        >
-                          Cambiar Contraseña
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <UserActivitySection />
                 </>
               )}
+
+              {/* Actividad del Usuario - Visible para todos */}
+              <UserActivitySection />
             </TabsContent>
           </Tabs>
         </div>
