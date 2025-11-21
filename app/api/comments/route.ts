@@ -216,27 +216,28 @@ export async function POST(request: NextRequest) {
     // Create notifications for mentioned users
     if (mentions.length > 0) {
       try {
-        const mentionNotifications = mentions
-          .filter(mentionedUserId => mentionedUserId !== session.user.id) // Don't notify yourself
-          .map(mentionedUserId => ({
-            tipo: "mention",
+        const mentionedUserIds = mentions.filter(
+          mentionedUserId => mentionedUserId !== session.user.id
+        ) // Don't notify yourself
+
+        // Create individual notifications (to trigger Pusher events)
+        for (const mentionedUserId of mentionedUserIds) {
+          await createNotification({
+            tipo: "alert",
             titulo: `${comment.user.name} te mencionó en un comentario`,
             descripcion: content.slice(0, 200), // First 200 chars
-            icono: "💬",
+            icono: "MessageSquare",
             entidad: entityType,
             entidadId: entityId,
-            url: `/${entityType.toLowerCase()}/${entityId}`,
+            url: `${getEntityUrl(entityType, entityId)}#comment-${comment.id}`,
             usuarioId: mentionedUserId,
-            leida: false,
-          }))
-
-        if (mentionNotifications.length > 0) {
-          await prisma.notificacion.createMany({
-            data: mentionNotifications,
+            actorId: session.user.id, // Usuario que mencionó
+            prioridad: "normal",
           })
-          console.log(
-            `✅ [Comments] Created ${mentionNotifications.length} mention notification(s)`
-          )
+        }
+
+        if (mentionedUserIds.length > 0) {
+          console.log(`✅ [Comments] Created ${mentionedUserIds.length} mention notification(s)`)
         }
       } catch (notifError) {
         console.error("⚠️ [Comments] Failed to create mention notifications:", notifError)

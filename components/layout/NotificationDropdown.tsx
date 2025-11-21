@@ -15,6 +15,8 @@ import {
   Trash2,
   RotateCcw,
   User,
+  MessageSquare,
+  Heart,
   type LucideIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -32,6 +34,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Edit,
   Trash2,
   RotateCcw,
+  MessageSquare,
+  Heart,
 }
 
 // Mapeo de emojis antiguos a iconos lucide-react
