@@ -22,6 +22,8 @@ import { es } from "date-fns/locale"
 import Image from "next/image"
 import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
+import { EmojiPicker } from "@/components/reactions/EmojiPicker"
+import { ReactionsDisplay } from "@/components/reactions/ReactionsDisplay"
 import { subscribeToChannel, unsubscribeFromChannel } from "@/lib/pusher-client"
 
 interface Attachment {
@@ -31,6 +33,20 @@ interface Attachment {
   size: number
 }
 
+interface ReactionUser {
+  id: string
+  name: string
+  lastName: string | null
+  profilePhoto: string | null
+}
+
+interface Reaction {
+  emoji: string
+  count: number
+  users: ReactionUser[]
+  userReacted: boolean
+}
+
 interface Comment {
   id: string
   userId: string
@@ -38,6 +54,7 @@ interface Comment {
   entityId: string
   content: string
   attachments?: Attachment[]
+  reactions?: Reaction[]
   editedAt: string | null
   createdAt: string
   updatedAt: string

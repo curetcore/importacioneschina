@@ -253,6 +253,7 @@ model User {
   // Relaciones
   auditLogs AuditLog[]
   comments  Comment[]
+  reactions Reaction[]
 
   // Timestamps
   createdAt DateTime  @default(now()) @map("created_at")
@@ -457,6 +458,9 @@ model Comment {
   // Ejemplo: ["user_id_1", "user_id_2"]
   mentions String[] @default([])
 
+  // Relaciones
+  reactions Reaction[] // Reacciones emoji del comentario
+
   // Edición
   editedAt DateTime? @map("edited_at") // Si fue editado, cuándo
 
@@ -469,4 +473,30 @@ model Comment {
   @@index([entityType, entityId, createdAt]) // Índice compuesto para ordenar por fecha
   @@index([createdAt])
   @@map("comments")
+}
+
+// TABLA 12: REACCIONES - Reacciones emoji en comentarios
+model Reaction {
+  id String @id @default(cuid())
+
+  // Comentario reaccionado
+  commentId String  @map("comment_id")
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  // Usuario que reacciona
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Emoji de la reacción
+  emoji String // "👍", "❤️", "😊", "🎉", "🚀", etc.
+
+  // Timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Un usuario solo puede reaccionar una vez por emoji en cada comentario
+  @@unique([commentId, userId, emoji])
+  @@index([commentId])
+  @@index([userId])
+  @@index([commentId, emoji]) // Índice compuesto para contar reacciones por emoji
+  @@map("reactions")
 }
