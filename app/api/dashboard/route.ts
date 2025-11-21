@@ -147,6 +147,7 @@ async function generateDashboardData() {
           // Primera vez que vemos este gasto - agregarlo con toda su info
           gastosUnicos.set(gastoId, {
             ...gl.gasto,
+            ocChina: { oc: oc.oc }, // AGREGAR relación con primera OC asociada
             ordenesCompra: oc.gastosLogisticos
               .filter(g => g.gasto.id === gastoId)
               .map(() => ({ ocId: oc.id })),
