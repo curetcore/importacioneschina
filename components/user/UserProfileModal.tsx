@@ -237,7 +237,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
                       className="gap-2"
                     >
                       <Camera size={16} />
-                      {currentPhoto ? "Cambiar Foto" : "Subir Foto"}
+                      {currentPhoto ? "Reemplazar" : "Subir Foto"}
                     </Button>
 
                     {currentPhoto && (
