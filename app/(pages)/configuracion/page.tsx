@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic"
 
 import { useState, useEffect, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import MainLayout from "@/components/layout/MainLayout"
@@ -475,6 +475,8 @@ function ConfiguracionPageContent() {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const [activeTab, setActiveTab] = useState("configuracion")
   const [formOpen, setFormOpen] = useState(false)
   const [configToEdit, setConfigToEdit] = useState<Configuracion | null>(null)
@@ -495,7 +497,16 @@ function ConfiguracionPageContent() {
   // Check if user is super admin
   const isSuperAdmin = session?.user?.role === "superadmin"
 
-  // Handle URL tab parameter
+  // Handle tab change with URL sync
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    // Update URL with new tab parameter (shallow routing, no page reload)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", newTab)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+  }
+
+  // Handle URL tab parameter on initial load
   useEffect(() => {
     const tab = searchParams.get("tab")
     if (tab && ["configuracion", "distribucion", "proveedores", "cuenta"].includes(tab)) {
@@ -638,7 +649,7 @@ function ConfiguracionPageContent() {
           <Tabs
             defaultValue="configuracion"
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-4">

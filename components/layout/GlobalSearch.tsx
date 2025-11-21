@@ -142,26 +142,40 @@ export default function GlobalSearch() {
     {} as Record<SearchResult["type"], SearchResult[]>
   )
 
+  // Detect if user is on Mac
+  const isMac =
+    typeof window !== "undefined" ? navigator.platform.toUpperCase().indexOf("MAC") >= 0 : false
+
   return (
     <div ref={searchRef} className="relative w-full">
       {/* Search Input */}
       <div className="relative">
-        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
-          placeholder="Buscar... (Ctrl+K)"
-          className="w-full pl-10 pr-10 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-shopify-navbar-search text-white placeholder-gray-400 transition-all"
+          placeholder="Buscar"
+          className="w-full pl-10 pr-20 py-1.5 text-sm border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-shopify-navbar-search text-white placeholder-gray-400 transition-all"
         />
+        {!query && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 text-xs font-medium text-gray-400 bg-gray-700 border border-gray-600 rounded shadow-sm">
+              {isMac ? "⌘" : "Ctrl"}
+            </kbd>
+            <kbd className="px-1.5 py-0.5 text-xs font-medium text-gray-400 bg-gray-700 border border-gray-600 rounded shadow-sm">
+              K
+            </kbd>
+          </div>
+        )}
         {query && (
           <button
             onClick={handleClear}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         )}
       </div>

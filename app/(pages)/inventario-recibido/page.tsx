@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic"
 import { useState, useMemo, useEffect, Suspense } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import dynamicImport from "next/dynamic"
 import MainLayout from "@/components/layout/MainLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -78,7 +78,9 @@ function InventarioRecibidoPageContent() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState("inventario")
   const [formOpen, setFormOpen] = useState(false)
   const [inventarioToEdit, setInventarioToEdit] = useState<InventarioRecibido | null>(null)
   const [inventarioToDelete, setInventarioToDelete] = useState<InventarioRecibido | null>(null)
@@ -87,6 +89,22 @@ function InventarioRecibidoPageContent() {
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
   const [tallasModalOpen, setTallasModalOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<ProductoRow | null>(null)
+
+  // Handle tab change with URL sync
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", newTab)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+  }
+
+  // Handle URL tab parameter on initial load
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (tab && ["inventario", "costos", "productos"].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Fetch all inventarios
   const { data: inventarios = [], isLoading } = useQuery({
@@ -489,7 +507,12 @@ function InventarioRecibidoPageContent() {
   return (
     <MainLayout>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <Tabs defaultValue="inventario" className="w-full space-y-6">
+        <Tabs
+          defaultValue="inventario"
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="inventario" className="gap-2">
               <Inbox className="w-4 h-4" />

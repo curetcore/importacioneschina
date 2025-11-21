@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import {
   FileText,
@@ -45,9 +46,28 @@ interface DocumentWithSource {
 }
 
 export default function DocumentosPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState("todos")
   const [searchTerm, setSearchTerm] = useState("")
   const [ocFilter, setOcFilter] = useState("")
+
+  // Handle tab change with URL sync
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", newTab)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+  }
+
+  // Handle URL tab parameter on initial load
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (tab && ["todos", "facturas", "comprobantes", "logisticos"].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
   const [renameModalOpen, setRenameModalOpen] = useState(false)
   const [documentToRename, setDocumentToRename] = useState<DocumentWithSource | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -276,7 +296,7 @@ export default function DocumentosPage() {
             <Tabs
               defaultValue="todos"
               value={activeTab}
-              onValueChange={setActiveTab}
+              onValueChange={handleTabChange}
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-4">
