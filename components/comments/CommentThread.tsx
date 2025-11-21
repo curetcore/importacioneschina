@@ -78,7 +78,7 @@ export function CommentThread({
   level = 0,
 }: CommentThreadProps) {
   const isOwnComment = currentUserId === comment.userId
-  const maxNestingLevel = 3 // Maximum nesting depth
+  const maxNestingLevel = 5 // Maximum nesting depth (allows deeper conversations)
 
   // Calculate indentation based on nesting level
   const indentClass = level > 0 ? `ml-${Math.min(level * 8, 24)}` : ""
