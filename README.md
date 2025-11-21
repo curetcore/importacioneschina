@@ -81,6 +81,10 @@ npm start
 - **[COMPLETED-FEATURES.md](./docs/COMPLETED-FEATURES.md)** - Todas las funcionalidades completadas
 - **[CHANGELOG.md](./CHANGELOG.md)** - Registro de cambios por versión
 
+### 🚀 Planes Futuros
+
+- **[PLANES-FUTUROS.md](./docs/PLANES-FUTUROS.md)** - Sentry (error tracking) + AWS SES (emails)
+
 ---
 
 ## 📋 Tareas Pendientes
@@ -194,6 +198,19 @@ Ver plan completo: **[PLAN-MONOREPO.md](./docs/PLAN-MONOREPO.md)**
 
 - **Shopify:** Shopify Admin API + Shopify POS (futuro)
 - **Automation:** n8n (workflows Shopify ↔ CuretCore) (futuro)
+
+### Monitoreo y Notificaciones
+
+- **Notificaciones en Tiempo Real:** Pusher (WebSocket) ✅
+  - Presence channels (usuarios conectados)
+  - Notificaciones push instantáneas
+  - Toast notifications flotantes
+- **Email Service:** ⚠️ **Temporalmente deshabilitado**
+  - Resend removido (servicio intermitente)
+  - AWS SES planificado para implementar (ver [PLANES-FUTUROS.md](./docs/PLANES-FUTUROS.md))
+  - Invitaciones generan URLs para compartir manualmente
+- **Error Tracking:** Sentry (planificado - ver [PLANES-FUTUROS.md](./docs/PLANES-FUTUROS.md))
+- **Logging:** Winston (estructurado)
 
 ---
 
