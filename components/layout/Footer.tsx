@@ -1,7 +1,5 @@
 "use client"
 
-import { Instagram } from "lucide-react"
-
 export default function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-[#E8E9EA]">
@@ -17,20 +15,18 @@ export default function Footer() {
                 href="https://www.instagram.com/_ronaldopaulino/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-gray-700 hover:text-primary-600 transition-colors inline-flex items-center gap-1"
+                className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 Ronaldo Paulino
-                <Instagram className="w-3 h-3" />
               </a>{" "}
               para{" "}
               <a
                 href="https://www.instagram.com/curetcore/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-gray-700 hover:text-primary-600 transition-colors inline-flex items-center gap-1"
+                className="text-blue-600 hover:text-blue-800 hover:underline"
               >
                 CuretCore
-                <Instagram className="w-3 h-3" />
               </a>
             </span>
           </div>
