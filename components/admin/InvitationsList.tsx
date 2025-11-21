@@ -110,7 +110,7 @@ export function InvitationsList() {
     const { icon: Icon, label, className } = config[status]
 
     return (
-      <Badge variant="outline" className={`${className} flex items-center gap-1 w-fit`}>
+      <Badge variant="default" className={`${className} flex items-center gap-1 w-fit`}>
         <Icon className="w-3 h-3" />
         {label}
       </Badge>
@@ -182,7 +182,7 @@ export function InvitationsList() {
                       <Mail className="w-4 h-4 text-gray-400" />
                       <span className="font-medium text-gray-900">{invitation.email}</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="info" className="text-xs">
                       {roleLabels[invitation.role] || invitation.role}
                     </Badge>
                     <StatusBadge status={invitation.status} />
