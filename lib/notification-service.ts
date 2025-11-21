@@ -353,3 +353,49 @@ function getEntityDisplayName(entidad: string): string {
   }
   return names[entidad] || entidad
 }
+
+/**
+ * Obtener el dueño (owner) de una entidad
+ * Útil para enviar notificaciones al usuario que creó la entidad
+ */
+export async function getEntityOwnerId(
+  entityType: string,
+  entityId: string
+): Promise<string | null> {
+  try {
+    const db = await getPrismaClient()
+
+    // Mapeo de entidades a su campo de usuario/owner
+    const entityUserFields: Record<string, string> = {
+      OCChina: "usuarioId",
+      PagosChina: "usuarioId",
+      GastosLogisticos: "usuarioId",
+      InventarioRecibido: "usuarioId",
+      Comment: "userId",
+    }
+
+    const userField = entityUserFields[entityType]
+
+    if (!userField) {
+      return null
+    }
+
+    // Obtener el owner de la entidad
+    const modelName = entityType.charAt(0).toLowerCase() + entityType.slice(1)
+    const entityData: any = await (db as any)[modelName]
+      .findUnique({
+        where: { id: entityId },
+        select: { [userField]: true },
+      })
+      .catch(() => null)
+
+    if (entityData) {
+      return entityData[userField]
+    }
+
+    return null
+  } catch (error) {
+    console.error("⚠️ [Notification] Could not determine entity owner:", error)
+    return null
+  }
+}

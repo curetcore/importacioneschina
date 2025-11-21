@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { triggerPusherEvent } from "@/lib/pusher-server"
+import { createNotification } from "@/lib/notification-service"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Check if comment exists
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      select: { id: true, entityType: true, entityId: true },
+      select: { id: true, entityType: true, entityId: true, userId: true, content: true },
     })
 
     if (!comment) {
@@ -120,6 +121,27 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           },
         },
       })
+
+      // Create notification for comment author (if not reacting to own comment)
+      if (comment.userId !== session.user.id) {
+        try {
+          const userName = `${reaction.user.name}${reaction.user.lastName ? ` ${reaction.user.lastName}` : ""}`
+          await createNotification({
+            tipo: "success",
+            titulo: `${userName} reaccionó ${emoji} a tu comentario`,
+            descripcion: comment.content.slice(0, 200),
+            icono: "Heart",
+            entidad: comment.entityType,
+            entidadId: comment.entityId,
+            url: `/${comment.entityType.toLowerCase()}/${comment.entityId}#comment-${commentId}`,
+            usuarioId: comment.userId,
+            prioridad: "low",
+          })
+          console.log(`✅ [Reactions] Created notification for comment author: ${comment.userId}`)
+        } catch (notifError) {
+          console.error("⚠️ [Reactions] Failed to create reaction notification:", notifError)
+        }
+      }
 
       // Get updated reactions count
       const reactions = await prisma.reaction.groupBy({

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { auditCreate } from "@/lib/audit-logger"
 import { triggerPusherEvent } from "@/lib/pusher-server"
 import { extractMentionedUserIds } from "@/lib/mentions"
+import { createNotification, getEntityOwnerId } from "@/lib/notification-service"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -240,6 +241,60 @@ export async function POST(request: NextRequest) {
       } catch (notifError) {
         console.error("⚠️ [Comments] Failed to create mention notifications:", notifError)
       }
+    }
+
+    // Create notification for comment reply or new comment on entity
+    try {
+      let notifyUserId: string | null = null
+      let notificationTitle = ""
+      const notificationDescription = content.slice(0, 200)
+
+      if (parentId) {
+        // This is a reply - notify the parent comment author
+        const parentComment = await prisma.comment.findUnique({
+          where: { id: parentId },
+          select: { userId: true },
+        })
+
+        if (parentComment && parentComment.userId !== session.user.id) {
+          notifyUserId = parentComment.userId
+          notificationTitle = `${comment.user.name} respondió a tu comentario`
+        }
+      } else {
+        // This is a root comment - notify the entity owner
+        const entityOwnerId = await getEntityOwnerId(entityType, entityId)
+
+        if (entityOwnerId && entityOwnerId !== session.user.id) {
+          notifyUserId = entityOwnerId
+          // Entity display name helper
+          const entityNames: Record<string, string> = {
+            OCChina: "orden de compra",
+            PagosChina: "pago",
+            GastosLogisticos: "gasto logístico",
+            InventarioRecibido: "inventario",
+          }
+          const entityDisplayName = entityNames[entityType] || "registro"
+          notificationTitle = `${comment.user.name} comentó en tu ${entityDisplayName}`
+        }
+      }
+
+      // Create notification if we have a recipient
+      if (notifyUserId) {
+        await createNotification({
+          tipo: "success",
+          titulo: notificationTitle,
+          descripcion: notificationDescription,
+          icono: "MessageSquare",
+          entidad: entityType,
+          entidadId: entityId,
+          url: `/${entityType.toLowerCase()}/${entityId}#comment-${comment.id}`,
+          usuarioId: notifyUserId,
+          prioridad: "normal",
+        })
+        console.log(`✅ [Comments] Created comment notification for user: ${notifyUserId}`)
+      }
+    } catch (notifError) {
+      console.error("⚠️ [Comments] Failed to create comment notification:", notifError)
     }
 
     // Trigger Pusher event for real-time updates
