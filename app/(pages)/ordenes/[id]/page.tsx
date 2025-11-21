@@ -552,6 +552,8 @@ export default function OCDetailPage() {
                       const currentOCIndex = gasto.ordenesCompra?.findIndex(
                         rel => rel.ocChina.id === oc.id
                       )
+                      // Calcular monto prorrateado para esta orden
+                      const montoProrrateado = numOCs > 0 ? gasto.montoRD / numOCs : gasto.montoRD
 
                       return (
                         <tr
@@ -595,8 +597,17 @@ export default function OCDetailPage() {
                               )}
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-right text-sm font-medium text-gray-900 border-r border-[#f1f1f1] last:border-r-0">
-                            {formatCurrency(gasto.montoRD)}
+                          <td className="py-3 px-4 text-right border-r border-[#f1f1f1] last:border-r-0">
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900">
+                                {formatCurrency(montoProrrateado)}
+                              </div>
+                              {isShared && (
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  de {formatCurrency(gasto.montoRD)}
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
