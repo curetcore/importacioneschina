@@ -22,9 +22,16 @@ interface FileAttachment {
 interface AttachmentsListProps {
   attachments: FileAttachment[]
   compact?: boolean
+  onRename?: (file: FileAttachment) => void
+  onDelete?: (file: FileAttachment) => void
 }
 
-export function AttachmentsList({ attachments, compact = false }: AttachmentsListProps) {
+export function AttachmentsList({
+  attachments,
+  compact = false,
+  onRename,
+  onDelete,
+}: AttachmentsListProps) {
   const [selectedFile, setSelectedFile] = useState<FileAttachment | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
@@ -137,7 +144,13 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
             )
           })}
         </div>
-        <FilePreviewModal file={selectedFile} open={previewOpen} onOpenChange={setPreviewOpen} />
+        <FilePreviewModal
+          file={selectedFile}
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          onRename={onRename && selectedFile ? () => onRename(selectedFile) : undefined}
+          onDelete={onDelete && selectedFile ? () => onDelete(selectedFile) : undefined}
+        />
       </>
     )
   }
@@ -191,7 +204,13 @@ export function AttachmentsList({ attachments, compact = false }: AttachmentsLis
           )
         })}
       </div>
-      <FilePreviewModal file={selectedFile} open={previewOpen} onOpenChange={setPreviewOpen} />
+      <FilePreviewModal
+        file={selectedFile}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        onRename={onRename && selectedFile ? () => onRename(selectedFile) : undefined}
+        onDelete={onDelete && selectedFile ? () => onDelete(selectedFile) : undefined}
+      />
     </>
   )
 }
