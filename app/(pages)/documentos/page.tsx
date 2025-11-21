@@ -129,6 +129,31 @@ export default function DocumentosPage() {
     setPreviewOpen(true)
   }
 
+  const handleDelete = async (doc: DocumentWithSource) => {
+    if (!confirm(`¿Estás seguro de eliminar "${doc.nombre}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/documentos/${doc.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar documento")
+      }
+
+      showToast.success("Documento eliminado", {
+        description: `${doc.nombre} ha sido eliminado`,
+      })
+      refetch()
+    } catch (error) {
+      showToast.error("Error al eliminar", {
+        description: "No se pudo eliminar el documento",
+      })
+    }
+  }
+
   const getFileIcon = (tipo: string) => {
     if (tipo.startsWith("image/")) {
       return <FileText size={16} className="text-blue-500" />
@@ -393,6 +418,8 @@ export default function DocumentosPage() {
         }
         open={previewOpen}
         onOpenChange={setPreviewOpen}
+        onRename={() => documentToPreview && handleRename(documentToPreview)}
+        onDelete={() => documentToPreview && handleDelete(documentToPreview)}
       />
     </MainLayout>
   )

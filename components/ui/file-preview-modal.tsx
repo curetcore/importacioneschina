@@ -2,7 +2,14 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download, FileText, Image as ImageIcon, FileSpreadsheet } from "lucide-react"
+import {
+  Download,
+  FileText,
+  Image as ImageIcon,
+  FileSpreadsheet,
+  Edit2,
+  Trash2,
+} from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -15,9 +22,17 @@ interface FilePreviewModalProps {
   file: FileAttachment | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onRename?: () => void
+  onDelete?: () => void
 }
 
-export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalProps) {
+export function FilePreviewModal({
+  file,
+  open,
+  onOpenChange,
+  onRename,
+  onDelete,
+}: FilePreviewModalProps) {
   if (!file) return null
 
   const isImage = file.tipo.startsWith("image/")
@@ -61,28 +76,64 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-6">
+        <DialogHeader className="pb-4">
+          <div className="flex items-start justify-between gap-4">
+            <DialogTitle className="flex items-center gap-3 flex-1 min-w-0">
               {getFileIcon()}
-              <span className="truncate max-w-md">{file.nombre}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="truncate text-base font-semibold">{file.nombre}</span>
+                <span className="text-xs text-gray-500 font-normal">
+                  {formatFileSize(file.size)}
+                </span>
+              </div>
             </DialogTitle>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">{formatFileSize(file.size)}</span>
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleDownload}
-                className="gap-2 px-3 py-1.5 text-sm"
+                className="gap-2"
+                title="Descargar archivo"
               >
                 <Download size={16} />
                 Descargar
               </Button>
+              {onRename && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onRename()
+                    onOpenChange(false)
+                  }}
+                  className="gap-2"
+                  title="Cambiar nombre"
+                >
+                  <Edit2 size={16} />
+                  Renombrar
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onDelete()
+                    onOpenChange(false)
+                  }}
+                  className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  title="Eliminar archivo"
+                >
+                  <Trash2 size={16} />
+                  Eliminar
+                </Button>
+              )}
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto bg-gray-50 rounded-lg p-4">
+        <div className="flex-1 overflow-auto bg-gray-50 rounded-lg p-6 my-4">
           {isImage && (
             <div className="flex items-center justify-center min-h-[400px]">
               <img
@@ -113,27 +164,6 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
               </Button>
             </div>
           )}
-        </div>
-
-        {/* Botones de acción en el footer del modal */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-500">
-            {isImage && "Haz clic derecho para copiar o guardar"}
-            {isPDF && "Usa los controles del visor para navegar"}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDownload} className="gap-2">
-              <Download size={16} />
-              Descargar
-            </Button>
-            {(isImage || isPDF) && (
-              <a href={file.url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="gap-2">
-                  Abrir en nueva pestaña
-                </Button>
-              </a>
-            )}
-          </div>
         </div>
       </DialogContent>
     </Dialog>
