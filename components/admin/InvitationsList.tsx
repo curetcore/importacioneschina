@@ -39,7 +39,8 @@ export function InvitationsList() {
     refetchInterval: 30000, // Refrescar cada 30 segundos
   })
 
-  const invitations = data?.data || []
+  // Filtrar solo invitaciones pendientes (no aceptadas ni expiradas)
+  const invitations = (data?.data || []).filter(inv => inv.status === "pending")
 
   // Cancelar invitación
   const handleCancelInvitation = async (id: string, email: string) => {
@@ -148,9 +149,9 @@ export function InvitationsList() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
-            Invitaciones Enviadas
+            Invitaciones Pendientes
           </CardTitle>
-          <CardDescription>No hay invitaciones enviadas</CardDescription>
+          <CardDescription>No hay invitaciones pendientes</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -161,10 +162,10 @@ export function InvitationsList() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="w-5 h-5" />
-          Invitaciones Enviadas
+          Invitaciones Pendientes
         </CardTitle>
         <CardDescription>
-          Gestiona las invitaciones pendientes, aceptadas y expiradas
+          Gestiona las invitaciones que están esperando ser aceptadas
         </CardDescription>
       </CardHeader>
       <CardContent>
