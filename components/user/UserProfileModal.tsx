@@ -14,8 +14,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/toast"
-import { Camera, Trash2, Upload, User } from "lucide-react"
+import { Camera, Trash2, User } from "lucide-react"
 import Image from "next/image"
+import { ProfilePhotoEditor } from "./ProfilePhotoEditor"
+import { readFile } from "@/lib/image-crop-helper"
 
 interface UserProfileModalProps {
   open: boolean
@@ -28,7 +30,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [imageSrc, setImageSrc] = useState<string | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
   const [formData, setFormData] = useState({
     name: session?.user?.name || "",
     lastName: session?.user?.lastName || "",
@@ -36,7 +39,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
 
   const currentPhoto = session?.user?.profilePhoto || null
 
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -56,22 +59,25 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
       return
     }
 
-    // Create preview
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string)
+    // Read file and open editor
+    try {
+      const imageDataUrl = await readFile(file)
+      setImageSrc(imageDataUrl)
+      setShowEditor(true)
+    } catch (error) {
+      showToast.error("Error al cargar imagen", {
+        description: "No se pudo cargar la imagen seleccionada",
+      })
     }
-    reader.readAsDataURL(file)
   }
 
-  const handleUploadPhoto = async () => {
-    const file = fileInputRef.current?.files?.[0]
-    if (!file) return
-
+  const handleCropComplete = async (croppedFile: File) => {
+    setShowEditor(false)
     setUploadingPhoto(true)
+
     try {
       const formData = new FormData()
-      formData.append("photo", file)
+      formData.append("photo", croppedFile)
 
       const response = await fetch("/api/user/profile-photo", {
         method: "POST",
@@ -97,7 +103,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         description: "Tu foto de perfil ha sido actualizada",
       })
 
-      setPhotoPreview(null)
+      setImageSrc(null)
       if (fileInputRef.current) fileInputRef.current.value = ""
       queryClient.invalidateQueries({ queryKey: ["user-profile"] })
     } catch (error: any) {
@@ -108,6 +114,12 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
     } finally {
       setUploadingPhoto(false)
     }
+  }
+
+  const handleCancelCrop = () => {
+    setShowEditor(false)
+    setImageSrc(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const handleRemovePhoto = async () => {
@@ -193,46 +205,46 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader className="space-y-3">
-          <DialogTitle>Mi Perfil</DialogTitle>
-          <DialogDescription>Actualiza tu información personal</DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader className="space-y-3">
+            <DialogTitle>Mi Perfil</DialogTitle>
+            <DialogDescription>Actualiza tu información personal</DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
-          {/* Profile Photo Section */}
-          <div className="space-y-3">
-            <Label>Foto de Perfil</Label>
-            <div className="flex items-center gap-4">
-              {/* Avatar Preview */}
-              <div className="relative flex-shrink-0">
-                {photoPreview || currentPhoto ? (
-                  <Image
-                    src={photoPreview || currentPhoto || ""}
-                    alt="Profile"
-                    width={80}
-                    height={80}
-                    className="rounded-full object-cover border-2 border-gray-200"
+          <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
+            {/* Profile Photo Section */}
+            <div className="space-y-3">
+              <Label>Foto de Perfil</Label>
+              <div className="flex items-center gap-4">
+                {/* Avatar Preview */}
+                <div className="relative flex-shrink-0">
+                  {currentPhoto ? (
+                    <Image
+                      src={currentPhoto}
+                      alt="Profile"
+                      width={80}
+                      height={80}
+                      className="rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold border-2 border-gray-200">
+                      <User size={32} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Upload Controls */}
+                <div className="flex-1 space-y-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handlePhotoSelect}
+                    className="hidden"
                   />
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold border-2 border-gray-200">
-                    <User size={32} />
-                  </div>
-                )}
-              </div>
 
-              {/* Upload Controls */}
-              <div className="flex-1 space-y-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handlePhotoSelect}
-                  className="hidden"
-                />
-
-                {!photoPreview ? (
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -260,91 +272,84 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
                       </Button>
                     )}
                   </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleUploadPhoto}
-                      disabled={uploadingPhoto || loading}
-                      className="gap-2"
-                    >
-                      <Upload size={16} />
-                      {uploadingPhoto ? "Subiendo..." : "Confirmar"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setPhotoPreview(null)
-                        if (fileInputRef.current) fileInputRef.current.value = ""
-                      }}
-                      disabled={uploadingPhoto || loading}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                )}
 
-                <p className="text-xs text-gray-500">Formatos: JPG, PNG, WEBP • Máximo 5MB</p>
+                  <p className="text-xs text-gray-500">
+                    Formatos: JPG, PNG, WEBP • Máximo 5MB
+                    <br />
+                    Podrás ajustar y recortar la imagen después de seleccionarla
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" value={session?.user?.email || ""} disabled className="bg-gray-50" />
-            <p className="text-xs text-gray-500">El email no puede ser modificado</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="name">Nombre *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Apellido</Label>
-            <Input
-              id="lastName"
-              value={formData.lastName}
-              onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Rol</Label>
-            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-700">
-              {session?.user?.role === "superadmin"
-                ? "Super Admin"
-                : session?.user?.role === "admin"
-                  ? "Administrador"
-                  : "Limitado"}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={session?.user?.email || ""}
+                disabled
+                className="bg-gray-50"
+              />
+              <p className="text-xs text-gray-500">El email no puede ser modificado</p>
             </div>
-          </div>
 
-          <div className="flex gap-3 justify-end pt-6 border-t mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar Cambios"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Apellido</Label>
+              <Input
+                id="lastName"
+                value={formData.lastName}
+                onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Rol</Label>
+              <div className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-700">
+                {session?.user?.role === "superadmin"
+                  ? "Super Admin"
+                  : session?.user?.role === "admin"
+                    ? "Administrador"
+                    : "Limitado"}
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-6 border-t mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Guardando..." : "Guardar Cambios"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Editor - Fullscreen overlay */}
+      {showEditor && imageSrc && (
+        <ProfilePhotoEditor
+          imageSrc={imageSrc}
+          onCancel={handleCancelCrop}
+          onComplete={handleCropComplete}
+        />
+      )}
+    </>
   )
 }
