@@ -30,6 +30,40 @@ export function getPusherClient(): PusherClient {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
+        params: {
+          // Forzar que las cookies se incluyan en la petición
+        },
+      },
+      // Configurar authorizer personalizado para incluir credentials
+      authorizer: (channel: { name: string }) => {
+        return {
+          authorize: (socketId: string, callback: (error: Error | null, data: unknown) => void) => {
+            fetch("/api/pusher/auth", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              credentials: "same-origin", // Incluir cookies de sesión
+              body: new URLSearchParams({
+                socket_id: socketId,
+                channel_name: channel.name,
+              }),
+            })
+              .then(res => {
+                if (!res.ok) {
+                  throw new Error(`HTTP ${res.status}`)
+                }
+                return res.json()
+              })
+              .then(data => {
+                callback(null, data)
+              })
+              .catch(err => {
+                console.error("❌ [Pusher Auth] Authorization failed:", err)
+                callback(err as Error, null)
+              })
+          },
+        }
       },
     })
 
