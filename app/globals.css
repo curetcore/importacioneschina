@@ -43,9 +43,8 @@
   }
 
   html, body {
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
-    overscroll-behavior-x: none;
+    /* Permite swipe de navegación horizontal (2 dedos) pero previene bounce vertical */
+    overscroll-behavior-y: contain;
   }
 
   body {
