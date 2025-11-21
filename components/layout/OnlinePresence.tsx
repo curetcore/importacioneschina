@@ -62,7 +62,7 @@ export function OnlinePresence() {
                 user={{
                   id: session.user.id!,
                   name: session.user.name!,
-                  lastName: session.user.lastName,
+                  lastName: session.user.lastName ?? undefined,
                   email: session.user.email!,
                 }}
                 isOnline={true}
