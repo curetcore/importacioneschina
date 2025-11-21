@@ -103,6 +103,68 @@ export function formatActivity(pathname: string, entityName?: string): string {
 }
 
 /**
+ * Detectar si una ruta contiene un ID de entidad
+ */
+export function extractEntityId(pathname: string): { type: string; id: string } | null {
+  // Patrones para rutas con ID: /ordenes/123, /pagos-china/456, etc.
+  const patterns = [
+    { regex: /^\/ordenes\/([^/]+)$/, type: "ordenes" },
+    { regex: /^\/pagos-china\/([^/]+)$/, type: "pagos-china" },
+    { regex: /^\/gastos-logisticos\/([^/]+)$/, type: "gastos-logisticos" },
+    { regex: /^\/inventario-recibido\/([^/]+)$/, type: "inventario-recibido" },
+  ]
+
+  for (const pattern of patterns) {
+    const match = pathname.match(pattern.regex)
+    if (match) {
+      return { type: pattern.type, id: match[1] }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Obtener nombre legible de una entidad desde la API
+ */
+export async function fetchEntityName(type: string, id: string): Promise<string | null> {
+  try {
+    const endpoints: Record<string, string> = {
+      ordenes: `/api/oc-china/${id}`,
+      "pagos-china": `/api/pagos-china/${id}`,
+      "gastos-logisticos": `/api/gastos-logisticos/${id}`,
+      "inventario-recibido": `/api/inventario-recibido/${id}`,
+    }
+
+    const endpoint = endpoints[type]
+    if (!endpoint) return null
+
+    const response = await fetch(endpoint)
+    if (!response.ok) return null
+
+    const data = await response.json()
+    if (!data.success) return null
+
+    // Extraer el nombre según el tipo de entidad
+    switch (type) {
+      case "ordenes":
+        return data.data?.oc || null
+      case "pagos-china":
+        return data.data?.idPago || null
+      case "gastos-logisticos":
+        return data.data?.idGasto || null
+      case "inventario-recibido":
+        return data.data?.item?.sku || null
+      default:
+        return null
+    }
+  } catch (error) {
+    console.error(`Failed to fetch entity name for ${type}/${id}:`, error)
+    return null
+  }
+}
+
+/**
  * Tipos de actividad del usuario
  */
 export interface UserActivity {

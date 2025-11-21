@@ -2,7 +2,12 @@
 
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { getPageConfig, type UserActivity } from "@/lib/activity-helpers"
+import {
+  getPageConfig,
+  extractEntityId,
+  fetchEntityName,
+  type UserActivity,
+} from "@/lib/activity-helpers"
 
 /**
  * Hook para rastrear la actividad del usuario en tiempo real
@@ -21,17 +26,34 @@ export function useUserActivity(): UserActivity {
     }
   })
 
-  // Actualizar actividad cuando cambia la ruta
+  // Actualizar actividad cuando cambia la ruta (Fase 4: incluye detección de entidad)
   useEffect(() => {
     const config = getPageConfig(pathname)
 
-    setActivity({
+    // Crear actividad base
+    const baseActivity: UserActivity = {
       page: pathname,
       pageName: config.name,
       pageIcon: config.icon,
       pageColor: config.color,
       timestamp: Date.now(),
-    })
+    }
+
+    setActivity(baseActivity)
+
+    // Fase 4: Detectar y fetchear nombre de entidad si aplica
+    const entityInfo = extractEntityId(pathname)
+    if (entityInfo) {
+      // Fetch async del nombre de la entidad
+      fetchEntityName(entityInfo.type, entityInfo.id).then(entityName => {
+        if (entityName) {
+          setActivity(prev => ({
+            ...prev,
+            entityName,
+          }))
+        }
+      })
+    }
   }, [pathname])
 
   return activity

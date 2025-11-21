@@ -52,12 +52,18 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     return "Desconectado"
   }
 
-  // Obtener actividad del usuario (Fase 2)
+  // Obtener actividad del usuario (Fase 2 + Fase 4)
   const getActivityText = () => {
     if (!isOnline || !user.activity) {
       return null
     }
 
+    // Fase 4: Si hay nombre de entidad, mostrar "Viendo [entidad]"
+    if (user.activity.entityName) {
+      return `${user.activity.pageIcon} Viendo ${user.activity.entityName}`
+    }
+
+    // Fase 2: Mostrar "En [página]"
     return `${user.activity.pageIcon} En ${user.activity.pageName}`
   }
 
