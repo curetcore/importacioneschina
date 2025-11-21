@@ -7,7 +7,7 @@ import { History } from "lucide-react"
 export default function AuditLogPage() {
   return (
     <MainLayout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">

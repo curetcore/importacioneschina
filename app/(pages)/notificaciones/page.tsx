@@ -6,7 +6,7 @@ import { AuditLogViewer } from "@/components/audit/AuditLogViewer"
 export default function NotificacionesPage() {
   return (
     <MainLayout>
-      <div className="p-6">
+      <div className="space-y-6">
         <AuditLogViewer limit={30} showFilters={true} />
       </div>
     </MainLayout>
