@@ -260,84 +260,85 @@ function DocumentosPageContent() {
     <MainLayout>
       <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Archivos</span>
-              <span className="text-sm font-normal text-gray-500">
-                {documentos.length} documento{documentos.length !== 1 ? "s" : ""}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Filtros */}
-            <div className="flex gap-3 mb-4">
-              <div className="flex-1 relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-                <Input
-                  placeholder="Buscar por nombre de archivo..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+          <CardHeader className="space-y-0 pb-4">
+            {/* Layout estándar: Título | Tabs | Buscador | Filtro OC */}
+            <div className="space-y-4">
+              {/* Primera fila: Título + contador */}
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <FileText size={18} />
+                  Documentos ({documentos.length})
+                </CardTitle>
               </div>
-              <div className="w-48">
-                <Input
-                  placeholder="Filtrar por OC..."
-                  value={ocFilter}
-                  onChange={e => setOcFilter(e.target.value)}
-                />
+
+              {/* Segunda fila: Tabs */}
+              <Tabs
+                defaultValue="todos"
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="todos" className="gap-2">
+                    <FileText className="w-4 h-4" />
+                    Todos
+                  </TabsTrigger>
+                  <TabsTrigger value="facturas" className="gap-2">
+                    <FileCheck className="w-4 h-4" />
+                    Facturas
+                  </TabsTrigger>
+                  <TabsTrigger value="comprobantes" className="gap-2">
+                    <Receipt className="w-4 h-4" />
+                    Comprobantes
+                  </TabsTrigger>
+                  <TabsTrigger value="logisticos" className="gap-2">
+                    <Package className="w-4 h-4" />
+                    Logísticos
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Tercera fila: Buscador + Filtro OC */}
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar por nombre de archivo..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+                <div className="w-48">
+                  <Input
+                    placeholder="Filtrar por OC..."
+                    value={ocFilter}
+                    onChange={e => setOcFilter(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
               </div>
             </div>
+          </CardHeader>
 
-            {/* Tabs */}
-            <Tabs
-              defaultValue="todos"
-              value={activeTab}
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="todos" className="gap-2">
-                  <FileText className="w-4 h-4" />
-                  Todos
-                </TabsTrigger>
-                <TabsTrigger value="facturas" className="gap-2">
-                  <FileCheck className="w-4 h-4" />
-                  Facturas Comerciales
-                </TabsTrigger>
-                <TabsTrigger value="comprobantes" className="gap-2">
-                  <Receipt className="w-4 h-4" />
-                  Comprobantes de Pago
-                </TabsTrigger>
-                <TabsTrigger value="logisticos" className="gap-2">
-                  <Package className="w-4 h-4" />
-                  Documentos Logísticos
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-4">
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : documentos.length === 0 ? (
-                  <div className="text-center py-12">
-                    <FileText size={48} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500">No hay documentos en esta categoría</p>
-                  </div>
-                ) : (
-                  <VirtualizedDataTable
-                    columns={columns}
-                    data={documentos}
-                    showColumnToggle={false}
-                    onRowClick={handlePreview}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
+          <CardContent className="pt-0">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : documentos.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText size={48} className="mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">No hay documentos en esta categoría</p>
+              </div>
+            ) : (
+              <VirtualizedDataTable
+                columns={columns}
+                data={documentos}
+                showColumnToggle={false}
+                onRowClick={handlePreview}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
