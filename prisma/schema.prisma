@@ -458,6 +458,11 @@ model Comment {
   // Ejemplo: ["user_id_1", "user_id_2"]
   mentions String[] @default([])
 
+  // Respuestas anidadas (threads) - self-referential relation
+  parentId String?   @map("parent_id") // ID del comentario padre (null = comentario raíz)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies") // Comentarios hijos (respuestas)
+
   // Relaciones
   reactions Reaction[] // Reacciones emoji del comentario
 
@@ -472,6 +477,7 @@ model Comment {
   @@index([entityType, entityId]) // Índice compuesto para buscar comentarios de una entidad específica
   @@index([entityType, entityId, createdAt]) // Índice compuesto para ordenar por fecha
   @@index([createdAt])
+  @@index([parentId]) // Índice para búsquedas de respuestas
   @@map("comments")
 }
 

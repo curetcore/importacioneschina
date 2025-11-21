@@ -24,6 +24,8 @@ import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
 import { EmojiPicker } from "@/components/reactions/EmojiPicker"
 import { ReactionsDisplay } from "@/components/reactions/ReactionsDisplay"
+import { CommentThread } from "@/components/comments/CommentThread"
+import { CommentReplyForm } from "@/components/comments/CommentReplyForm"
 import { subscribeToChannel, unsubscribeFromChannel } from "@/lib/pusher-client"
 
 interface Attachment {
@@ -58,6 +60,8 @@ interface Comment {
   editedAt: string | null
   createdAt: string
   updatedAt: string
+  parentId: string | null
+  replies?: Comment[]
   user: {
     id: string
     name: string
@@ -88,6 +92,8 @@ export function CommentsSection({
   const [newAttachments, setNewAttachments] = useState<Attachment[]>([])
   const [editAttachments, setEditAttachments] = useState<Attachment[]>([])
   const [uploading, setUploading] = useState(false)
+  const [commentReactions, setCommentReactions] = useState<Record<string, Reaction[]>>({})
+  const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null)
 
   // Fetch comments
   const { data: comments = [], isLoading } = useQuery<Comment[]>({
@@ -105,14 +111,16 @@ export function CommentsSection({
     mutationFn: async ({
       content,
       attachments,
+      parentId,
     }: {
       content: string
       attachments: Attachment[]
+      parentId?: string
     }) => {
       const response = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ entityType, entityId, content, attachments }),
+        body: JSON.stringify({ entityType, entityId, content, attachments, parentId }),
       })
       const result = await response.json()
       if (!result.success) throw new Error(result.error)
@@ -122,6 +130,7 @@ export function CommentsSection({
       queryClient.invalidateQueries({ queryKey: ["comments", entityType, entityId] })
       setNewComment("")
       setNewAttachments([])
+      setReplyingTo(null)
       addToast({
         type: "success",
         title: "Comentario agregado",
@@ -311,6 +320,122 @@ export function CommentsSection({
     return type.startsWith("image/")
   }
 
+  // Reaction mutation
+  const reactionMutation = useMutation({
+    mutationFn: async ({ commentId, emoji }: { commentId: string; emoji: string }) => {
+      const response = await fetch(`/api/comments/${commentId}/reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emoji }),
+      })
+      const result = await response.json()
+      if (!result.success) throw new Error(result.error)
+      return { commentId, ...result.data }
+    },
+    onSuccess: data => {
+      // Update reactions in state
+      setCommentReactions(prev => ({
+        ...prev,
+        [data.commentId]: data.reactions,
+      }))
+    },
+    onError: (error: Error) => {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: error.message || "No se pudo procesar la reacción",
+      })
+    },
+  })
+
+  const handleReaction = (commentId: string, emoji: string) => {
+    reactionMutation.mutate({ commentId, emoji })
+  }
+
+  const handleReply = (parentId: string) => {
+    const parentComment = findCommentById(comments, parentId)
+    if (parentComment) {
+      const authorName = `${parentComment.user.name}${
+        parentComment.user.lastName ? ` ${parentComment.user.lastName}` : ""
+      }`.trim()
+      setReplyingTo({ id: parentId, author: authorName })
+    }
+  }
+
+  const handleSubmitReply = async (content: string, parentId: string, files: File[]) => {
+    // Upload files first if any
+    let uploadedAttachments: Attachment[] = []
+    if (files.length > 0) {
+      setUploading(true)
+      try {
+        const formData = new FormData()
+        files.forEach(file => formData.append("files", file))
+
+        const response = await fetch("/api/comments/attachments", {
+          method: "POST",
+          body: formData,
+        })
+
+        const result = await response.json()
+        if (result.success) {
+          uploadedAttachments = result.data
+        }
+      } catch (error) {
+        addToast({
+          type: "error",
+          title: "Error al subir archivos",
+          description: error instanceof Error ? error.message : "Error desconocido",
+        })
+        setUploading(false)
+        return
+      } finally {
+        setUploading(false)
+      }
+    }
+
+    createMutation.mutate({ content, attachments: uploadedAttachments, parentId })
+  }
+
+  const handleCancelReply = () => {
+    setReplyingTo(null)
+  }
+
+  // Helper function to find a comment by ID (recursively in nested structure)
+  const findCommentById = (commentsList: Comment[], id: string): Comment | null => {
+    for (const comment of commentsList) {
+      if (comment.id === id) return comment
+      if (comment.replies) {
+        const found = findCommentById(comment.replies, id)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  // Fetch reactions for all comments
+  useEffect(() => {
+    const fetchReactions = async () => {
+      for (const comment of comments) {
+        try {
+          const response = await fetch(`/api/comments/${comment.id}/reactions`)
+          const result = await response.json()
+          if (result.success) {
+            setCommentReactions(prev => ({
+              ...prev,
+              [comment.id]: result.data,
+            }))
+          }
+        } catch (error) {
+          console.error(`Failed to fetch reactions for comment ${comment.id}:`, error)
+        }
+      }
+    }
+
+    if (comments.length > 0) {
+      fetchReactions()
+    }
+  }, [comments])
+
   // Subscribe to Pusher channel for real-time updates
   useEffect(() => {
     const channelName = `comments-${entityType}-${entityId}`
@@ -342,11 +467,35 @@ export function CommentsSection({
       })
     })
 
+    // Listen for reaction added
+    channel.bind(
+      "reaction-added",
+      (data: { commentId: string; emoji: string; reactions: Reaction[] }) => {
+        setCommentReactions(prev => ({
+          ...prev,
+          [data.commentId]: data.reactions,
+        }))
+      }
+    )
+
+    // Listen for reaction removed
+    channel.bind(
+      "reaction-removed",
+      (data: { commentId: string; emoji: string; reactions: Reaction[] }) => {
+        setCommentReactions(prev => ({
+          ...prev,
+          [data.commentId]: data.reactions,
+        }))
+      }
+    )
+
     // Cleanup on unmount
     return () => {
       channel.unbind("new-comment")
       channel.unbind("comment-updated")
       channel.unbind("comment-deleted")
+      channel.unbind("reaction-added")
+      channel.unbind("reaction-removed")
       unsubscribeFromChannel(channelName)
     }
   }, [entityType, entityId, queryClient])
@@ -460,143 +609,31 @@ export function CommentsSection({
             <p className="text-xs text-gray-400 mt-1">Sé el primero en comentar</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {comments.map(comment => (
-              <div
-                key={comment.id}
-                className="flex gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  {comment.user.profilePhoto ? (
-                    <Image
-                      src={comment.user.profilePhoto}
-                      alt={getUserDisplayName(comment.user)}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
-                      {getUserInitials(comment.user)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Comment Content */}
-                <div className="flex-1 min-w-0">
-                  {/* Header */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900">
-                      {getUserDisplayName(comment.user)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {formatDistanceToNow(new Date(comment.createdAt), {
-                        addSuffix: true,
-                        locale: es,
-                      })}
-                    </span>
-                    {comment.editedAt && (
-                      <span className="text-xs text-gray-400 italic">(editado)</span>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  {editingId === comment.id ? (
-                    <div className="space-y-2">
-                      <MarkdownEditor
-                        value={editContent}
-                        onChange={setEditContent}
-                        disabled={updateMutation.isPending}
-                        minRows={3}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleSaveEdit(comment.id)}
-                          disabled={!editContent.trim() || updateMutation.isPending}
-                          className="h-7 px-2 text-xs"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          Guardar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleCancelEdit}
-                          disabled={updateMutation.isPending}
-                          className="h-7 px-2 text-xs"
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          Cancelar
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-sm text-gray-700">
-                        <MarkdownRenderer content={comment.content} />
-                      </div>
-
-                      {/* Attachments Display */}
-                      {comment.attachments && comment.attachments.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {comment.attachments.map((attachment, index) => (
-                            <a
-                              key={index}
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 hover:border-blue-300 transition-all group"
-                            >
-                              {isImageFile(attachment.type) ? (
-                                <Image
-                                  src={attachment.url}
-                                  alt={attachment.name}
-                                  width={40}
-                                  height={40}
-                                  className="w-10 h-10 rounded object-cover"
-                                />
-                              ) : (
-                                <File className="h-5 w-5 text-gray-500 group-hover:text-blue-600" />
-                              )}
-                              <div className="flex flex-col">
-                                <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600 truncate max-w-[150px]">
-                                  {attachment.name}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {formatFileSize(attachment.size)}
-                                </span>
-                              </div>
-                              <Download className="h-4 w-4 text-gray-400 group-hover:text-blue-600 ml-1" />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Actions (only for comment author) */}
-                  {session?.user?.id === comment.userId && editingId !== comment.id && (
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => handleEdit(comment)}
-                        className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(comment.id)}
-                        className="text-xs text-red-600 hover:text-red-800 flex items-center gap-1"
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                        Eliminar
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div key={comment.id}>
+                <CommentThread
+                  comment={comment}
+                  currentUserId={session?.user?.id}
+                  onDelete={handleDelete}
+                  onEdit={commentId => {
+                    const foundComment = findCommentById(comments, commentId)
+                    if (foundComment) handleEdit(foundComment)
+                  }}
+                  onReaction={handleReaction}
+                  onReply={handleReply}
+                  reactions={commentReactions[comment.id] || []}
+                  isDeleting={deleteMutation.isPending}
+                />
+                {replyingTo && replyingTo.id === comment.id && (
+                  <CommentReplyForm
+                    parentId={replyingTo.id}
+                    parentAuthor={replyingTo.author}
+                    onSubmit={handleSubmitReply}
+                    onCancel={handleCancelReply}
+                    isSubmitting={createMutation.isPending || uploading}
+                  />
+                )}
               </div>
             ))}
           </div>

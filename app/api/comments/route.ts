@@ -26,6 +26,7 @@ const commentSchema = z.object({
     )
     .optional()
     .default([]),
+  parentId: z.string().optional(), // For threaded replies
 })
 
 /**
@@ -50,10 +51,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Fetch only root-level comments (no parentId) with nested replies
     const comments = await prisma.comment.findMany({
       where: {
         entityType,
         entityId,
+        parentId: null, // Only root-level comments
       },
       include: {
         user: {
@@ -63,6 +66,40 @@ export async function GET(request: NextRequest) {
             lastName: true,
             email: true,
             profilePhoto: true,
+          },
+        },
+        replies: {
+          // Include nested replies
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                lastName: true,
+                email: true,
+                profilePhoto: true,
+              },
+            },
+            replies: {
+              // Support 2 levels of nesting for now
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    email: true,
+                    profilePhoto: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
           },
         },
       },
@@ -110,10 +147,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { entityType, entityId, content, attachments } = validation.data
+    const { entityType, entityId, content, attachments, parentId } = validation.data
 
     // Extract mentioned user IDs from content
     const mentions = extractMentionedUserIds(content)
+
+    // If parentId is provided, verify parent comment exists
+    if (parentId) {
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+        select: { id: true, entityType: true, entityId: true },
+      })
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { success: false, error: "Parent comment not found" },
+          { status: 404 }
+        )
+      }
+
+      // Verify parent belongs to same entity
+      if (parentComment.entityType !== entityType || parentComment.entityId !== entityId) {
+        return NextResponse.json(
+          { success: false, error: "Parent comment belongs to different entity" },
+          { status: 400 }
+        )
+      }
+    }
 
     // Create comment
     const comment = await prisma.comment.create({
@@ -124,6 +184,7 @@ export async function POST(request: NextRequest) {
         content,
         attachments: attachments || [],
         mentions: mentions,
+        parentId: parentId || null, // Store parent ID for threaded replies
       },
       include: {
         user: {
