@@ -52,15 +52,25 @@ export function getPusherClient(): PusherClient {
             })
               .then(res => {
                 if (!res.ok) {
-                  throw new Error(`HTTP ${res.status}`)
+                  console.error("❌ [Pusher Auth] HTTP error:", {
+                    status: res.status,
+                    statusText: res.statusText,
+                    channel: channel.name,
+                  })
+                  throw new Error(`HTTP ${res.status}: ${res.statusText}`)
                 }
                 return res.json()
               })
               .then(data => {
+                console.log("✅ [Pusher Auth] Authorization successful for:", channel.name)
                 callback(null, data)
               })
               .catch(err => {
-                console.error("❌ [Pusher Auth] Authorization failed:", err)
+                console.error("❌ [Pusher Auth] Authorization failed:", {
+                  error: err,
+                  message: err.message,
+                  channel: channel.name,
+                })
                 callback(err as Error, null)
               })
           },
@@ -78,7 +88,13 @@ export function getPusherClient(): PusherClient {
     })
 
     pusherClientInstance.connection.bind("error", (error: any) => {
-      console.error("❌ [PUSHER CLIENT] Connection error:", error)
+      console.error("❌ [PUSHER CLIENT] Connection error:", {
+        type: error?.type,
+        error: error?.error,
+        data: error?.data,
+        message: error?.message,
+        full: error,
+      })
     })
 
     pusherClientInstance.connection.bind("connecting", () => {
