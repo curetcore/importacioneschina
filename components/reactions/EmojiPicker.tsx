@@ -66,14 +66,14 @@ export function EmojiPicker({ onSelect, disabled = false }: EmojiPickerProps) {
       </Button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50">
-          <div className="grid grid-cols-6 gap-1">
+        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl p-3 z-[100] min-w-[220px]">
+          <div className="grid grid-cols-6 gap-2">
             {REACTION_EMOJIS.map(emoji => (
               <button
                 key={emoji}
                 type="button"
                 onClick={() => handleEmojiClick(emoji)}
-                className="w-8 h-8 flex items-center justify-center text-xl hover:bg-gray-100 rounded transition-colors"
+                className="w-9 h-9 flex items-center justify-center text-2xl hover:bg-gray-100 rounded-md transition-all hover:scale-110"
                 title={emoji}
               >
                 {emoji}
