@@ -33,7 +33,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
+      <SessionProvider refetchInterval={0} refetchOnWindowFocus={true} refetchWhenOffline={false}>
         {children}
         <Toaster position="top-right" expand={false} richColors closeButton />
         <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />

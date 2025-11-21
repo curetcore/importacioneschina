@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function UserDropdown() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
 
-  if (!session?.user) return null
+  if (status === "loading" || !session?.user) return null
 
   // Solo mostrar el nombre (sin apellido)
   const displayName = session.user.name
@@ -37,6 +37,7 @@ export default function UserDropdown() {
           {/* Avatar - Foto de perfil o ícono */}
           {profilePhoto ? (
             <Image
+              key={profilePhoto}
               src={profilePhoto}
               alt={displayName || "Usuario"}
               width={24}
