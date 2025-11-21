@@ -201,6 +201,11 @@ interface OCChinaItem {
 
 interface GastoLogistico {
   montoRD: number | Prisma.Decimal
+  ordenesCompra?: Array<{
+    ocChina: {
+      id: string
+    }
+  }>
 }
 
 interface PagoChina {
@@ -324,7 +329,13 @@ export function distribuirGastosLogisticos(
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-    return sum + monto
+
+    // Si el gasto está asociado con múltiples órdenes, dividir el monto
+    // para evitar multiplicación (Bug Fix: gasto de 100 en 3 OCs = 100/3 por OC, no 100*3)
+    const numOrdenes = gasto.ordenesCompra?.length || 1
+    const montoPorOrden = monto / numOrdenes
+
+    return sum + montoPorOrden
   }, 0)
   const tasaCambioPromedio = calcularTasaCambioPromedio(pagosChina)
 
@@ -398,7 +409,12 @@ export function calcularResumenFinanciero(
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-    return sum + monto
+
+    // Si el gasto está asociado con múltiples órdenes, dividir el monto
+    const numOrdenes = gasto.ordenesCompra?.length || 1
+    const montoPorOrden = monto / numOrdenes
+
+    return sum + montoPorOrden
   }, 0)
 
   const totalCostoRD = totalPagadoRD + totalGastosRD
@@ -535,7 +551,12 @@ export function calcularCostosCompletos(
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-    return sum + monto
+
+    // Si el gasto está asociado con múltiples órdenes, dividir el monto
+    const numOrdenes = gasto.ordenesCompra?.length || 1
+    const montoPorOrden = monto / numOrdenes
+
+    return sum + montoPorOrden
   }, 0)
 
   const totalComisionesRD = pagosChina.reduce((sum, pago) => {
