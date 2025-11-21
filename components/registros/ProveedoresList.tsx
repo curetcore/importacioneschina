@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast"
 import { Plus, Edit, Trash2, Mail, Phone, MapPin, Star } from "lucide-react"
 import { getErrorMessage, getErrorDetails } from "@/lib/api-client"
+import { useApiQuery } from "@/lib/hooks/useApiQuery"
 
 interface Proveedor {
   id: string

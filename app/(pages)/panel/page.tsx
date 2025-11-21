@@ -363,7 +363,14 @@ export default function PanelPage() {
                     formatter={(value: any) => formatCurrency(Number(value))}
                     contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                   />
-                  <Bar dataKey="value" fill={CHART_COLORS[3]} radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {data.gastos.gastosPorTipo.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -395,8 +402,22 @@ export default function PanelPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-xs text-gray-400">
-                    No hay proveedores registrados
+                  <div className="space-y-2 animate-pulse">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-md"
+                      >
+                        <div className="flex items-center space-x-3 flex-1">
+                          <div className="w-6 h-6 rounded-full bg-gray-200"></div>
+                          <div className="h-4 bg-gray-200 rounded flex-1 max-w-[120px]"></div>
+                        </div>
+                        <div className="text-right">
+                          <div className="h-4 w-20 bg-gray-200 rounded mb-1"></div>
+                          <div className="h-3 w-16 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -426,12 +447,23 @@ export default function PanelPage() {
                       formatter={(value: any) => `${Number(value).toLocaleString()} unidades`}
                       contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                     />
-                    <Bar dataKey="value" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      {data.inventario.inventarioPorBodega.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-center py-8 text-xs text-gray-400">
-                  No hay inventario recibido
+                <div className="space-y-3 animate-pulse">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-8 bg-gray-200 rounded flex-1"></div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -513,8 +545,25 @@ export default function PanelPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-xs text-gray-400">
-                    No hay productos registrados
+                  <div className="space-y-2 animate-pulse">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-md"
+                      >
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <div className="w-6 h-6 rounded-full bg-gray-200 flex-shrink-0"></div>
+                          <div className="min-w-0 flex-1">
+                            <div className="h-4 bg-gray-200 rounded mb-1 max-w-[100px]"></div>
+                            <div className="h-3 bg-gray-200 rounded max-w-[140px]"></div>
+                          </div>
+                        </div>
+                        <div className="text-right ml-3 flex-shrink-0">
+                          <div className="h-4 w-12 bg-gray-200 rounded mb-1"></div>
+                          <div className="h-3 w-16 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -564,7 +613,11 @@ export default function PanelPage() {
                   formatter={(value: any) => formatCurrency(Number(value))}
                   contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                 />
-                <Bar dataKey="inversion" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} />
+                <Bar dataKey="inversion" radius={[0, 4, 4, 0]}>
+                  {data.proveedores.inversionPorProveedor.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>

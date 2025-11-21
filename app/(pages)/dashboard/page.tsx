@@ -201,7 +201,14 @@ export default function DashboardPage() {
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="inversion" fill={CHART_COLORS[0]} />
+                  <Bar dataKey="inversion">
+                    {data.proveedores.inversionPorProveedor.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -259,7 +266,14 @@ export default function DashboardPage() {
                     formatter={(value: number) => [value.toLocaleString(), "Unidades"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="value" fill={CHART_COLORS[1]} />
+                  <Bar dataKey="value">
+                    {data.inventario.inventarioPorBodega.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -329,7 +343,14 @@ export default function DashboardPage() {
                       return producto ? `${producto.sku} - ${producto.nombre}` : label
                     }}
                   />
-                  <Bar dataKey="unidades" fill={CHART_COLORS[2]} />
+                  <Bar dataKey="unidades">
+                    {data.inventario.topProductos.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -359,7 +380,14 @@ export default function DashboardPage() {
                     formatter={(value: number) => [formatCurrency(value), "Inversión"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="inversion" fill={CHART_COLORS[3]} />
+                  <Bar dataKey="inversion">
+                    {data.inventario.comprasPorCategoria.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

@@ -3,16 +3,20 @@
  * Diseñada para ser accesible, distinguible y profesional
  */
 
-// Paleta principal - Colores pastel suaves
+// Paleta principal - Colores pastel vibrantes y legibles
 export const CHART_COLORS = [
-  "#A7C7E7", // Azul pastel
-  "#B4E7CE", // Verde menta pastel
-  "#FFD8A8", // Melocotón pastel
-  "#FFB3BA", // Rosa pastel
-  "#D4C5F9", // Lavanda pastel
-  "#B3E5FC", // Cyan pastel
-  "#F8BBD0", // Rosa claro pastel
-  "#FFCCBC", // Coral pastel
+  "#8AB4F8", // Azul pastel vibrante
+  "#81C995", // Verde pastel vibrante
+  "#FDD663", // Amarillo pastel vibrante
+  "#F28B82", // Coral pastel vibrante
+  "#C58AF9", // Púrpura pastel vibrante
+  "#78D9EC", // Cyan pastel vibrante
+  "#FCAD70", // Naranja pastel vibrante
+  "#FF8BCB", // Rosa pastel vibrante
+  "#A8DAB5", // Menta pastel vibrante
+  "#FFB5E8", // Rosa claro pastel vibrante
+  "#B4E7D8", // Turquesa pastel vibrante
+  "#FFD6A5", // Melocotón pastel vibrante
 ]
 
 // Paleta alternativa - Tonos tierra profesionales
