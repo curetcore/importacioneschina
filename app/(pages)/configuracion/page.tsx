@@ -231,16 +231,7 @@ function AdminUsersSection() {
                   const isSuperAdmin = user.role === "superadmin"
                   return (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          {user.email}
-                          {isSuperAdmin && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
-                              Super Admin
-                            </span>
-                          )}
-                        </div>
-                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{user.email}</td>
                       <td className="py-3 px-4 text-sm text-gray-900">
                         {user.name} {user.lastName || ""}
                       </td>
