@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
-import { createAuditLog } from "@/lib/audit-log"
+import { auditUpdate, auditDelete, AuditAction } from "@/lib/audit-logger"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -79,10 +79,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     // Create audit log
-    await createAuditLog({
+    await auditUpdate({
       entidad: "Comment",
       entidadId: comment.id,
-      accion: "UPDATE",
+      accion: AuditAction.UPDATE,
       usuarioEmail: session.user.email || "",
       cambiosAntes: {
         content: existingComment.content,
@@ -142,10 +142,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     })
 
     // Create audit log
-    await createAuditLog({
+    await auditDelete({
       entidad: "Comment",
       entidadId: commentId,
-      accion: "DELETE",
+      accion: AuditAction.DELETE,
       usuarioEmail: session.user.email || "",
       cambiosAntes: {
         content: existingComment.content,
