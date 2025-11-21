@@ -52,6 +52,17 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     return "Desconectado"
   }
 
+  // Obtener actividad del usuario (Fase 2)
+  const getActivityText = () => {
+    if (!isOnline || !user.activity) {
+      return null
+    }
+
+    return `${user.activity.pageIcon} En ${user.activity.pageName}`
+  }
+
+  const activityText = getActivityText()
+
   return (
     <div className="flex items-center gap-3 py-2 px-1 rounded-md hover:bg-gray-50 transition-colors">
       {/* Avatar con badge de estado */}
@@ -90,6 +101,9 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
         >
           {getLastActiveText()}
         </p>
+
+        {/* Actividad del usuario (Fase 2) - Solo visible cuando está online */}
+        {activityText && <p className="text-xs text-gray-500 truncate mt-0.5">{activityText}</p>}
       </div>
     </div>
   )
