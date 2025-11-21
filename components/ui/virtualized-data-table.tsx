@@ -4,17 +4,15 @@ import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
-  SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ChevronDown, ChevronUp, ChevronsUpDown, Settings2 } from "lucide-react"
+import { Settings2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -70,7 +68,6 @@ export function VirtualizedDataTable<TData, TValue>({
   overscan = 5, // Render 5 extra rows above/below viewport
   maxHeight = "600px",
 }: VirtualizedDataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>(
     {}
@@ -100,14 +97,11 @@ export function VirtualizedDataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onRowSelectionChange: setRowSelection,
     state: {
-      sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
@@ -199,29 +193,9 @@ export function VirtualizedDataTable<TData, TValue>({
                         key={header.id}
                         className="text-left py-2.5 px-3 text-[11px] font-semibold text-[#616161] uppercase tracking-wider border-r border-[#e4e4e4] last:border-r-0 whitespace-nowrap"
                       >
-                        {header.isPlaceholder ? null : (
-                          <div
-                            className={
-                              header.column.getCanSort()
-                                ? "flex items-center gap-2 cursor-pointer select-none hover:text-gray-700"
-                                : ""
-                            }
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {header.column.getCanSort() && (
-                              <span className="flex-shrink-0">
-                                {header.column.getIsSorted() === "asc" ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : header.column.getIsSorted() === "desc" ? (
-                                  <ChevronDown className="h-4 w-4" />
-                                ) : (
-                                  <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                                )}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     )
                   })}
