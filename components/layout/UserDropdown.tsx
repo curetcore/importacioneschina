@@ -42,6 +42,7 @@ export default function UserDropdown() {
               width={24}
               height={24}
               className="rounded-full object-cover border border-gray-500"
+              unoptimized
             />
           ) : (
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">

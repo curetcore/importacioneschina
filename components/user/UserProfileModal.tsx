@@ -90,14 +90,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         throw new Error(result.error || "Error al subir foto")
       }
 
-      // Update session
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          profilePhoto: result.data.url,
-        },
-      })
+      // Update session - NextAuth will fetch fresh data from database
+      await update()
 
       showToast.success("Foto actualizada", {
         description: "Tu foto de perfil ha sido actualizada",
@@ -137,14 +131,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
         throw new Error(result.error || "Error al eliminar foto")
       }
 
-      // Update session
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          profilePhoto: null,
-        },
-      })
+      // Update session - NextAuth will fetch fresh data from database
+      await update()
 
       showToast.success("Foto eliminada", {
         description: "Tu foto de perfil ha sido eliminada",
@@ -179,15 +167,8 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
 
       const data = await response.json()
 
-      // Actualizar sesión de NextAuth
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          name: data.user.name,
-          lastName: data.user.lastName,
-        },
-      })
+      // Actualizar sesión de NextAuth - will fetch fresh data from database
+      await update()
 
       showToast.success("Perfil actualizado", {
         description: "Tu información ha sido actualizada exitosamente",
@@ -227,6 +208,7 @@ export function UserProfileModal({ open, onOpenChange }: UserProfileModalProps) 
                       width={80}
                       height={80}
                       className="rounded-full object-cover border-2 border-gray-200"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-semibold border-2 border-gray-200">

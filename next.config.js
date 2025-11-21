@@ -17,6 +17,18 @@ const nextConfig = {
   images: {
     domains: [],
     formats: ["image/avif", "image/webp"],
+    // Allow unoptimized images for local uploads
+    unoptimized: false,
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
 }
 
