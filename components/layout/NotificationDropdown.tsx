@@ -20,7 +20,6 @@ import {
 import { useRouter } from "next/navigation"
 import { formatTimeAgo } from "@/lib/utils"
 import { useNotifications } from "@/hooks/useNotifications"
-import Image from "next/image"
 
 // Mapeo de nombres de íconos a componentes lucide-react
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -65,13 +64,10 @@ function NotificationIcon({
   if (actor?.profilePhoto) {
     return (
       <div className="relative w-10 h-10 flex-shrink-0">
-        <Image
+        <img
           src={actor.profilePhoto}
           alt={actor.name}
-          width={40}
-          height={40}
-          className="rounded-full object-cover border border-gray-200"
-          unoptimized
+          className="w-10 h-10 rounded-full object-cover border border-gray-200"
         />
       </div>
     )
