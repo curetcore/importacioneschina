@@ -1,6 +1,9 @@
 import { getPrismaClient } from "@/lib/db-helpers"
-import { resend, FROM_EMAIL } from "./resend-client"
+// import { resend, FROM_EMAIL } from "./resend-client" // REMOVED: Migrating to AWS SES
 import crypto from "crypto"
+
+// Temporary FROM_EMAIL until AWS SES is implemented
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@curetcore.com"
 
 export interface SendInvitationInput {
   email: string
@@ -60,151 +63,27 @@ export async function sendUserInvitation(input: SendInvitationInput) {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
   const invitationUrl = `${baseUrl}/auth/invitation/${token}`
 
-  // 7. Enviar correo electrónico
-  const roleNames = {
-    limitado: "Usuario Limitado",
-    admin: "Administrador",
-    superadmin: "Super Administrador",
-  }
-
-  console.log("📧 [Invitation] Preparing to send email...")
-  console.log("📧 [Invitation] FROM:", FROM_EMAIL)
-  console.log("📧 [Invitation] TO:", input.email)
+  // 7. Email temporalmente deshabilitado - Preparando migración a AWS SES
+  console.log("⚠️ [Invitation] Email sending temporarily disabled - Awaiting AWS SES migration")
+  console.log("📧 [Invitation] Invitation created successfully in database")
   console.log("📧 [Invitation] Invitation URL:", invitationUrl)
   console.log("📧 [Invitation] Token:", token)
+  console.log("💡 [Invitation] Admin can copy the URL and share manually via WhatsApp/Slack")
 
-  try {
-    console.log("📧 [Invitation] Calling resend.emails.send()...")
-    const result = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: input.email,
-      subject: "Invitación al Sistema de Importaciones",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-              }
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-                border-radius: 8px 8px 0 0;
-              }
-              .content {
-                background: #f7fafc;
-                padding: 30px;
-                border-radius: 0 0 8px 8px;
-              }
-              .button {
-                display: inline-block;
-                background: #4299e1;
-                color: white;
-                padding: 14px 28px;
-                text-decoration: none;
-                border-radius: 6px;
-                margin: 20px 0;
-                font-weight: bold;
-              }
-              .info-box {
-                background: white;
-                padding: 15px;
-                border-left: 4px solid #4299e1;
-                margin: 20px 0;
-              }
-              .footer {
-                text-align: center;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #e2e8f0;
-                color: #718096;
-                font-size: 14px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1 style="margin: 0;">Sistema de Importaciones</h1>
-                <p style="margin: 10px 0 0 0;">Has sido invitado a unirte</p>
-              </div>
-              
-              <div class="content">
-                <h2>¡Hola!</h2>
-                <p>${input.invitedBy} te ha invitado a unirte al Sistema de Importaciones.</p>
-                
-                <div class="info-box">
-                  <p style="margin: 0;"><strong>Rol asignado:</strong> ${roleNames[input.role]}</p>
-                  <p style="margin: 10px 0 0 0;"><strong>Email:</strong> ${input.email}</p>
-                </div>
-
-                <p>Para completar tu registro, haz clic en el siguiente botón:</p>
-
-                <div style="text-align: center;">
-                  <a href="${invitationUrl}" class="button">
-                    Completar Registro
-                  </a>
-                </div>
-
-                <p style="color: #718096; font-size: 14px;">
-                  O copia y pega este enlace en tu navegador:<br>
-                  <a href="${invitationUrl}" style="color: #4299e1;">${invitationUrl}</a>
-                </p>
-
-                <p style="color: #e53e3e; font-size: 14px; margin-top: 30px;">
-                  ⚠️ Esta invitación expira en 7 días.
-                </p>
-              </div>
-
-              <div class="footer">
-                <p>Este es un correo automático, por favor no responder.</p>
-                <p>Sistema de Importaciones - Curet Core</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
-    })
-
-    console.log("📧 [Invitation] Resend API response:", JSON.stringify(result, null, 2))
-    console.log(`✅ [Invitation] Email sent successfully to ${input.email}`)
-    console.log(`✅ [Invitation] Email ID:`, result.data?.id || "no-id")
-  } catch (error) {
-    console.error("❌ [Invitation] Error sending email - Full error:", error)
-    console.error("❌ [Invitation] Error name:", error instanceof Error ? error.name : "unknown")
-    console.error(
-      "❌ [Invitation] Error message:",
-      error instanceof Error ? error.message : "unknown"
-    )
-    console.error("❌ [Invitation] Error stack:", error instanceof Error ? error.stack : "no stack")
-
-    if (error && typeof error === "object" && "response" in error) {
-      console.error(
-        "❌ [Invitation] API Response:",
-        JSON.stringify((error as any).response, null, 2)
-      )
-    }
-
-    // Eliminar la invitación si el correo falla
-    console.log("🗑️ [Invitation] Deleting invitation due to email failure...")
-    await db.userInvitation.delete({
-      where: { id: invitation.id },
-    })
-    console.log("🗑️ [Invitation] Invitation deleted")
-
-    throw new Error("Error al enviar el correo de invitación. Por favor intenta nuevamente.")
-  }
+  // TODO: Implementar AWS SES aquí cuando esté listo
+  // const roleNames = {
+  //   limitado: "Usuario Limitado",
+  //   admin: "Administrador",
+  //   superadmin: "Super Administrador",
+  // }
+  //
+  // import { sendEmailWithSES } from "@/lib/aws/ses-service"
+  // await sendEmailWithSES({
+  //   from: FROM_EMAIL,
+  //   to: input.email,
+  //   subject: "Invitación al Sistema de Importaciones",
+  //   html: `...template HTML aquí...`
+  // })
 
   return {
     invitation,
