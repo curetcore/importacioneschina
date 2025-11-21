@@ -14,6 +14,8 @@ import {
   FileSpreadsheet,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { StatCard } from "@/components/ui/stat-card"
+import { StatsGrid } from "@/components/ui/stats-grid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -210,6 +212,20 @@ function DocumentosPageContent() {
     return getFileIcon(doc.tipo)
   }
 
+  // Calcular estadísticas
+  const stats = {
+    totalDocumentos: documentos.length,
+    totalFacturas: documentos.filter(doc => doc.categoria === "facturas").length,
+    totalComprobantes: documentos.filter(doc => doc.categoria === "comprobantes").length,
+    totalLogisticos: documentos.filter(doc => doc.categoria === "logisticos").length,
+    totalSize: documentos.reduce((sum, doc) => sum + doc.size, 0),
+  }
+
+  const formatTotalSize = (bytes: number): string => {
+    const mb = bytes / (1024 * 1024)
+    return mb.toFixed(2) + " MB"
+  }
+
   const columns: ColumnDef<DocumentWithSource>[] = [
     {
       accessorKey: "nombre",
@@ -259,6 +275,37 @@ function DocumentosPageContent() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* KPIs Section */}
+        <StatsGrid cols={4}>
+          <StatCard
+            icon={<FileText className="w-4 h-4" />}
+            label="Total Documentos"
+            value={stats.totalDocumentos}
+            subtitle="Archivos"
+          />
+
+          <StatCard
+            icon={<FileCheck className="w-4 h-4" />}
+            label="Facturas"
+            value={stats.totalFacturas}
+            subtitle="Facturas"
+          />
+
+          <StatCard
+            icon={<Receipt className="w-4 h-4" />}
+            label="Comprobantes"
+            value={stats.totalComprobantes}
+            subtitle="Pagos"
+          />
+
+          <StatCard
+            icon={<Package className="w-4 h-4" />}
+            label="Logísticos"
+            value={stats.totalLogisticos}
+            subtitle={formatTotalSize(stats.totalSize)}
+          />
+        </StatsGrid>
+
         <Card>
           <CardHeader className="space-y-0 pb-4">
             {/* Layout optimizado: Título en línea con filtros */}
