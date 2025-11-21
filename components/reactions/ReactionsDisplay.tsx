@@ -36,7 +36,7 @@ export function ReactionsDisplay({ reactions, onReact, disabled = false }: React
   }
 
   return (
-    <div className="flex flex-wrap gap-1 mt-2">
+    <div className="flex flex-wrap gap-2 mt-3">
       {reactions.map(reaction => (
         <div key={reaction.emoji} className="relative">
           <button
@@ -46,7 +46,7 @@ export function ReactionsDisplay({ reactions, onReact, disabled = false }: React
             onMouseLeave={() => setHoveredEmoji(null)}
             disabled={disabled}
             className={`
-              inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm border transition-all
+              inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all
               ${
                 reaction.userReacted
                   ? "bg-blue-100 border-blue-300 text-blue-700"
@@ -55,8 +55,8 @@ export function ReactionsDisplay({ reactions, onReact, disabled = false }: React
               ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
             `}
           >
-            <span className="text-base leading-none">{reaction.emoji}</span>
-            <span className="text-xs font-medium">{reaction.count}</span>
+            <span className="text-lg leading-none">{reaction.emoji}</span>
+            <span className="text-sm font-medium">{reaction.count}</span>
           </button>
 
           {/* Tooltip with user names */}
