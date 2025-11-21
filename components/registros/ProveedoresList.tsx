@@ -29,40 +29,12 @@ interface ProveedoresListProps {
 
 export function ProveedoresList({ onAdd, onEdit, onDelete }: ProveedoresListProps) {
   const { addToast } = useToast()
-  const [proveedores, setProveedores] = useState<Proveedor[]>([])
-  const [loading, setLoading] = useState(true)
 
-  const fetchProveedores = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch("/api/proveedores?activo=true")
-      const result = await response.json()
-
-      if (result.success) {
-        setProveedores(result.data)
-      } else {
-        addToast({
-          type: "error",
-          title: "Error al cargar proveedores",
-          description: result.error || "Error desconocido",
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching proveedores:", error)
-      addToast({
-        type: "error",
-        title: "Error al cargar proveedores",
-        description: getErrorMessage(error),
-        details: getErrorDetails(error),
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchProveedores()
-  }, [])
+  // Use React Query for automatic cache invalidation
+  const { data: proveedores = [], isLoading: loading } = useApiQuery<Proveedor[]>(
+    ["proveedores"],
+    "/api/proveedores?activo=true"
+  )
 
   const renderStars = (rating: number) => {
     return (
