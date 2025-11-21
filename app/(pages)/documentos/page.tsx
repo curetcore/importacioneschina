@@ -1,8 +1,19 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { useQuery } from "@tanstack/react-query"
-import { FileText, Download, Edit2, Search, FileCheck, Receipt, Package } from "lucide-react"
+import {
+  FileText,
+  Download,
+  Edit2,
+  Search,
+  FileCheck,
+  Receipt,
+  Package,
+  Eye,
+  FileSpreadsheet,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
@@ -12,6 +23,15 @@ import { VirtualizedDataTable } from "@/components/ui/virtualized-data-table"
 import { ColumnDef } from "@tanstack/react-table"
 import MainLayout from "@/components/layout/MainLayout"
 import { RenameDocumentModal } from "@/components/documentos/RenameDocumentModal"
+import { FilePreviewModal } from "@/components/ui/file-preview-modal"
+
+const PDFThumbnail = dynamic(
+  () => import("@/components/ui/pdf-thumbnail").then(mod => mod.PDFThumbnail),
+  {
+    ssr: false,
+    loading: () => <FileText size={16} className="text-red-500 animate-pulse" />,
+  }
+)
 
 interface DocumentWithSource {
   id: string
@@ -32,6 +52,8 @@ export default function DocumentosPage() {
   const [ocFilter, setOcFilter] = useState("")
   const [renameModalOpen, setRenameModalOpen] = useState(false)
   const [documentToRename, setDocumentToRename] = useState<DocumentWithSource | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [documentToPreview, setDocumentToPreview] = useState<DocumentWithSource | null>(null)
 
   // Fetch documentos con filtros
   const { data, isLoading, refetch } = useQuery({
@@ -102,19 +124,94 @@ export default function DocumentosPage() {
     setRenameModalOpen(true)
   }
 
+  const handlePreview = (doc: DocumentWithSource) => {
+    setDocumentToPreview(doc)
+    setPreviewOpen(true)
+  }
+
+  const getFileIcon = (tipo: string) => {
+    if (tipo.startsWith("image/")) {
+      return <FileText size={16} className="text-blue-500" />
+    }
+    if (tipo === "application/pdf") {
+      return <FileText size={16} className="text-red-500" />
+    }
+    if (
+      tipo === "application/vnd.ms-excel" ||
+      tipo === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) {
+      return <FileSpreadsheet size={16} className="text-green-600" />
+    }
+    return <FileText size={16} className="text-gray-400" />
+  }
+
+  const renderThumbnail = (doc: DocumentWithSource) => {
+    const isImage = doc.tipo.startsWith("image/")
+    const isPDF = doc.tipo === "application/pdf"
+
+    if (isImage) {
+      return (
+        <img
+          src={doc.url}
+          alt={doc.nombre}
+          className="w-10 h-10 object-cover rounded border border-gray-200"
+          loading="lazy"
+        />
+      )
+    }
+
+    if (isPDF) {
+      return <PDFThumbnail url={doc.url} width={40} height={40} className="rounded" />
+    }
+
+    return getFileIcon(doc.tipo)
+  }
+
   const columns: ColumnDef<DocumentWithSource>[] = [
     {
       accessorKey: "nombre",
       header: "Archivo",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <FileText size={16} className="text-gray-400 flex-shrink-0" />
-          <div className="min-w-0">
-            <div className="font-medium text-gray-900 truncate">{row.original.nombre}</div>
-            <div className="text-xs text-gray-500">{formatFileSize(row.original.size)}</div>
-          </div>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isImage = row.original.tipo.startsWith("image/")
+        const isPDF = row.original.tipo === "application/pdf"
+        const hasPreview = isImage || isPDF
+
+        return (
+          <button
+            onClick={e => {
+              e.stopPropagation()
+              if (hasPreview) {
+                handlePreview(row.original)
+              }
+            }}
+            className={`flex items-center gap-3 text-left group ${hasPreview ? "cursor-pointer hover:bg-gray-50 rounded p-1 -m-1 transition-colors" : ""}`}
+          >
+            <div className="flex-shrink-0">
+              {hasPreview ? (
+                <div className="relative">
+                  {renderThumbnail(row.original)}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded transition-all flex items-center justify-center">
+                    <Eye
+                      size={14}
+                      className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg"
+                    />
+                  </div>
+                </div>
+              ) : (
+                getFileIcon(row.original.tipo)
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div
+                className={`font-medium text-gray-900 truncate ${hasPreview ? "group-hover:text-blue-700" : ""}`}
+              >
+                {row.original.nombre}
+              </div>
+              <div className="text-xs text-gray-500">{formatFileSize(row.original.size)}</div>
+            </div>
+          </button>
+        )
+      },
     },
     {
       accessorKey: "categoria",
@@ -147,32 +244,43 @@ export default function DocumentosPage() {
     {
       id: "actions",
       header: "Acciones",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <a
-            href={row.original.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            Ver
-          </a>
-          <Button
-            variant="ghost"
-            onClick={() => handleDownload(row.original)}
-            className="h-7 px-2 py-1"
-          >
-            <Download size={14} />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleRename(row.original)}
-            className="h-7 px-2 py-1"
-          >
-            <Edit2 size={14} />
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isImage = row.original.tipo.startsWith("image/")
+        const isPDF = row.original.tipo === "application/pdf"
+        const hasPreview = isImage || isPDF
+
+        return (
+          <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+            {hasPreview ? (
+              <Button
+                variant="ghost"
+                onClick={() => handlePreview(row.original)}
+                className="h-7 px-2 py-1 text-blue-600 hover:text-blue-700"
+              >
+                <Eye size={14} className="mr-1" />
+                Ver
+              </Button>
+            ) : (
+              <a
+                href={row.original.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium px-2"
+              >
+                Descargar
+              </a>
+            )}
+            <Button
+              variant="ghost"
+              onClick={() => handleRename(row.original)}
+              className="h-7 px-2 py-1"
+              title="Renombrar"
+            >
+              <Edit2 size={14} />
+            </Button>
+          </div>
+        )
+      },
     },
   ]
 
@@ -270,6 +378,21 @@ export default function DocumentosPage() {
           refetch()
           setDocumentToRename(null)
         }}
+      />
+
+      <FilePreviewModal
+        file={
+          documentToPreview
+            ? {
+                nombre: documentToPreview.nombre,
+                url: documentToPreview.url,
+                tipo: documentToPreview.tipo,
+                size: documentToPreview.size,
+              }
+            : null
+        }
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
       />
     </MainLayout>
   )
