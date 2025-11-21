@@ -88,13 +88,19 @@ export function getPusherClient(): PusherClient {
     })
 
     pusherClientInstance.connection.bind("error", (error: any) => {
-      console.error("❌ [PUSHER CLIENT] Connection error:", {
+      console.error("❌ [PUSHER CLIENT] Connection error:", error)
+      console.error("❌ [PUSHER CLIENT] Error details:", {
         type: error?.type,
         error: error?.error,
         data: error?.data,
         message: error?.message,
-        full: error,
       })
+      // Try to stringify the full error for better visibility
+      try {
+        console.error("❌ [PUSHER CLIENT] Full error JSON:", JSON.stringify(error, null, 2))
+      } catch (e) {
+        console.error("❌ [PUSHER CLIENT] Could not stringify error")
+      }
     })
 
     pusherClientInstance.connection.bind("connecting", () => {
