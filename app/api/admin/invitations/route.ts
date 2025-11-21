@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { sendUserInvitation } from "@/lib/email/invitation-service"
+import { getPrismaClient } from "@/lib/db-helpers"
 import { z } from "zod"
 
 export const dynamic = "force-dynamic"
@@ -46,6 +47,73 @@ const invitationSchema = z.object({
     errorMap: () => ({ message: "Rol inválido. Debe ser: limitado, admin o superadmin" }),
   }),
 })
+
+/**
+ * GET /api/admin/invitations
+ * Listar todas las invitaciones (solo super admin)
+ */
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    // Validar autenticación
+    if (!session?.user?.email) {
+      return NextResponse.json({ success: false, error: "No autenticado" }, { status: 401 })
+    }
+
+    // Validar que sea super admin
+    if (session.user.role !== "superadmin") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No autorizado. Solo super admin puede ver invitaciones.",
+        },
+        { status: 403 }
+      )
+    }
+
+    const db = await getPrismaClient()
+
+    // Obtener todas las invitaciones ordenadas por fecha de creación (más recientes primero)
+    const invitations = await db.userInvitation.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        token: false, // No exponer el token
+        expiresAt: true,
+        accepted: true,
+        invitedBy: true,
+        createdAt: true,
+      },
+    })
+
+    // Clasificar invitaciones por estado
+    const now = new Date()
+    const enrichedInvitations = invitations.map(inv => ({
+      ...inv,
+      status: inv.accepted ? "accepted" : inv.expiresAt < now ? "expired" : "pending",
+    }))
+
+    return NextResponse.json({
+      success: true,
+      data: enrichedInvitations,
+    })
+  } catch (error: any) {
+    console.error("❌ Error fetching invitations:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Error al obtener invitaciones",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined,
+      },
+      { status: 500 }
+    )
+  }
+}
 
 /**
  * POST /api/admin/invitations

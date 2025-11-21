@@ -23,6 +23,7 @@ import { UserProfileModal } from "@/components/user/UserProfileModal"
 import { ChangePasswordModal } from "@/components/user/ChangePasswordModal"
 import { EditUserModal } from "@/components/admin/EditUserModal"
 import { SendInvitationModal } from "@/components/admin/SendInvitationModal"
+import { InvitationsList } from "@/components/admin/InvitationsList"
 import { formatTimeAgo } from "@/lib/utils"
 
 interface Configuracion {
@@ -317,6 +318,14 @@ function AdminUsersSection() {
         loading={deleteLoading}
       />
     </Card>
+  )
+}
+
+function InvitationsSection() {
+  return (
+    <div className="mt-6">
+      <InvitationsList />
+    </div>
   )
 }
 
@@ -760,6 +769,7 @@ function ConfiguracionPageContent() {
               {isSuperAdmin ? (
                 <>
                   <AdminUsersSection />
+                  <InvitationsSection />
                   <UserActivitySection />
                 </>
               ) : (
