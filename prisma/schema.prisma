@@ -449,6 +449,10 @@ model Comment {
   // Contenido del comentario
   content String @db.Text
 
+  // Archivos adjuntos (array de objetos JSON)
+  // Cada objeto: { url: string, name: string, type: string, size: number }
+  attachments Json? @default("[]")
+
   // Edición
   editedAt DateTime? @map("edited_at") // Si fue editado, cuándo
 

@@ -14,6 +14,17 @@ const commentSchema = z.object({
   entityType: z.string().min(1, "Entity type is required"),
   entityId: z.string().min(1, "Entity ID is required"),
   content: z.string().min(1, "Comment content is required").max(5000, "Comment is too long"),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string(),
+        name: z.string(),
+        type: z.string(),
+        size: z.number(),
+      })
+    )
+    .optional()
+    .default([]),
 })
 
 /**
@@ -98,7 +109,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { entityType, entityId, content } = validation.data
+    const { entityType, entityId, content, attachments } = validation.data
 
     // Create comment
     const comment = await prisma.comment.create({
@@ -107,6 +118,7 @@ export async function POST(request: NextRequest) {
         entityType,
         entityId,
         content,
+        attachments: attachments || [],
       },
       include: {
         user: {

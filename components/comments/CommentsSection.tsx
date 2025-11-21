@@ -6,7 +6,17 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast"
-import { MessageSquare, Send, Edit2, Trash2, X, Check } from "lucide-react"
+import {
+  MessageSquare,
+  Send,
+  Edit2,
+  Trash2,
+  X,
+  Check,
+  Paperclip,
+  File,
+  Download,
+} from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import Image from "next/image"
@@ -14,12 +24,20 @@ import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
 import { subscribeToChannel, unsubscribeFromChannel } from "@/lib/pusher-client"
 
+interface Attachment {
+  url: string
+  name: string
+  type: string
+  size: number
+}
+
 interface Comment {
   id: string
   userId: string
   entityType: string
   entityId: string
   content: string
+  attachments?: Attachment[]
   editedAt: string | null
   createdAt: string
   updatedAt: string
@@ -50,6 +68,9 @@ export function CommentsSection({
   const [newComment, setNewComment] = useState("")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState("")
+  const [newAttachments, setNewAttachments] = useState<Attachment[]>([])
+  const [editAttachments, setEditAttachments] = useState<Attachment[]>([])
+  const [uploading, setUploading] = useState(false)
 
   // Fetch comments
   const { data: comments = [], isLoading } = useQuery<Comment[]>({
@@ -64,11 +85,17 @@ export function CommentsSection({
 
   // Create comment mutation
   const createMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({
+      content,
+      attachments,
+    }: {
+      content: string
+      attachments: Attachment[]
+    }) => {
       const response = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ entityType, entityId, content }),
+        body: JSON.stringify({ entityType, entityId, content, attachments }),
       })
       const result = await response.json()
       if (!result.success) throw new Error(result.error)
@@ -77,6 +104,7 @@ export function CommentsSection({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", entityType, entityId] })
       setNewComment("")
+      setNewAttachments([])
       addToast({
         type: "success",
         title: "Comentario agregado",
@@ -150,20 +178,71 @@ export function CommentsSection({
     },
   })
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      Array.from(files).forEach(file => formData.append("files", file))
+
+      const response = await fetch("/api/comments/attachments", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+      if (!result.success) throw new Error(result.error)
+
+      // Add uploaded attachments to state
+      setNewAttachments(prev => [...prev, ...result.data])
+
+      if (result.warnings && result.warnings.length > 0) {
+        addToast({
+          type: "warning",
+          title: "Algunos archivos no se pudieron subir",
+          description: result.warnings.join(", "),
+        })
+      } else {
+        addToast({
+          type: "success",
+          title: "Archivos subidos",
+          description: `${result.data.length} archivo(s) subido(s) exitosamente`,
+        })
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error al subir archivos",
+        description: error instanceof Error ? error.message : "Error desconocido",
+      })
+    } finally {
+      setUploading(false)
+      e.target.value = "" // Reset input
+    }
+  }
+
+  const handleRemoveAttachment = (url: string) => {
+    setNewAttachments(prev => prev.filter(att => att.url !== url))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim()) return
-    createMutation.mutate(newComment)
+    createMutation.mutate({ content: newComment, attachments: newAttachments })
   }
 
   const handleEdit = (comment: Comment) => {
     setEditingId(comment.id)
     setEditContent(comment.content)
+    setEditAttachments(comment.attachments || [])
   }
 
   const handleCancelEdit = () => {
     setEditingId(null)
     setEditContent("")
+    setEditAttachments([])
   }
 
   const handleSaveEdit = (id: string) => {
@@ -203,6 +282,16 @@ export function CommentsSection({
       .join("")
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  }
+
+  const isImageFile = (type: string) => {
+    return type.startsWith("image/")
   }
 
   // Subscribe to Pusher channel for real-time updates
@@ -264,7 +353,73 @@ export function CommentsSection({
               disabled={createMutation.isPending}
               minRows={3}
             />
-            <div className="flex justify-end">
+
+            {/* Attachments Preview */}
+            {newAttachments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {newAttachments.map((attachment, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm group"
+                  >
+                    {isImageFile(attachment.type) ? (
+                      <Image
+                        src={attachment.url}
+                        alt={attachment.name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                    ) : (
+                      <File className="h-5 w-5 text-gray-500" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium text-gray-700 truncate max-w-[150px]">
+                        {attachment.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatFileSize(attachment.size)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAttachment(attachment.url)}
+                      className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-between items-center">
+              {/* File Upload Button */}
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+                  onChange={handleFileUpload}
+                  disabled={uploading || createMutation.isPending}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading || createMutation.isPending}
+                  className="gap-1.5"
+                  onClick={e => {
+                    e.preventDefault()
+                    e.currentTarget.previousElementSibling?.dispatchEvent(new MouseEvent("click"))
+                  }}
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                  {uploading ? "Subiendo..." : "Adjuntar"}
+                </Button>
+              </label>
+
               <Button
                 type="submit"
                 size="sm"
@@ -361,9 +516,47 @@ export function CommentsSection({
                       </div>
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-700">
-                      <MarkdownRenderer content={comment.content} />
-                    </div>
+                    <>
+                      <div className="text-sm text-gray-700">
+                        <MarkdownRenderer content={comment.content} />
+                      </div>
+
+                      {/* Attachments Display */}
+                      {comment.attachments && comment.attachments.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {comment.attachments.map((attachment, index) => (
+                            <a
+                              key={index}
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 hover:border-blue-300 transition-all group"
+                            >
+                              {isImageFile(attachment.type) ? (
+                                <Image
+                                  src={attachment.url}
+                                  alt={attachment.name}
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 rounded object-cover"
+                                />
+                              ) : (
+                                <File className="h-5 w-5 text-gray-500 group-hover:text-blue-600" />
+                              )}
+                              <div className="flex flex-col">
+                                <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600 truncate max-w-[150px]">
+                                  {attachment.name}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {formatFileSize(attachment.size)}
+                                </span>
+                              </div>
+                              <Download className="h-4 w-4 text-gray-400 group-hover:text-blue-600 ml-1" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {/* Actions (only for comment author) */}
