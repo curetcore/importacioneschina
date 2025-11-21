@@ -4,7 +4,7 @@
  */
 
 /**
- * Mapeo de rutas a nombres legibles y emojis
+ * Mapeo de rutas a nombres legibles e iconos (lucide-react)
  */
 export const PAGE_CONFIG: Record<
   string,
@@ -16,47 +16,47 @@ export const PAGE_CONFIG: Record<
 > = {
   "/dashboard": {
     name: "Dashboard",
-    icon: "📊",
+    icon: "BarChart3",
     color: "text-blue-600",
   },
   "/ordenes": {
     name: "Órdenes de Compra",
-    icon: "📋",
+    icon: "ClipboardList",
     color: "text-purple-600",
   },
   "/pagos-china": {
     name: "Pagos China",
-    icon: "💰",
+    icon: "DollarSign",
     color: "text-green-600",
   },
   "/gastos-logisticos": {
     name: "Gastos Logísticos",
-    icon: "🚚",
+    icon: "Truck",
     color: "text-orange-600",
   },
   "/inventario-recibido": {
     name: "Inventario",
-    icon: "📦",
+    icon: "Package",
     color: "text-indigo-600",
   },
   "/documentos": {
     name: "Documentos",
-    icon: "📄",
+    icon: "FileText",
     color: "text-gray-600",
   },
   "/configuracion": {
     name: "Configuración",
-    icon: "⚙️",
+    icon: "Settings",
     color: "text-slate-600",
   },
   "/analisis-costos": {
     name: "Análisis de Costos",
-    icon: "💹",
+    icon: "TrendingUp",
     color: "text-emerald-600",
   },
   "/notificaciones": {
     name: "Notificaciones",
-    icon: "🔔",
+    icon: "Bell",
     color: "text-yellow-600",
   },
 }
@@ -84,7 +84,7 @@ export function getPageConfig(pathname: string): {
   // Fallback para rutas no mapeadas
   return {
     name: "Navegando",
-    icon: "🌐",
+    icon: "Globe",
     color: "text-gray-500",
   }
 }
@@ -199,7 +199,7 @@ export function detectAction(pathname: string, searchParams?: URLSearchParams): 
 export interface UserActivity {
   page: string // Ruta actual: "/ordenes"
   pageName: string // Nombre legible: "Órdenes de Compra"
-  pageIcon: string // Emoji: "📋"
+  pageIcon: string // Ícono lucide-react: "ClipboardList"
   pageColor: string // Color: "text-purple-600"
   entityName?: string // Nombre de entidad: "OC-2024-001"
   action?: string // Fase 6: "Viendo", "Editando", "Creando", "En"

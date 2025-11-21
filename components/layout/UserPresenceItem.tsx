@@ -3,6 +3,33 @@ import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import Image from "next/image"
 import { useEffect, useState } from "react"
+import {
+  BarChart3,
+  ClipboardList,
+  DollarSign,
+  Truck,
+  Package,
+  FileText,
+  Settings,
+  TrendingUp,
+  Bell,
+  Globe,
+  type LucideIcon,
+} from "lucide-react"
+
+// Mapeo de nombres de íconos a componentes lucide-react
+const ICON_MAP: Record<string, LucideIcon> = {
+  BarChart3,
+  ClipboardList,
+  DollarSign,
+  Truck,
+  Package,
+  FileText,
+  Settings,
+  TrendingUp,
+  Bell,
+  Globe,
+}
 
 interface UserPresenceItemProps {
   user: OnlineUser
@@ -65,10 +92,14 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
   }, [])
 
   // Obtener actividad del usuario (Fase 2 + Fase 4 + Fase 5 + Fase 6)
-  const getActivityText = () => {
+  const getActivityText = (): { text: string; Icon: LucideIcon | null; color: string } | null => {
     if (!isOnline || !user.activity) {
       return null
     }
+
+    // Obtener el ícono correspondiente
+    const Icon = ICON_MAP[user.activity.pageIcon] || Globe
+    const color = user.activity.pageColor || "text-gray-500"
 
     let baseText = ""
     const action = user.activity.action || "En"
@@ -76,13 +107,13 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     // Fase 6 + Fase 4: Combinar acción con entidad o página
     if (user.activity.entityName) {
       // Con entidad: "Editando OC-2024-001", "Viendo OC-2024-001", "Creando nueva orden"
-      baseText = `${user.activity.pageIcon} ${action} ${user.activity.entityName}`
+      baseText = `${action} ${user.activity.entityName}`
     } else if (action === "Creando") {
       // Creando sin entidad específica: "Creando nueva orden"
-      baseText = `${user.activity.pageIcon} ${action} ${user.activity.pageName.toLowerCase()}`
+      baseText = `${action} ${user.activity.pageName.toLowerCase()}`
     } else {
       // Fase 2: Sin entidad, mostrar acción + página: "En Órdenes de Compra"
-      baseText = `${user.activity.pageIcon} ${action} ${user.activity.pageName}`
+      baseText = `${action} ${user.activity.pageName}`
     }
 
     // Fase 5: Agregar timestamp relativo
@@ -92,16 +123,16 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
           addSuffix: true,
           locale: es,
         })
-        return `${baseText} · ${timeAgo}`
+        return { text: `${baseText} · ${timeAgo}`, Icon, color }
       } catch {
-        return baseText
+        return { text: baseText, Icon, color }
       }
     }
 
-    return baseText
+    return { text: baseText, Icon, color }
   }
 
-  const activityText = getActivityText()
+  const activityData = getActivityText()
 
   return (
     <div className="flex items-center gap-3 py-2 px-1 rounded-md hover:bg-gray-50 transition-colors">
@@ -143,7 +174,14 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
         </p>
 
         {/* Actividad del usuario (Fase 2) - Solo visible cuando está online */}
-        {activityText && <p className="text-xs text-gray-500 truncate mt-0.5">{activityText}</p>}
+        {activityData && (
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {activityData.Icon && (
+              <activityData.Icon className={`w-3 h-3 flex-shrink-0 ${activityData.color}`} />
+            )}
+            <p className="text-xs text-gray-500 truncate">{activityData.text}</p>
+          </div>
+        )}
       </div>
     </div>
   )
