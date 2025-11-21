@@ -25,8 +25,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       include: {
         ocChina: {
           select: {
+            id: true,
             oc: true,
             proveedor: true,
+            fechaOC: true,
+            categoriaPrincipal: true,
           },
         },
       },
