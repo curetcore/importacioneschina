@@ -261,14 +261,31 @@ function DocumentosPageContent() {
       <div className="space-y-6">
         <Card>
           <CardHeader className="space-y-0 pb-4">
-            {/* Layout estándar: Título | Tabs | Buscador | Filtro OC */}
+            {/* Layout optimizado: Título en línea con filtros */}
             <div className="space-y-4">
-              {/* Primera fila: Título + contador */}
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              {/* Primera fila: Título + Buscador + Filtro OC */}
+              <div className="flex items-center gap-3">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold whitespace-nowrap">
                   <FileText size={18} />
                   Documentos ({documentos.length})
                 </CardTitle>
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar por nombre de archivo..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+                <div className="w-48">
+                  <Input
+                    placeholder="Filtrar por OC..."
+                    value={ocFilter}
+                    onChange={e => setOcFilter(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Segunda fila: Tabs */}
@@ -297,27 +314,6 @@ function DocumentosPageContent() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-
-              {/* Tercera fila: Buscador + Filtro OC */}
-              <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por nombre de archivo..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-                <div className="w-48">
-                  <Input
-                    placeholder="Filtrar por OC..."
-                    value={ocFilter}
-                    onChange={e => setOcFilter(e.target.value)}
-                    className="h-9 text-sm"
-                  />
-                </div>
-              </div>
             </div>
           </CardHeader>
 
