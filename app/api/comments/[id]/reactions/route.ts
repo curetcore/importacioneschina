@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { triggerPusherEvent } from "@/lib/pusher-server"
-import { createNotification } from "@/lib/notification-service"
+import { createNotification, getEntityUrl } from "@/lib/notification-service"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             icono: "Heart",
             entidad: comment.entityType,
             entidadId: comment.entityId,
-            url: `/${comment.entityType.toLowerCase()}/${comment.entityId}#comment-${commentId}`,
+            url: `${getEntityUrl(comment.entityType, comment.entityId)}#comment-${commentId}`,
             usuarioId: comment.userId,
             actorId: session.user.id, // Usuario que reaccionó
             prioridad: "low",

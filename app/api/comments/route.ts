@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { auditCreate } from "@/lib/audit-logger"
 import { triggerPusherEvent } from "@/lib/pusher-server"
 import { extractMentionedUserIds } from "@/lib/mentions"
-import { createNotification, getEntityOwnerId } from "@/lib/notification-service"
+import { createNotification, getEntityOwnerId, getEntityUrl } from "@/lib/notification-service"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -287,7 +287,7 @@ export async function POST(request: NextRequest) {
           icono: "MessageSquare",
           entidad: entityType,
           entidadId: entityId,
-          url: `/${entityType.toLowerCase()}/${entityId}#comment-${comment.id}`,
+          url: `${getEntityUrl(entityType, entityId)}#comment-${comment.id}`,
           usuarioId: notifyUserId,
           actorId: session.user.id, // Usuario que comentó
           prioridad: "normal",

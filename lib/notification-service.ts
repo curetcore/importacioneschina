@@ -53,7 +53,7 @@ const AUDIT_ACTION_ICONS: Record<string, string> = {
 /**
  * Mapeo de entidades a rutas base (para detalle)
  */
-const ENTITY_URLS: Record<string, string> = {
+export const ENTITY_URLS: Record<string, string> = {
   OCChina: "/ordenes",
   PagosChina: "/pagos-china",
   GastosLogisticos: "/gastos-logisticos",
@@ -61,6 +61,14 @@ const ENTITY_URLS: Record<string, string> = {
   Proveedor: "/configuracion?tab=proveedores",
   Configuracion: "/configuracion",
   ConfiguracionDistribucionCostos: "/configuracion",
+}
+
+/**
+ * Helper para obtener la URL base de una entidad
+ */
+export function getEntityUrl(entityType: string, entityId: string): string {
+  const baseUrl = ENTITY_URLS[entityType] || "/"
+  return `${baseUrl}/${entityId}`
 }
 
 /**
