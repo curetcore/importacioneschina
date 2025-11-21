@@ -115,8 +115,8 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader className="space-y-3">
+      <DialogContent className="sm:max-w-lg p-6">
+        <DialogHeader className="space-y-3 pb-4">
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-blue-600" />
             <DialogTitle>Enviar Invitación</DialogTitle>
@@ -127,7 +127,7 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email *</Label>
@@ -204,7 +204,7 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
           </div>
 
           {/* Botones */}
-          <div className="flex gap-3 justify-end pt-6 border-t mt-6">
+          <div className="flex gap-3 justify-end pt-5 border-t mt-6">
             <Button
               type="button"
               variant="outline"
