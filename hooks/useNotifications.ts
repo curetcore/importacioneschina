@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { subscribeToChannel, unsubscribeFromChannel, isPusherEnabled } from "@/lib/pusher-client"
+import { showToast } from "@/lib/toast"
+import { useRouter } from "next/navigation"
 import type { Channel } from "pusher-js"
 
 export interface Notification {
@@ -49,6 +51,7 @@ interface UseNotificationsReturn {
  */
 export function useNotifications(options: UseNotificationsOptions = {}): UseNotificationsReturn {
   const { userId, pollingInterval = 30000, enableRealtime } = options
+  const router = useRouter()
 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -139,42 +142,77 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   /**
    * Handle new notification from Pusher
    */
-  const handleNewNotification = useCallback((data: any) => {
-    // console.log("📬 [PUSHER HOOK] New notification received via Pusher:", data)
+  const handleNewNotification = useCallback(
+    (data: any) => {
+      // console.log("📬 [PUSHER HOOK] New notification received via Pusher:", data)
 
-    if (!isMountedRef.current) {
-      // console.warn("⚠️ [PUSHER HOOK] Component unmounted, ignoring notification")
-      return
-    }
+      if (!isMountedRef.current) {
+        // console.warn("⚠️ [PUSHER HOOK] Component unmounted, ignoring notification")
+        return
+      }
 
-    const newNotification: Notification = {
-      id: data.id,
-      tipo: data.tipo,
-      titulo: data.titulo,
-      descripcion: data.descripcion || null,
-      icono: data.icono,
-      entidad: data.entidad || null,
-      entidadId: data.entidadId || null,
-      url: data.url || null,
-      prioridad: data.prioridad,
-      leida: false,
-      createdAt: data.createdAt,
-      leidaAt: null,
-    }
+      const newNotification: Notification = {
+        id: data.id,
+        tipo: data.tipo,
+        titulo: data.titulo,
+        descripcion: data.descripcion || null,
+        icono: data.icono,
+        entidad: data.entidad || null,
+        entidadId: data.entidadId || null,
+        url: data.url || null,
+        prioridad: data.prioridad,
+        leida: false,
+        createdAt: data.createdAt,
+        leidaAt: null,
+      }
 
-    setNotifications(prev => {
-      const updated = [newNotification, ...prev]
-      // console.log("📋 [PUSHER HOOK] Notifications updated. Count:", updated.length)
-      return updated
-    })
-    setUnreadCount(prev => {
-      const newCount = prev + 1
-      // console.log("🔔 [PUSHER HOOK] Unread count updated:", newCount)
-      return newCount
-    })
+      setNotifications(prev => {
+        const updated = [newNotification, ...prev]
+        // console.log("📋 [PUSHER HOOK] Notifications updated. Count:", updated.length)
+        return updated
+      })
+      setUnreadCount(prev => {
+        const newCount = prev + 1
+        // console.log("🔔 [PUSHER HOOK] Unread count updated:", newCount)
+        return newCount
+      })
 
-    // console.log("✅ [PUSHER HOOK] Notification processed successfully:", newNotification.titulo)
-  }, [])
+      // Mostrar toast con la notificación
+      const toastOptions = {
+        description: newNotification.descripcion || undefined,
+        duration: 5000, // 5 segundos
+        action: newNotification.url
+          ? {
+              label: "Ver",
+              onClick: () => {
+                router.push(newNotification.url!)
+              },
+            }
+          : undefined,
+      }
+
+      // Tipo de toast según tipo de notificación
+      switch (newNotification.tipo) {
+        case "success":
+          showToast.success(newNotification.titulo, toastOptions)
+          break
+        case "error":
+          showToast.error(newNotification.titulo, toastOptions)
+          break
+        case "warning":
+          showToast.warning(newNotification.titulo, toastOptions)
+          break
+        case "alert":
+          showToast.warning(newNotification.titulo, toastOptions)
+          break
+        default:
+          showToast.info(newNotification.titulo, toastOptions)
+      }
+
+      // console.log("✅ [PUSHER HOOK] Notification processed successfully:", newNotification.titulo)
+    },
+    [router]
+  )
 
   /**
    * Setup Pusher subscription

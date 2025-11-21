@@ -1,5 +1,5 @@
 import { getPrismaClient } from "./db-helpers"
-import { triggerPusherEvent, isPusherEnabled } from "./pusher-server"
+import { triggerPusherEvent, triggerNotification, isPusherEnabled } from "./pusher-server"
 
 /**
  * Tipos de notificación
@@ -107,30 +107,17 @@ export async function createNotification(input: CreateNotificationInput): Promis
 
     console.log("✅ [Notification] Created in DB:", notification.id)
 
-    // Trigger Pusher event si está habilitado
-    if (isPusherEnabled()) {
-      console.log("📡 [Pusher] Triggering event...")
-
-      // Canal: notificaciones globales o por usuario
-      const channel = input.usuarioId ? `private-notifications-${input.usuarioId}` : "notifications"
-
-      await triggerPusherEvent(channel, "new-notification", {
-        id: notification.id,
-        tipo: notification.tipo,
-        titulo: notification.titulo,
-        descripcion: notification.descripcion,
-        icono: notification.icono,
-        entidad: notification.entidad,
-        entidadId: notification.entidadId,
-        url: notification.url,
-        prioridad: notification.prioridad,
-        createdAt: notification.createdAt.toISOString(),
-      })
-
-      console.log("✅ [Pusher] Event triggered successfully on channel:", channel)
-    } else {
-      console.log("⚠️ [Pusher] Disabled - notification saved to DB only")
-    }
+    // Trigger Pusher notification broadcast
+    await triggerNotification({
+      id: notification.id,
+      tipo: notification.tipo,
+      titulo: notification.titulo,
+      descripcion: notification.descripcion,
+      icono: notification.icono,
+      url: notification.url,
+      usuarioId: notification.usuarioId,
+      createdAt: notification.createdAt,
+    })
   } catch (error) {
     console.error("❌ [Notification] Error creating notification:", error)
     console.error("❌ [Notification] Input was:", input)
