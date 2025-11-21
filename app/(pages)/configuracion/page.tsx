@@ -176,9 +176,6 @@ function AdminUsersSection() {
               <Plus className="w-4 h-4" />
               Enviar Invitación
             </Button>
-            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">
-              Super Admin
-            </span>
           </div>
         </div>
       </CardHeader>
