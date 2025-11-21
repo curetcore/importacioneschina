@@ -24,4 +24,4 @@ export const resend = new Proxy({} as Resend, {
   },
 })
 
-export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@importacion.curetcore.com"
+export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@curetcore.com"
