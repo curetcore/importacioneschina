@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     // Get Prisma client with user email to avoid internal headers() call
-    const db = await getPrismaClient(session?.user?.email)
+    const db = await getPrismaClient()
 
     // Fetch configurations (no cache needed for config - changes rarely and is small)
     const whereClause = categoria ? { categoria, activo: true } : { activo: true }
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     // Get Prisma client with user email to avoid internal headers() call
-    const db = await getPrismaClient(session?.user?.email)
+    const db = await getPrismaClient()
     const body = await request.json()
     const validatedData = configuracionSchema.parse(body)
 

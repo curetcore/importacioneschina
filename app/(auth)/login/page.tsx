@@ -3,11 +3,10 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Lock, Mail, Play } from "lucide-react"
+import { Lock, Mail } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -103,33 +102,6 @@ export default function LoginPage() {
               {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">o</span>
-              </div>
-            </div>
-
-            <Link href="/demo" className="block w-full mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"
-                disabled={loading}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Probar Demo
-              </Button>
-            </Link>
-
-            <p className="text-xs text-center text-gray-500 mt-3">
-              Accede al modo demo sin necesidad de credenciales
-            </p>
-          </div>
 
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">Sistema de gestión de importaciones</p>

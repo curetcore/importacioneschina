@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const prisma = await getPrismaClient(session.user.email)
+    const prisma = await getPrismaClient()
     const body = await request.json()
     const { nombre } = body
 

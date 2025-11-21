@@ -1,6 +1,4 @@
-import { prisma, prismaDemo } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth-options"
+import { prisma } from "@/lib/prisma"
 
 /**
  * Soft delete helper - Marca un registro como eliminado sin borrarlo físicamente
@@ -80,50 +78,9 @@ export const onlyDeletedFilter = {
 }
 
 /**
- * Email del usuario demo
+ * Obtener el cliente Prisma de producción
+ * @returns PrismaClient de producción
  */
-export const DEMO_USER_EMAIL = "demo@sistema.com"
-
-/**
- * Obtener el cliente Prisma correcto según el usuario actual
- * - Si es usuario demo: retorna prismaDemo (base de datos demo)
- * - Si es usuario normal: retorna prisma (base de datos producción)
- * @param userEmail - Optional email from session to avoid calling getServerSession inside cached functions
- * @returns PrismaClient apropiado según el contexto
- */
-export async function getPrismaClient(userEmail?: string | null) {
-  // Si se proporciona el email directamente, usarlo
-  if (userEmail !== undefined) {
-    return userEmail === DEMO_USER_EMAIL ? prismaDemo : prisma
-  }
-
-  // Fallback: intentar obtener sesión (solo para casos donde no se pasa el email)
-  try {
-    const session = await getServerSession(authOptions)
-
-    // Si es usuario demo, usar base de datos demo
-    if (session?.user?.email === DEMO_USER_EMAIL) {
-      return prismaDemo
-    }
-
-    // Usuario normal: usar base de datos producción
-    return prisma
-  } catch (error) {
-    // Si hay error obteniendo sesión, usar DB producción por defecto
-    console.warn("Error obteniendo sesión, usando DB producción:", error)
-    return prisma
-  }
-}
-
-/**
- * Verificar si el usuario actual es demo
- * @returns true si es usuario demo, false si no
- */
-export async function isDemoUser(): Promise<boolean> {
-  try {
-    const session = await getServerSession(authOptions)
-    return session?.user?.email === DEMO_USER_EMAIL
-  } catch (error) {
-    return false
-  }
+export async function getPrismaClient() {
+  return prisma
 }

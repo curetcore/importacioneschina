@@ -134,17 +134,13 @@ export default function NotificationDropdown() {
       <button
         onClick={toggleDropdown}
         className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
-        title={isRealtimeEnabled ? "Notificaciones en tiempo real" : "Notificaciones"}
+        title="Notificaciones"
       >
         <Bell size={20} className="text-white" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
-        )}
-        {/* Indicador de tiempo real */}
-        {isRealtimeEnabled && (
-          <span className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full h-2.5 w-2.5 border-2 border-white"></span>
         )}
       </button>
 
@@ -154,18 +150,7 @@ export default function NotificationDropdown() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900">Notificaciones</h3>
-                {isRealtimeEnabled && (
-                  <span
-                    className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full"
-                    title="Actualizaciones en tiempo real activas"
-                  >
-                    <Zap size={10} />
-                    <span>Tiempo real</span>
-                  </span>
-                )}
-              </div>
+              <h3 className="font-semibold text-gray-900">Notificaciones</h3>
               {unreadCount > 0 && (
                 <p className="text-xs text-gray-500 mt-0.5">{unreadCount} sin leer</p>
               )}

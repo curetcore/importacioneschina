@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       )
     }
 
-    const prisma = await getPrismaClient(session.user.email)
+    const prisma = await getPrismaClient()
     const body = await request.json()
     const { name, lastName, role, newPassword } = body
 
@@ -131,7 +131,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       )
     }
 
-    const prisma = await getPrismaClient(session.user.email)
+    const prisma = await getPrismaClient()
 
     // Obtener usuario antes de eliminar
     const user = await prisma.user.findUnique({

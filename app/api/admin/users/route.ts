@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const prisma = await getPrismaClient(session.user.email)
+    const prisma = await getPrismaClient()
 
     const users = await prisma.user.findMany({
       select: {
