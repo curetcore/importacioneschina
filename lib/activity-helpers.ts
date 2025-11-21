@@ -200,7 +200,7 @@ export interface UserActivity {
   page: string // Ruta actual: "/ordenes"
   pageName: string // Nombre legible: "Órdenes de Compra"
   pageIcon: string // Ícono lucide-react: "ClipboardList"
-  pageColor: string // Color: "text-purple-600"
+  pageColor?: string // Color: "text-purple-600" (opcional)
   entityName?: string // Nombre de entidad: "OC-2024-001"
   action?: string // Fase 6: "Viendo", "Editando", "Creando", "En"
   timestamp: number // Timestamp de última actividad
