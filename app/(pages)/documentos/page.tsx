@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
@@ -45,7 +45,7 @@ interface DocumentWithSource {
   fechaAsociada?: string
 }
 
-export default function DocumentosPage() {
+function DocumentosPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -370,5 +370,19 @@ export default function DocumentosPage() {
         onDelete={() => documentToPreview && handleDelete(documentToPreview)}
       />
     </MainLayout>
+  )
+}
+
+export default function DocumentosPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="text-center py-12 text-sm text-gray-500">Cargando documentos...</div>
+        </MainLayout>
+      }
+    >
+      <DocumentosPageContent />
+    </Suspense>
   )
 }
