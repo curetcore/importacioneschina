@@ -12,6 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/utils"
 import { useEditingPresence } from "@/hooks/useEditingPresence"
 import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
+import { CommentsSection } from "@/components/comments/CommentsSection"
 
 interface InventarioDetail {
   id: string
@@ -246,6 +247,9 @@ export default function InventarioRecibidoDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Sección de Comentarios */}
+        <CommentsSection entityType="InventarioRecibido" entityId={inventario.id} />
       </div>
     </MainLayout>
   )
