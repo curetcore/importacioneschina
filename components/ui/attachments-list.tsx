@@ -1,10 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { FileText, Image as ImageIcon, Download, Eye } from "lucide-react"
 import { Button } from "./button"
 import { FilePreviewModal } from "./file-preview-modal"
-import { PDFThumbnail } from "./pdf-thumbnail"
+
+const PDFThumbnail = dynamic(() => import("./pdf-thumbnail").then(mod => mod.PDFThumbnail), {
+  ssr: false,
+  loading: () => <FileText size={14} className="text-red-500 animate-pulse" />,
+})
 
 interface FileAttachment {
   nombre: string
