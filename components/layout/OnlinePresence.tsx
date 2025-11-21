@@ -19,15 +19,21 @@ export function OnlinePresence() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
           title="Usuarios conectados en tiempo real"
         >
-          <Users size={20} className="text-white" />
-          {totalOnline > 0 && (
-            <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {totalOnline > 9 ? "9+" : totalOnline}
-            </span>
-          )}
+          {/* Punto verde latente */}
+          <div className="relative flex items-center justify-center">
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            {totalOnline > 0 && (
+              <div className="absolute w-2 h-2 bg-green-500 rounded-full animate-ping" />
+            )}
+          </div>
+
+          {/* Texto con cantidad */}
+          <span className="text-white text-sm font-medium">
+            {totalOnline} {totalOnline === 1 ? "en línea" : "en línea"}
+          </span>
         </button>
       </PopoverTrigger>
 

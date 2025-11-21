@@ -8,7 +8,8 @@ interface UserPresenceItemProps {
 }
 
 export function UserPresenceItem({ user, isOnline }: UserPresenceItemProps) {
-  const displayName = [user.name, user.lastName].filter(Boolean).join(" ")
+  // Solo mostrar apellido para ahorrar espacio
+  const displayName = user.lastName || user.name || user.email.split("@")[0]
   const initials = displayName
     .split(" ")
     .map(n => n[0])

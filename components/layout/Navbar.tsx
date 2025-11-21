@@ -27,7 +27,7 @@ export default function Navbar() {
 
         {/* Buscador - Centrado */}
         <div className="flex-1 flex justify-center px-8">
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-lg">
             <GlobalSearch />
           </div>
         </div>
