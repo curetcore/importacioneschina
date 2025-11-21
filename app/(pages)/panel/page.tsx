@@ -363,7 +363,7 @@ export default function PanelPage() {
                     formatter={(value: any) => formatCurrency(Number(value))}
                     contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                   />
-                  <Bar dataKey="value" fill="#1A1A1A" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="value" fill={CHART_COLORS[3]} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -426,7 +426,7 @@ export default function PanelPage() {
                       formatter={(value: any) => `${Number(value).toLocaleString()} unidades`}
                       contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                     />
-                    <Bar dataKey="value" fill="#4A5568" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -564,7 +564,7 @@ export default function PanelPage() {
                   formatter={(value: any) => formatCurrency(Number(value))}
                   contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
                 />
-                <Bar dataKey="inversion" fill="#2D3748" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="inversion" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
