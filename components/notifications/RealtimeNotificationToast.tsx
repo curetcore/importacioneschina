@@ -9,6 +9,10 @@ import { Bell, FileText, AlertTriangle, XCircle, CheckCircle } from "lucide-reac
 /**
  * Componente que escucha notificaciones en tiempo real via Pusher
  * y muestra toasts flotantes cuando llegan nuevas notificaciones
+ *
+ * Escucha 2 canales:
+ * 1. "notifications" → Notificaciones persistentes del usuario (comentarios, menciones)
+ * 2. "activity-feed" → Activity feed efímero (acciones de audit de todos los usuarios)
  */
 export function RealtimeNotificationToast() {
   const pusher = usePusher()
@@ -17,38 +21,35 @@ export function RealtimeNotificationToast() {
 
   useEffect(() => {
     if (!pusher) {
-      // console.log("📡 [RealtimeToast] Pusher not available, skipping toast notifications")
       return
     }
 
-    // console.log("🚀 [RealtimeToast] Setting up realtime notification toasts")
+    // Mapear iconos de Lucide según el tipo
+    const iconMap: Record<string, any> = {
+      audit: FileText,
+      alert: AlertTriangle,
+      error: XCircle,
+      success: CheckCircle,
+      warning: AlertTriangle,
+    }
 
-    // Suscribirse al canal de notificaciones global
-    const channel = pusher.subscribe("notifications")
+    // =========================================
+    // CANAL 1: Notificaciones Persistentes
+    // =========================================
+    // Para notificaciones que requieren acción (comentarios, menciones, replies)
+    const notificationsChannel = pusher.subscribe("notifications")
 
     const handleNewNotification = (data: any) => {
-      // console.log("📬 [RealtimeToast] New notification received:", data)
-
-      // Prevenir duplicados (por si acaso)
+      // Prevenir duplicados
       if (lastNotificationIdRef.current === data.id) {
-        // console.log("⚠️ [RealtimeToast] Duplicate notification, skipping")
         return
       }
 
       lastNotificationIdRef.current = data.id
 
-      // Mapear iconos de Lucide según el tipo
-      const iconMap: Record<string, any> = {
-        audit: FileText,
-        alert: AlertTriangle,
-        error: XCircle,
-        success: CheckCircle,
-        warning: AlertTriangle,
-      }
-
       const Icon = iconMap[data.tipo] || Bell
 
-      // Mostrar toast flotante
+      // Toast con estilo de notificación importante
       toast(data.titulo, {
         description: data.descripcion || "Nueva actividad en el sistema",
         icon: <Icon className="h-5 w-5 text-blue-600" />,
@@ -57,25 +58,55 @@ export function RealtimeNotificationToast() {
           ? {
               label: "Ver",
               onClick: () => {
-                // console.log("🔗 [RealtimeToast] Navigating to:", data.url)
                 router.push(data.url)
               },
             }
           : undefined,
       })
-
-      // console.log("✅ [RealtimeToast] Toast displayed successfully")
     }
 
-    // Escuchar evento de nueva notificación
-    channel.bind("new-notification", handleNewNotification)
-    // console.log("✅ [RealtimeToast] Bound to 'new-notification' event")
+    notificationsChannel.bind("new-notification", handleNewNotification)
+
+    // =========================================
+    // CANAL 2: Activity Feed (Toasts Efímeros)
+    // =========================================
+    // Para awareness de lo que otros usuarios están haciendo (audit logs)
+    const activityChannel = pusher.subscribe("activity-feed")
+
+    const handleActivityUpdate = (data: any) => {
+      // Prevenir duplicados
+      if (lastNotificationIdRef.current === data.id) {
+        return
+      }
+
+      lastNotificationIdRef.current = data.id
+
+      const Icon = iconMap[data.tipo] || Bell
+
+      // Toast más discreto, se auto-cierra rápido
+      toast(data.titulo, {
+        description: data.descripcion || "Actividad reciente",
+        icon: <Icon className="h-4 w-4 text-gray-500" />,
+        duration: 3000, // 3 segundos (más corto que notificaciones)
+        action: data.url
+          ? {
+              label: "Ver",
+              onClick: () => {
+                router.push(data.url)
+              },
+            }
+          : undefined,
+      })
+    }
+
+    activityChannel.bind("activity-update", handleActivityUpdate)
 
     // Cleanup
     return () => {
-      // console.log("📤 [RealtimeToast] Cleaning up realtime notification toasts")
-      channel.unbind("new-notification", handleNewNotification)
+      notificationsChannel.unbind("new-notification", handleNewNotification)
+      activityChannel.unbind("activity-update", handleActivityUpdate)
       pusher.unsubscribe("notifications")
+      pusher.unsubscribe("activity-feed")
     }
   }, [pusher, router])
 

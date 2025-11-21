@@ -130,9 +130,10 @@ export async function createNotification(input: CreateNotificationInput): Promis
 
 /**
  * Crear notificación desde audit log
- * Implementa filtrado inteligente por rol de usuario:
- * - Superadmin/Admin: Reciben TODAS las notificaciones (global)
- * - Limitado: Solo reciben notificaciones de entidades que ellos crearon/poseen
+ * NUEVO COMPORTAMIENTO:
+ * - NO crea notificaciones persistentes en BD
+ * - Solo envía evento de Pusher para toast efímero (awareness en tiempo real)
+ * - Todos los usuarios ven el toast por 3-5 segundos y desaparece
  */
 export async function createNotificationFromAudit(
   auditLogId: string,
@@ -189,87 +190,35 @@ export async function createNotificationFromAudit(
     }
 
     // ========================================
-    // FILTRADO INTELIGENTE POR ROL
+    // ACTIVITY UPDATE (TOAST EFÍMERO)
     // ========================================
+    // En lugar de crear notificaciones persistentes, solo enviamos
+    // un evento de Pusher para mostrar toast efímero a todos
 
-    // 1. Obtener todos los usuarios activos
-    const allUsers = await db.user.findMany({
-      where: { activo: true },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-      },
-    })
+    if (isPusherEnabled()) {
+      console.log("📡 [Activity] Triggering activity update for all users...")
 
-    // 2. Determinar el owner de la entidad (quien la creó)
-    let entityOwnerId: string | null = null
+      // Canal global de actividad (todos los usuarios conectados)
+      await triggerPusherEvent("activity-feed", "activity-update", {
+        id: `activity-${Date.now()}`, // ID único temporal
+        tipo: "audit",
+        titulo,
+        descripcion,
+        icono,
+        entidad,
+        entidadId,
+        url,
+        prioridad: accion === "DELETE" ? "high" : "normal",
+        accion,
+        timestamp: new Date().toISOString(),
+      })
 
-    try {
-      // Mapeo de entidades a su campo de usuario/owner
-      const entityUserFields: Record<string, string> = {
-        OCChina: "usuarioId",
-        PagosChina: "usuarioId",
-        GastosLogisticos: "usuarioId",
-        InventarioRecibido: "usuarioId",
-        Comment: "userId",
-      }
-
-      const userField = entityUserFields[entidad]
-
-      if (userField) {
-        // Obtener el owner de la entidad
-        const entityData: any = await (db as any)[
-          entidad.charAt(0).toLowerCase() + entidad.slice(1)
-        ]
-          .findUnique({
-            where: { id: entidadId },
-            select: { [userField]: true },
-          })
-          .catch(() => null)
-
-        if (entityData) {
-          entityOwnerId = entityData[userField]
-        }
-      }
-    } catch (error) {
-      console.log("⚠️ [Notification] Could not determine entity owner:", error)
+      console.log("✅ [Activity] Activity update broadcasted to all users")
+    } else {
+      console.log("⚠️ [Activity] Pusher disabled - activity update skipped")
     }
-
-    // 3. Crear notificaciones según el rol del usuario
-    for (const user of allUsers) {
-      let shouldReceiveNotification = false
-
-      if (user.role === "superadmin" || user.role === "admin") {
-        // Superadmin y Admin reciben TODAS las notificaciones
-        shouldReceiveNotification = true
-      } else if (user.role === "limitado") {
-        // Limitados solo reciben notificaciones de entidades que poseen
-        if (entityOwnerId && entityOwnerId === user.id) {
-          shouldReceiveNotification = true
-        }
-      }
-
-      // 4. Crear notificación individual si corresponde
-      if (shouldReceiveNotification) {
-        await createNotification({
-          tipo: "audit",
-          titulo,
-          descripcion,
-          icono,
-          entidad,
-          entidadId,
-          url,
-          auditLogId,
-          usuarioId: user.id, // ← Notificación INDIVIDUAL
-          prioridad: accion === "DELETE" ? "high" : "normal",
-        })
-      }
-    }
-
-    console.log(`✅ [Notification] Created filtered notifications for ${allUsers.length} users`)
   } catch (error) {
-    console.error("Error creating notification from audit:", error)
+    console.error("Error creating activity update from audit:", error)
   }
 }
 
