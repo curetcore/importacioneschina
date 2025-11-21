@@ -28,8 +28,6 @@ export function OnlinePresence() {
               {totalOnline > 9 ? "9+" : totalOnline}
             </span>
           )}
-          {/* Indicador de tiempo real activo */}
-          <span className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full h-2.5 w-2.5 border-2 border-white"></span>
         </button>
       </PopoverTrigger>
 
