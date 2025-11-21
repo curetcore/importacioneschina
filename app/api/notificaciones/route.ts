@@ -28,11 +28,28 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20")
     const onlyUnread = searchParams.get("unread") === "true"
 
-    // IMPORTANTE: Solo devolver notificaciones del usuario autenticado
-    const where = {
-      usuarioId: session.user.id,
-      ...(onlyUnread && { leida: false }),
-    }
+    // Obtener el rol del usuario
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    })
+
+    const isSuperAdmin = user?.role === "superadmin"
+
+    // IMPORTANTE:
+    // - Superadmin ve TODAS las notificaciones (globales + propias)
+    // - Otros usuarios solo ven sus notificaciones específicas
+    const where = isSuperAdmin
+      ? {
+          // Superadmin: todas las notificaciones globales (sin usuarioId) + propias
+          OR: [{ usuarioId: null }, { usuarioId: session.user.id }],
+          ...(onlyUnread && { leida: false }),
+        }
+      : {
+          // Usuarios normales: solo sus notificaciones
+          usuarioId: session.user.id,
+          ...(onlyUnread && { leida: false }),
+        }
 
     const [notificaciones, totalUnread] = await Promise.all([
       db.notificacion.findMany({
@@ -53,10 +70,15 @@ export async function GET(request: NextRequest) {
         },
       }),
       db.notificacion.count({
-        where: {
-          usuarioId: session.user.id,
-          leida: false,
-        },
+        where: isSuperAdmin
+          ? {
+              OR: [{ usuarioId: null }, { usuarioId: session.user.id }],
+              leida: false,
+            }
+          : {
+              usuarioId: session.user.id,
+              leida: false,
+            },
       }),
     ])
 

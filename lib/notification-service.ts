@@ -187,13 +187,33 @@ export async function createNotificationFromAudit(
     }
 
     // ========================================
-    // ACTIVITY UPDATE (TOAST EFÍMERO)
+    // NOTIFICACIÓN PERSISTENTE (Para SuperAdmin)
     // ========================================
-    // En lugar de crear notificaciones persistentes, solo enviamos
-    // un evento de Pusher para mostrar toast efímero a todos
+    // Crear notificación en BD sin usuarioId (global)
+    // Solo el superadmin verá estas notificaciones en su campanita
+    await db.notificacion.create({
+      data: {
+        tipo: "audit",
+        titulo,
+        descripcion,
+        icono,
+        entidad,
+        entidadId,
+        url,
+        auditLogId,
+        usuarioId: null, // NULL = notificación global solo para superadmin
+        prioridad: accion === "DELETE" ? "high" : "normal",
+      },
+    })
 
+    console.log("✅ [Activity] Notification saved to DB (visible to superadmin)")
+
+    // ========================================
+    // TOAST EFÍMERO (Para Todos)
+    // ========================================
+    // Enviar evento de Pusher para mostrar toast temporal a todos
     if (isPusherEnabled()) {
-      console.log("📡 [Activity] Triggering activity update for all users...")
+      console.log("📡 [Activity] Triggering activity toast for all users...")
 
       // Canal global de actividad (todos los usuarios conectados)
       await triggerPusherEvent("activity-feed", "activity-update", {
@@ -210,9 +230,9 @@ export async function createNotificationFromAudit(
         timestamp: new Date().toISOString(),
       })
 
-      console.log("✅ [Activity] Activity update broadcasted to all users")
+      console.log("✅ [Activity] Activity toast broadcasted to all users")
     } else {
-      console.log("⚠️ [Activity] Pusher disabled - activity update skipped")
+      console.log("⚠️ [Activity] Pusher disabled - activity toast skipped")
     }
   } catch (error) {
     console.error("Error creating activity update from audit:", error)
