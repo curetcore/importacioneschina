@@ -45,24 +45,19 @@ export const getGastosColumns = (actions: ColumnActions): ColumnDef<GastoLogisti
   },
   {
     accessorKey: "ordenesCompra",
-    header: "OCs / Proveedores",
+    header: "OCs Vinculadas",
     cell: ({ row }) => {
       const ordenesCompra = row.original.ordenesCompra || []
       if (ordenesCompra.length === 0) return <div className="text-gray-400">-</div>
 
+      const count = ordenesCompra.length
+      const label = count === 1 ? "OC vinculada" : "OC vinculadas"
+
       return (
-        <div className="max-w-md">
-          <div className="flex flex-wrap gap-1">
-            {ordenesCompra.map((orden, index) => (
-              <div
-                key={index}
-                className="inline-flex flex-col bg-gray-50 rounded px-2 py-1 border border-gray-200"
-              >
-                <span className="font-medium text-gray-900 text-xs">{orden.ocChina.oc}</span>
-                <span className="text-gray-500 text-xs">{orden.ocChina.proveedor}</span>
-              </div>
-            ))}
-          </div>
+        <div className="whitespace-nowrap">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            {count} {label}
+          </span>
         </div>
       )
     },
