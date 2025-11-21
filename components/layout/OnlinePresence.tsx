@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Users } from "lucide-react"
+import { useSession } from "next-auth/react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useOnlinePresence } from "@/hooks/useOnlinePresence"
 import { UserPresenceItem } from "./UserPresenceItem"
@@ -11,9 +12,11 @@ import { UserPresenceItem } from "./UserPresenceItem"
  */
 export function OnlinePresence() {
   const [open, setOpen] = useState(false)
+  const { data: session } = useSession()
   const { onlineUsers, recentUsers } = useOnlinePresence()
 
-  const totalOnline = onlineUsers.length
+  // Total incluye al usuario actual + otros usuarios conectados
+  const totalOnline = onlineUsers.length + (session?.user ? 1 : 0)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,13 +54,27 @@ export function OnlinePresence() {
           </div>
 
           {/* Online Users */}
-          {onlineUsers.length > 0 && (
-            <div className="space-y-1 max-h-60 overflow-y-auto">
-              {onlineUsers.map(user => (
-                <UserPresenceItem key={user.id} user={user} isOnline={true} />
-              ))}
-            </div>
-          )}
+          <div className="space-y-1 max-h-60 overflow-y-auto">
+            {/* Current User */}
+            {session?.user && (
+              <UserPresenceItem
+                key={session.user.id}
+                user={{
+                  id: session.user.id!,
+                  name: session.user.name!,
+                  lastName: session.user.lastName,
+                  email: session.user.email!,
+                }}
+                isOnline={true}
+                isSelf={true}
+              />
+            )}
+
+            {/* Other Users */}
+            {onlineUsers.map(user => (
+              <UserPresenceItem key={user.id} user={user} isOnline={true} />
+            ))}
+          </div>
 
           {/* Recent Users (Disconnected) */}
           {recentUsers.length > 0 && (
@@ -73,17 +90,6 @@ export function OnlinePresence() {
                 </div>
               </div>
             </>
-          )}
-
-          {/* Empty State */}
-          {onlineUsers.length === 0 && recentUsers.length === 0 && (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-sm text-gray-500">No hay otros usuarios conectados</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Serás el primero en ver cuando alguien se conecte
-              </p>
-            </div>
           )}
         </div>
       </PopoverContent>

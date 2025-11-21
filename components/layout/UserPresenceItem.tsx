@@ -5,12 +5,16 @@ import { es } from "date-fns/locale"
 interface UserPresenceItemProps {
   user: OnlineUser
   isOnline: boolean
+  isSelf?: boolean
 }
 
-export function UserPresenceItem({ user, isOnline }: UserPresenceItemProps) {
+export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenceItemProps) {
   // Solo mostrar apellido para ahorrar espacio
-  const displayName = user.lastName || user.name || user.email.split("@")[0]
-  const initials = displayName
+  const baseName = user.lastName || user.name || user.email.split("@")[0]
+  const displayName = isSelf ? `${baseName} (Tú)` : baseName
+
+  // Usar baseName para las iniciales (sin el "(Tú)")
+  const initials = baseName
     .split(" ")
     .map(n => n[0])
     .join("")
