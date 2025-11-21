@@ -241,13 +241,14 @@ model Configuracion {
 
 // TABLA 6: USUARIOS DEL SISTEMA
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  name     String
-  lastName String? @map("last_name")
-  password String // Hashed con bcrypt
-  role     String  @default("limitado") // "limitado" | "admin" | "superadmin"
-  activo   Boolean @default(true)
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String
+  lastName     String? @map("last_name")
+  password     String // Hashed con bcrypt
+  role         String  @default("limitado") // "limitado" | "admin" | "superadmin"
+  activo       Boolean @default(true)
+  profilePhoto String? @map("profile_photo") // URL de la foto de perfil
 
   // Relaciones
   auditLogs AuditLog[]
