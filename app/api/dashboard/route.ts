@@ -172,7 +172,10 @@ async function generateDashboardData() {
   // Pagos por método
   const pagosPorMetodo = todosPagos.reduce(
     (acc, pago) => {
-      const existente = acc.find(item => item.metodo === pago.metodoPago)
+      const existente = acc.find(
+        (item: { metodo: string; total: number; cantidad: number }) =>
+          item.metodo === pago.metodoPago
+      )
       const monto = parseFloat(pago.montoRDNeto?.toString() || "0")
       if (existente) {
         existente.total += monto
@@ -192,7 +195,9 @@ async function generateDashboardData() {
   // Pagos por tipo
   const pagosPorTipo = todosPagos.reduce(
     (acc, pago) => {
-      const existente = acc.find(item => item.tipo === pago.tipoPago)
+      const existente = acc.find(
+        (item: { tipo: string; total: number; cantidad: number }) => item.tipo === pago.tipoPago
+      )
       const monto = parseFloat(pago.montoRDNeto?.toString() || "0")
       if (existente) {
         existente.total += monto
@@ -212,7 +217,10 @@ async function generateDashboardData() {
   // Pagos por moneda
   const pagosPorMoneda = todosPagos.reduce(
     (acc, pago) => {
-      const existente = acc.find(item => item.moneda === pago.moneda)
+      const existente = acc.find(
+        (item: { moneda: string; totalOriginal: number; totalRD: number; cantidad: number }) =>
+          item.moneda === pago.moneda
+      )
       const montoOriginal = parseFloat(pago.montoOriginal.toString())
       const montoRD = parseFloat(pago.montoRDNeto?.toString() || "0")
       if (existente) {
@@ -236,7 +244,10 @@ async function generateDashboardData() {
   const tasasPorMoneda = todosPagos.reduce(
     (acc, pago) => {
       if (pago.moneda !== "RD$") {
-        const existente = acc.find(item => item.moneda === pago.moneda)
+        const existente = acc.find(
+          (item: { moneda: string; sumaTasas: number; cantidad: number }) =>
+            item.moneda === pago.moneda
+        )
         const tasa = parseFloat(pago.tasaCambio.toString())
         if (existente) {
           existente.sumaTasas += tasa
@@ -262,7 +273,9 @@ async function generateDashboardData() {
   // Gastos por tipo
   const gastosPorTipo = todosGastos.reduce(
     (acc, gasto) => {
-      const existente = acc.find(item => item.tipo === gasto.tipoGasto)
+      const existente = acc.find(
+        (item: { tipo: string; total: number; cantidad: number }) => item.tipo === gasto.tipoGasto
+      )
       const monto = parseFloat(gasto.montoRD.toString())
 
       // Si el gasto está asociado con múltiples órdenes, dividir el monto
@@ -290,7 +303,10 @@ async function generateDashboardData() {
     .reduce(
       (acc, gasto) => {
         const proveedor = gasto.proveedorServicio || "Sin especificar"
-        const existente = acc.find(item => item.proveedor === proveedor)
+        const existente = acc.find(
+          (item: { proveedor: string; total: number; cantidad: number }) =>
+            item.proveedor === proveedor
+        )
         const monto = parseFloat(gasto.montoRD.toString())
 
         // Si el gasto está asociado con múltiples órdenes, dividir el monto
@@ -311,14 +327,21 @@ async function generateDashboardData() {
       },
       [] as Array<{ proveedor: string; total: number; cantidad: number }>
     )
-    .sort((a, b) => b.total - a.total)
+    .sort(
+      (
+        a: { proveedor: string; total: number; cantidad: number },
+        b: { proveedor: string; total: number; cantidad: number }
+      ) => b.total - a.total
+    )
     .slice(0, 5)
 
   // Inventario por bodega
   const inventarioPorBodega = ocsCalculadas.reduce(
     (acc, oc) => {
       oc.inventarioRecibido.forEach(inv => {
-        const existente = acc.find(item => item.bodega === inv.bodegaInicial)
+        const existente = acc.find(
+          (item: { bodega: string; unidades: number }) => item.bodega === inv.bodegaInicial
+        )
         if (existente) {
           existente.unidades += inv.cantidadRecibida
         } else {
@@ -337,7 +360,10 @@ async function generateDashboardData() {
   const productosPorSKU = ocsCalculadas.reduce(
     (acc, oc) => {
       oc.items.forEach(item => {
-        const existente = acc.find(p => p.sku === item.sku)
+        const existente = acc.find(
+          (p: { sku: string; nombre: string; unidades: number; valorUSD: number }) =>
+            p.sku === item.sku
+        )
         if (existente) {
           existente.unidades += item.cantidadTotal
           existente.valorUSD += parseFloat(item.subtotalUSD.toString())
@@ -360,7 +386,10 @@ async function generateDashboardData() {
   // Compras por categoría
   const comprasPorCategoria = ocsCalculadas.reduce(
     (acc, oc) => {
-      const existente = acc.find(item => item.categoria === oc.categoriaPrincipal)
+      const existente = acc.find(
+        (item: { categoria: string; unidades: number; inversion: number }) =>
+          item.categoria === oc.categoriaPrincipal
+      )
       const unidades = oc.cantidadOrdenada
       const inversion = oc.totalInversionRD
       if (existente) {
@@ -381,7 +410,10 @@ async function generateDashboardData() {
   // Inversión por proveedor
   const inversionPorProveedor = ocsCalculadas.reduce(
     (acc, oc) => {
-      const existente = acc.find(item => item.proveedor === oc.proveedor)
+      const existente = acc.find(
+        (item: { proveedor: string; total: number; unidades: number }) =>
+          item.proveedor === oc.proveedor
+      )
       if (existente) {
         existente.total += oc.totalInversionRD
         existente.unidades += oc.cantidadOrdenada
@@ -467,62 +499,78 @@ async function generateDashboardData() {
         : null,
     },
     financiero: {
-      pagosPorMetodo: pagosPorMetodo.map(item => ({
-        name: item.metodo,
-        value: Math.round(item.total * 100) / 100,
-        cantidad: item.cantidad,
-      })),
-      pagosPorTipo: pagosPorTipo.map(item => ({
+      pagosPorMetodo: pagosPorMetodo.map(
+        (item: { metodo: string; total: number; cantidad: number }) => ({
+          name: item.metodo,
+          value: Math.round(item.total * 100) / 100,
+          cantidad: item.cantidad,
+        })
+      ),
+      pagosPorTipo: pagosPorTipo.map((item: { tipo: string; total: number; cantidad: number }) => ({
         name: item.tipo,
         value: Math.round(item.total * 100) / 100,
         cantidad: item.cantidad,
       })),
-      pagosPorMoneda: pagosPorMoneda.map(item => ({
-        moneda: item.moneda,
-        totalOriginal: Math.round(item.totalOriginal * 100) / 100,
-        totalRD: Math.round(item.totalRD * 100) / 100,
-        cantidad: item.cantidad,
-      })),
-      tasasPromedio: tasasPromedio.map(item => ({
+      pagosPorMoneda: pagosPorMoneda.map(
+        (item: { moneda: string; totalOriginal: number; totalRD: number; cantidad: number }) => ({
+          moneda: item.moneda,
+          totalOriginal: Math.round(item.totalOriginal * 100) / 100,
+          totalRD: Math.round(item.totalRD * 100) / 100,
+          cantidad: item.cantidad,
+        })
+      ),
+      tasasPromedio: tasasPromedio.map((item: { moneda: string; tasaPromedio: number }) => ({
         moneda: item.moneda,
         tasa: Math.round(item.tasaPromedio * 100) / 100,
       })),
     },
     gastos: {
-      gastosPorTipo: gastosPorTipo.map(item => ({
-        name: item.tipo,
-        value: Math.round(item.total * 100) / 100,
-        cantidad: item.cantidad,
-      })),
-      gastosPorProveedor: gastosPorProveedor.map(item => ({
-        name: item.proveedor,
-        value: Math.round(item.total * 100) / 100,
-        cantidad: item.cantidad,
-      })),
+      gastosPorTipo: gastosPorTipo.map(
+        (item: { tipo: string; total: number; cantidad: number }) => ({
+          name: item.tipo,
+          value: Math.round(item.total * 100) / 100,
+          cantidad: item.cantidad,
+        })
+      ),
+      gastosPorProveedor: gastosPorProveedor.map(
+        (item: { proveedor: string; total: number; cantidad: number }) => ({
+          name: item.proveedor,
+          value: Math.round(item.total * 100) / 100,
+          cantidad: item.cantidad,
+        })
+      ),
     },
     inventario: {
-      inventarioPorBodega: inventarioPorBodega.map(item => ({
-        name: item.bodega,
-        value: item.unidades,
-      })),
-      topProductos: topProductos.map(item => ({
-        sku: item.sku,
-        nombre: item.nombre,
-        unidades: item.unidades,
-        valorUSD: Math.round(item.valorUSD * 100) / 100,
-      })),
-      comprasPorCategoria: comprasPorCategoria.map(item => ({
-        name: item.categoria,
-        unidades: item.unidades,
-        inversion: Math.round(item.inversion * 100) / 100,
-      })),
+      inventarioPorBodega: inventarioPorBodega.map(
+        (item: { bodega: string; unidades: number }) => ({
+          name: item.bodega,
+          value: item.unidades,
+        })
+      ),
+      topProductos: topProductos.map(
+        (item: { sku: string; nombre: string; unidades: number; valorUSD: number }) => ({
+          sku: item.sku,
+          nombre: item.nombre,
+          unidades: item.unidades,
+          valorUSD: Math.round(item.valorUSD * 100) / 100,
+        })
+      ),
+      comprasPorCategoria: comprasPorCategoria.map(
+        (item: { categoria: string; unidades: number; inversion: number }) => ({
+          name: item.categoria,
+          unidades: item.unidades,
+          inversion: Math.round(item.inversion * 100) / 100,
+        })
+      ),
     },
     proveedores: {
-      inversionPorProveedor: inversionPorProveedor.map(item => ({
-        name: item.proveedor,
-        inversion: Math.round(item.total * 100) / 100,
-        unidades: item.unidades,
-      })),
+      inversionPorProveedor: inversionPorProveedor.map(
+        (item: { proveedor: string; total: number; unidades: number }) => ({
+          name: item.proveedor,
+          inversion: Math.round(item.total * 100) / 100,
+          unidades: item.unidades,
+        })
+      ),
     },
     tablas: {
       topOCs,

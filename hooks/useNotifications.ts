@@ -15,6 +15,12 @@ export interface Notification {
   leida: boolean
   createdAt: string
   leidaAt: string | null
+  actor?: {
+    id: string
+    name: string
+    lastName?: string | null
+    profilePhoto?: string | null
+  } | null
 }
 
 interface UseNotificationsOptions {
