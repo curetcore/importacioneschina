@@ -174,12 +174,26 @@ export function CommentsSection({
   }
 
   const getUserDisplayName = (user: Comment["user"]) => {
-    return user.lastName || user.name || user.email.split("@")[0]
+    // Mostrar "Nombre Apellido" completo
+    const firstName = user.name || ""
+    const lastName = user.lastName || ""
+    const fullName = `${firstName} ${lastName}`.trim()
+    return fullName || user.email.split("@")[0]
   }
 
   const getUserInitials = (user: Comment["user"]) => {
-    const name = user.lastName || user.name || user.email
-    return name
+    // Usar nombre + apellido para iniciales
+    const firstName = user.name || ""
+    const lastName = user.lastName || ""
+
+    if (firstName && lastName) {
+      // Primera letra del nombre + primera letra del apellido
+      return `${firstName[0]}${lastName[0]}`.toUpperCase()
+    }
+
+    // Fallback: primeras 2 letras del nombre o email
+    const fallback = firstName || user.email
+    return fallback
       .split(" ")
       .map(n => n[0])
       .join("")

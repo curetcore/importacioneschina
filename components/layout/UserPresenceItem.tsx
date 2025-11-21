@@ -9,17 +9,27 @@ interface UserPresenceItemProps {
 }
 
 export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenceItemProps) {
-  // Solo mostrar apellido para ahorrar espacio
-  const baseName = user.lastName || user.name || user.email.split("@")[0]
-  const displayName = isSelf ? `${baseName} (Tú)` : baseName
+  // Mostrar "Nombre Apellido" completo
+  const firstName = user.name || ""
+  const lastName = user.lastName || ""
+  const fullName = `${firstName} ${lastName}`.trim() || user.email.split("@")[0]
+  const displayName = isSelf ? `${fullName} (Tú)` : fullName
 
-  // Usar baseName para las iniciales (sin el "(Tú)")
-  const initials = baseName
-    .split(" ")
-    .map(n => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
+  // Iniciales: Primera letra nombre + primera letra apellido
+  const getInitials = () => {
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase()
+    }
+    const fallback = firstName || user.email
+    return fallback
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const initials = getInitials()
 
   const getLastActiveText = () => {
     if (isOnline) {
