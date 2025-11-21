@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download, X, FileText, Image as ImageIcon } from "lucide-react"
+import { Download, FileText, Image as ImageIcon, FileSpreadsheet } from "lucide-react"
 
 interface FileAttachment {
   nombre: string
@@ -23,6 +22,16 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
 
   const isImage = file.tipo.startsWith("image/")
   const isPDF = file.tipo === "application/pdf"
+  const isExcel =
+    file.tipo === "application/vnd.ms-excel" ||
+    file.tipo === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+  const getFileIcon = () => {
+    if (isImage) return <ImageIcon size={20} className="text-blue-500" />
+    if (isPDF) return <FileText size={20} className="text-red-500" />
+    if (isExcel) return <FileSpreadsheet size={20} className="text-green-600" />
+    return <FileText size={20} className="text-gray-500" />
+  }
 
   const handleDownload = async () => {
     try {
@@ -56,7 +65,7 @@ export function FilePreviewModal({ file, open, onOpenChange }: FilePreviewModalP
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
-              {isImage ? <ImageIcon size={20} /> : <FileText size={20} />}
+              {getFileIcon()}
               <span className="truncate max-w-md">{file.nombre}</span>
             </DialogTitle>
             <div className="flex items-center gap-2">
