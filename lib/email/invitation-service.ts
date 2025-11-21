@@ -206,7 +206,10 @@ export async function sendUserInvitation(input: SendInvitationInput) {
     throw new Error("Error al enviar el correo de invitación. Por favor intenta nuevamente.")
   }
 
-  return invitation
+  return {
+    invitation,
+    invitationUrl,
+  }
 }
 
 /**

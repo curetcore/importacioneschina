@@ -165,7 +165,7 @@ export async function POST(request: Request) {
     const { email, role } = validation.data
 
     // Enviar invitación
-    const invitation = await sendUserInvitation({
+    const result = await sendUserInvitation({
       email: email.toLowerCase().trim(),
       role,
       invitedBy: session.user.email,
@@ -175,10 +175,11 @@ export async function POST(request: Request) {
       success: true,
       message: `Invitación enviada exitosamente a ${email}`,
       data: {
-        id: invitation.id,
-        email: invitation.email,
-        role: invitation.role,
-        expiresAt: invitation.expiresAt,
+        id: result.invitation.id,
+        email: result.invitation.email,
+        role: result.invitation.role,
+        expiresAt: result.invitation.expiresAt,
+        invitationUrl: result.invitationUrl,
       },
     })
   } catch (error: any) {

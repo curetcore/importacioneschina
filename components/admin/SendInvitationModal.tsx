@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
 import { useToast } from "@/components/ui/toast"
-import { Mail, Send, AlertCircle } from "lucide-react"
+import { Mail, Send, AlertCircle, Copy, CheckCircle2 } from "lucide-react"
 
 interface SendInvitationModalProps {
   open: boolean
@@ -30,6 +30,8 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
     role: "limitado",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [invitationUrl, setInvitationUrl] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Validación client-side
   const validateForm = () => {
@@ -78,19 +80,17 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
         throw new Error(data.error || "Error al enviar invitación")
       }
 
+      // Guardar la URL de invitación para mostrarla
+      setInvitationUrl(data.data.invitationUrl)
+
       addToast({
         type: "success",
         title: "Invitación enviada",
         description: data.message || `Invitación enviada exitosamente a ${formData.email}`,
       })
 
-      // Resetear formulario
-      setFormData({ email: "", role: "limitado" })
-
       // Refrescar lista de usuarios (la invitación aparecerá cuando se registre)
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-
-      onOpenChange(false)
     } catch (error: any) {
       console.error("Error sending invitation:", error)
       addToast({
@@ -104,11 +104,36 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
     }
   }
 
+  const handleCopyLink = async () => {
+    if (!invitationUrl) return
+
+    try {
+      await navigator.clipboard.writeText(invitationUrl)
+      setCopied(true)
+      addToast({
+        type: "success",
+        title: "Link copiado",
+        description: "El link de invitación ha sido copiado al portapapeles",
+      })
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        description: "No se pudo copiar el link. Por favor inténtalo manualmente.",
+      })
+    }
+  }
+
   // Resetear formulario al cerrar
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setFormData({ email: "", role: "limitado" })
       setErrors({})
+      setInvitationUrl(null)
+      setCopied(false)
     }
     onOpenChange(newOpen)
   }
@@ -203,29 +228,81 @@ export function SendInvitationModal({ open, onOpenChange }: SendInvitationModalP
             </div>
           </div>
 
+          {/* Link de invitación generado */}
+          {invitationUrl && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-green-900 font-medium mb-2">
+                    ✓ Invitación enviada por correo
+                  </p>
+                  <p className="text-xs text-green-700 mb-3">
+                    También puedes copiar el link y compartirlo manualmente:
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={invitationUrl}
+                      readOnly
+                      className="text-xs font-mono bg-white"
+                      onClick={e => (e.target as HTMLInputElement).select()}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyLink}
+                      className="flex-shrink-0"
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Botones */}
           <div className="flex gap-3 justify-end pt-5 border-t mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Enviar Invitación
-                </>
-              )}
-            </Button>
+            {invitationUrl ? (
+              // Si ya se envió la invitación, mostrar solo botón de cerrar
+              <Button type="button" onClick={() => handleOpenChange(false)}>
+                Cerrar
+              </Button>
+            ) : (
+              // Si no se ha enviado, mostrar botones normales
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={loading}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Enviar Invitación
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </form>
       </DialogContent>
