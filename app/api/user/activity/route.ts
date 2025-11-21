@@ -14,6 +14,8 @@ const activitySchema = z.object({
   pageIcon: z.string(),
   pageColor: z.string().optional(),
   timestamp: z.number(),
+  action: z.string().optional(), // Fase 6: "Viendo", "Editando", "Creando", "En"
+  entityName: z.string().optional(), // Fase 4: Nombre de entidad específica: "OC-2024-001"
 })
 
 /**
