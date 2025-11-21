@@ -191,9 +191,14 @@ export function useOnlinePresence() {
     return () => clearInterval(interval)
   }, [])
 
+  // Filtrar usuarios online de la lista de recientes para evitar duplicados
+  const filteredRecentUsers = recentUsers.filter(
+    recentUser => !onlineUsers.some(onlineUser => onlineUser.id === recentUser.id)
+  )
+
   return {
     onlineUsers,
-    recentUsers,
+    recentUsers: filteredRecentUsers,
     currentUser: session?.user,
   }
 }
