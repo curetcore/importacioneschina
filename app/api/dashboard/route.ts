@@ -133,14 +133,34 @@ async function generateDashboardData() {
     }))
   )
 
-  const todosGastos = ocs.flatMap(oc =>
+  // IMPORTANTE: Deduplicar gastos compartidos para evitar multiplicación
+  // Si un gasto está asociado con múltiples OCs, solo debe contarse una vez
+  // pero dividiendo el monto por el número de OCs asociadas
+  const gastosUnicos = new Map<string, any>()
+
+  ocs.forEach(oc => {
     oc.gastosLogisticos
       .filter(gl => gl.gasto.deletedAt === null)
-      .map(gl => ({
-        ...gl.gasto,
-        ocChina: { oc: oc.oc },
-      }))
-  )
+      .forEach(gl => {
+        const gastoId = gl.gasto.id
+        if (!gastosUnicos.has(gastoId)) {
+          // Primera vez que vemos este gasto - agregarlo con toda su info
+          gastosUnicos.set(gastoId, {
+            ...gl.gasto,
+            ordenesCompra: oc.gastosLogisticos
+              .filter(g => g.gasto.id === gastoId)
+              .map(() => ({ ocId: oc.id })),
+            numOrdenes: 1, // Contaremos las OCs asociadas
+          })
+        } else {
+          // Ya existe - solo incrementar contador de órdenes
+          const existing = gastosUnicos.get(gastoId)
+          existing.numOrdenes += 1
+        }
+      })
+  })
+
+  const todosGastos = Array.from(gastosUnicos.values())
 
   // Total de comisiones bancarias
   const totalComisiones = todosPagos.reduce(
@@ -244,13 +264,18 @@ async function generateDashboardData() {
     (acc, gasto) => {
       const existente = acc.find(item => item.tipo === gasto.tipoGasto)
       const monto = parseFloat(gasto.montoRD.toString())
+
+      // Si el gasto está asociado con múltiples órdenes, dividir el monto
+      const numOrdenes = gasto.numOrdenes || 1
+      const montoPorOrden = monto / numOrdenes
+
       if (existente) {
-        existente.total += monto
+        existente.total += montoPorOrden
         existente.cantidad += 1
       } else {
         acc.push({
           tipo: gasto.tipoGasto,
-          total: monto,
+          total: montoPorOrden,
           cantidad: 1,
         })
       }
@@ -267,13 +292,18 @@ async function generateDashboardData() {
         const proveedor = gasto.proveedorServicio || "Sin especificar"
         const existente = acc.find(item => item.proveedor === proveedor)
         const monto = parseFloat(gasto.montoRD.toString())
+
+        // Si el gasto está asociado con múltiples órdenes, dividir el monto
+        const numOrdenes = gasto.numOrdenes || 1
+        const montoPorOrden = monto / numOrdenes
+
         if (existente) {
-          existente.total += monto
+          existente.total += montoPorOrden
           existente.cantidad += 1
         } else {
           acc.push({
             proveedor,
-            total: monto,
+            total: montoPorOrden,
             cantidad: 1,
           })
         }
@@ -396,14 +426,21 @@ async function generateDashboardData() {
       monto: parseFloat(p.montoRDNeto?.toString() || "0"),
       descripcion: `${p.tipoPago} - ${p.metodoPago}`,
     })),
-    ...gastosRecientes.map(g => ({
-      tipo: "Gasto" as const,
-      id: g.idGasto,
-      oc: g.ocChina.oc,
-      fecha: g.fechaGasto,
-      monto: parseFloat(g.montoRD.toString()),
-      descripcion: g.tipoGasto,
-    })),
+    ...gastosRecientes.map(g => {
+      const monto = parseFloat(g.montoRD.toString())
+      // Si el gasto está asociado con múltiples órdenes, dividir el monto
+      const numOrdenes = g.numOrdenes || 1
+      const montoPorOrden = monto / numOrdenes
+
+      return {
+        tipo: "Gasto" as const,
+        id: g.idGasto,
+        oc: g.ocChina.oc,
+        fecha: g.fechaGasto,
+        monto: montoPorOrden,
+        descripcion: g.tipoGasto,
+      }
+    }),
   ]
     .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())
     .slice(0, 10)
