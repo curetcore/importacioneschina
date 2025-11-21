@@ -107,12 +107,15 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     // Fase 6 + Fase 4: Combinar acción con entidad o página
     if (user.activity.entityName) {
       // Con entidad: "Editando OC-2024-001", "Viendo OC-2024-001", "Creando nueva orden"
-      baseText = `${action} ${user.activity.entityName}`
+      baseText = action ? `${action} ${user.activity.entityName}` : user.activity.entityName
     } else if (action === "Creando") {
       // Creando sin entidad específica: "Creando nueva orden"
       baseText = `${action} ${user.activity.pageName.toLowerCase()}`
+    } else if (action === "") {
+      // Sin acción: mostrar solo el nombre de la página (ej: "En línea")
+      baseText = user.activity.pageName
     } else {
-      // Fase 2: Sin entidad, mostrar acción + página: "En Órdenes de Compra"
+      // Con acción: mostrar acción + página: "En Órdenes de Compra"
       baseText = `${action} ${user.activity.pageName}`
     }
 
