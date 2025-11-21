@@ -238,6 +238,174 @@ docker service logs apps_postgres_sistemadechina -f
 
 ---
 
+## ☁️ Migración a AWS (En Planificación)
+
+> **Documento completo:** [ANALISIS-AWS-INTEGRACION.md](./ANALISIS-AWS-INTEGRACION.md)
+
+### 🎯 ¿Por qué AWS?
+
+**Problemas críticos actuales:**
+
+| Problema                      | Impacto                                             | Severidad  |
+| ----------------------------- | --------------------------------------------------- | ---------- |
+| Archivos en file system local | Si el servidor falla, se pierden TODOS los archivos | 🔴 CRÍTICO |
+| PostgreSQL sin backups auto   | Pérdida total de datos si algo falla                | 🔴 CRÍTICO |
+| Resend API intermitente       | Invitaciones no llegan consistentemente             | 🟠 ALTO    |
+
+**Solución AWS:**
+
+- **AWS S3**: Almacenamiento ilimitado y redundante (~$5/mes)
+- **AWS RDS**: PostgreSQL con backups automáticos (~$16/mes)
+- **AWS SES**: Emails enterprise-grade ($0/mes inicialmente)
+- **AWS Lambda**: Procesamiento background ($0/mes inicialmente)
+
+**Costo total: ~$21/mes** (vs $20/mes Resend actual + múltiples riesgos eliminados)
+
+### 📋 Plan de Implementación por Fases
+
+#### Fase 1: RDS - Base de Datos Segura (2-3 días)
+
+**Prioridad: CRÍTICA**
+
+```
+Objetivo: Proteger los datos con backups automáticos
+
+Tareas:
+1. Crear instancia RDS PostgreSQL (db.t4g.micro)
+2. Configurar backups automáticos diarios (7 días retention)
+3. Migrar datos actuales a RDS
+4. Validar funcionamiento completo
+
+Resultado: Backups automáticos + Point-in-time recovery
+```
+
+#### Fase 2: S3 - Almacenamiento de Archivos (2-3 días)
+
+**Prioridad: CRÍTICA**
+
+```
+Objetivo: Eliminar riesgo de pérdida de archivos
+
+Tareas:
+1. Crear bucket S3 (curetcore-uploads-production)
+2. Implementar servicio de S3 (upload, delete, getSignedUrl)
+3. Migrar endpoint de upload actual
+4. Mover archivos existentes de /public/uploads a S3
+5. Actualizar URLs en base de datos
+
+Resultado: Archivos seguros con redundancia multi-AZ
+```
+
+#### Fase 3: SES - Emails Confiables (1 día)
+
+**Prioridad: MEDIA**
+
+```
+Objetivo: Mejorar deliverability de emails
+
+Tareas:
+1. Verificar dominio curetcore.com en SES
+2. Crear servicio de email
+3. Reemplazar Resend por SES en invitation-service.ts
+4. Validar envío de invitaciones
+
+Resultado: 99.9% SLA + tracking completo
+```
+
+#### Fase 4: Lambda - Procesamiento Background (Opcional)
+
+**Prioridad: BAJA**
+
+```
+Objetivo: Optimizar procesamiento de archivos
+
+Casos de uso:
+- Resize automático de imágenes al subir
+- Extracción de texto de PDFs
+- Generación de reportes en background
+
+Resultado: Sistema más eficiente y rápido
+```
+
+### 💰 Análisis de Costos
+
+| Servicio      | Costo Mensual | Beneficio Principal         |
+| ------------- | ------------- | --------------------------- |
+| AWS S3        | ~$5           | Sin pérdida de archivos     |
+| AWS RDS       | ~$16          | Backups automáticos diarios |
+| AWS SES       | $0            | Emails más confiables       |
+| AWS Lambda    | $0            | Procesamiento background    |
+| **TOTAL**     | **~$21/mes**  | Infraestructura enterprise  |
+| Resend actual | $20/mes       | Solo emails (intermitentes) |
+
+**Valor agregado:**
+
+- ✅ Eliminación de riesgos críticos de pérdida de datos
+- ✅ Alta disponibilidad garantizada
+- ✅ Escalabilidad ilimitada para futuros módulos
+- ✅ Infraestructura profesional lista para monorepo
+
+### 🏗️ Arquitectura Propuesta
+
+**ACTUAL:**
+
+```
+Usuario → Next.js → File System Local → Public URL
+                     ⚠️ Sin respaldo
+                     ⚠️ Sin redundancia
+
+          Next.js → PostgreSQL Docker
+                     ⚠️ Sin backups auto
+```
+
+**CON AWS:**
+
+```
+Usuario → Next.js → S3 Bucket → CloudFront (opcional)
+                     ✅ Respaldo automático
+                     ✅ Redundancia multi-AZ
+                     ✅ URLs firmadas
+
+          Next.js → AWS RDS PostgreSQL
+                     ✅ Backups diarios
+                     ✅ Point-in-time recovery
+```
+
+### 📆 Timeline Estimado
+
+```
+Fase 1 (RDS):    2-3 días  ████████░░░░
+Fase 2 (S3):     2-3 días  ████████░░░░
+Fase 3 (SES):    1 día     ████░░░░░░░░
+Fase 4 (Lambda): Futuro    ░░░░░░░░░░░░
+
+Total: 5-7 días de implementación
+```
+
+### 🚦 Estado Actual
+
+- [x] **Análisis completo** - Documento técnico creado ✅
+- [ ] **Aprobación de presupuesto** - ~$21/mes
+- [ ] **Configuración de cuenta AWS**
+- [ ] **Fase 1: RDS** - Backups automáticos
+- [ ] **Fase 2: S3** - Almacenamiento seguro
+- [ ] **Fase 3: SES** - Emails confiables
+- [ ] **Fase 4: Lambda** - Optimizaciones
+
+### 📚 Documentación Detallada
+
+Para análisis completo incluyendo:
+
+- Problemas identificados (16 issues documentados)
+- Servicios AWS con especificaciones técnicas
+- Comparativas antes/después
+- Guías de implementación paso a paso
+- Código de ejemplo para cada servicio
+
+**Ver:** [ANALISIS-AWS-INTEGRACION.md](./ANALISIS-AWS-INTEGRACION.md)
+
+---
+
 ## 🔑 Variables de Entorno
 
 ```env
