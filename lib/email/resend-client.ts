@@ -10,16 +10,27 @@ function getResendClient(): Resend {
   if (!resendInstance) {
     const apiKey = process.env.RESEND_API_KEY
 
+    console.log("📧 [Resend] Initializing Resend client...")
+    console.log("📧 [Resend] API Key present:", !!apiKey)
+    console.log("📧 [Resend] API Key length:", apiKey?.length || 0)
+    console.log("📧 [Resend] API Key prefix:", apiKey?.substring(0, 10) || "none")
+    console.log("📧 [Resend] NODE_ENV:", process.env.NODE_ENV)
+    console.log("📧 [Resend] FROM_EMAIL:", process.env.RESEND_FROM_EMAIL || "noreply@curetcore.com")
+
     // Durante build, permitir placeholder o valor por defecto
     if (!apiKey || apiKey === "placeholder_for_build") {
+      console.warn("⚠️ [Resend] No API key or placeholder detected")
       // En build time, crear instancia dummy que no se usará
       if (process.env.NODE_ENV === "production" && typeof window === "undefined") {
         // Durante el build de Next.js, usar un placeholder
+        console.log("📧 [Resend] Using placeholder for build time")
         resendInstance = new Resend("re_placeholder_" + "x".repeat(20))
       } else {
+        console.error("❌ [Resend] RESEND_API_KEY is not defined!")
         throw new Error("RESEND_API_KEY is not defined in environment variables")
       }
     } else {
+      console.log("✅ [Resend] Initializing with valid API key")
       resendInstance = new Resend(apiKey)
     }
   }

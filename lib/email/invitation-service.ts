@@ -67,8 +67,15 @@ export async function sendUserInvitation(input: SendInvitationInput) {
     superadmin: "Super Administrador",
   }
 
+  console.log("📧 [Invitation] Preparing to send email...")
+  console.log("📧 [Invitation] FROM:", FROM_EMAIL)
+  console.log("📧 [Invitation] TO:", input.email)
+  console.log("📧 [Invitation] Invitation URL:", invitationUrl)
+  console.log("📧 [Invitation] Token:", token)
+
   try {
-    await resend.emails.send({
+    console.log("📧 [Invitation] Calling resend.emails.send()...")
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: input.email,
       subject: "Invitación al Sistema de Importaciones",
@@ -170,13 +177,32 @@ export async function sendUserInvitation(input: SendInvitationInput) {
       `,
     })
 
-    console.log(`✅ Invitation email sent successfully to ${input.email}`)
+    console.log("📧 [Invitation] Resend API response:", JSON.stringify(result, null, 2))
+    console.log(`✅ [Invitation] Email sent successfully to ${input.email}`)
+    console.log(`✅ [Invitation] Email ID:`, result?.id || "no-id")
   } catch (error) {
-    console.error("❌ Error sending invitation email:", error)
+    console.error("❌ [Invitation] Error sending email - Full error:", error)
+    console.error("❌ [Invitation] Error name:", error instanceof Error ? error.name : "unknown")
+    console.error(
+      "❌ [Invitation] Error message:",
+      error instanceof Error ? error.message : "unknown"
+    )
+    console.error("❌ [Invitation] Error stack:", error instanceof Error ? error.stack : "no stack")
+
+    if (error && typeof error === "object" && "response" in error) {
+      console.error(
+        "❌ [Invitation] API Response:",
+        JSON.stringify((error as any).response, null, 2)
+      )
+    }
+
     // Eliminar la invitación si el correo falla
+    console.log("🗑️ [Invitation] Deleting invitation due to email failure...")
     await db.userInvitation.delete({
       where: { id: invitation.id },
     })
+    console.log("🗑️ [Invitation] Invitation deleted")
+
     throw new Error("Error al enviar el correo de invitación. Por favor intenta nuevamente.")
   }
 
