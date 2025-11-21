@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import NotificationDropdown from "./NotificationDropdown"
 import GlobalSearch from "./GlobalSearch"
 import UserDropdown from "./UserDropdown"
+import { OnlinePresence } from "./OnlinePresence"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -31,8 +32,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Notificaciones y Usuario - Derecha */}
+        {/* Online Presence, Notificaciones y Usuario - Derecha */}
         <div className="flex items-center gap-4 flex-shrink-0 pr-4">
+          <OnlinePresence />
           <NotificationDropdown />
           {session?.user && <UserDropdown />}
         </div>

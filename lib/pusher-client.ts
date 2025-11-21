@@ -25,6 +25,12 @@ export function getPusherClient(): PusherClient {
       forceTLS: true, // Siempre usar conexión segura
       enabledTransports: ["ws", "wss"], // WebSocket y WebSocket Secure
       disabledTransports: ["sockjs", "xhr_polling", "xhr_streaming"], // Deshabilitar fallbacks lentos
+      authEndpoint: "/api/pusher/auth", // Endpoint para autenticar presence y private channels
+      auth: {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      },
     })
 
     // Eventos de conexión (PRODUCCION - DEBUG TEMPORAL)
