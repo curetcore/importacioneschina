@@ -2,6 +2,7 @@ import { OnlineUser } from "@/hooks/useOnlinePresence"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import Image from "next/image"
+import { useEffect, useState } from "react"
 
 interface UserPresenceItemProps {
   user: OnlineUser
@@ -10,6 +11,8 @@ interface UserPresenceItemProps {
 }
 
 export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenceItemProps) {
+  // Fase 5: Estado para forzar re-render cada minuto y actualizar timestamps
+  const [, setTick] = useState(0)
   // Mostrar "Nombre Apellido" completo
   const firstName = user.name || ""
   const lastName = user.lastName || ""
@@ -52,19 +55,45 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     return "Desconectado"
   }
 
-  // Obtener actividad del usuario (Fase 2 + Fase 4)
+  // Fase 5: Actualizar timestamps cada minuto para mantener la frescura
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1)
+    }, 60000) // Cada minuto
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Obtener actividad del usuario (Fase 2 + Fase 4 + Fase 5)
   const getActivityText = () => {
     if (!isOnline || !user.activity) {
       return null
     }
 
+    let baseText = ""
+
     // Fase 4: Si hay nombre de entidad, mostrar "Viendo [entidad]"
     if (user.activity.entityName) {
-      return `${user.activity.pageIcon} Viendo ${user.activity.entityName}`
+      baseText = `${user.activity.pageIcon} Viendo ${user.activity.entityName}`
+    } else {
+      // Fase 2: Mostrar "En [página]"
+      baseText = `${user.activity.pageIcon} En ${user.activity.pageName}`
     }
 
-    // Fase 2: Mostrar "En [página]"
-    return `${user.activity.pageIcon} En ${user.activity.pageName}`
+    // Fase 5: Agregar timestamp relativo
+    if (user.activity.timestamp) {
+      try {
+        const timeAgo = formatDistanceToNow(new Date(user.activity.timestamp), {
+          addSuffix: true,
+          locale: es,
+        })
+        return `${baseText} · ${timeAgo}`
+      } catch {
+        return baseText
+      }
+    }
+
+    return baseText
   }
 
   const activityText = getActivityText()
