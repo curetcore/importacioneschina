@@ -195,6 +195,12 @@ export default function OCDetailPage() {
   const totalRecibido = oc.inventarioRecibido.reduce((sum, inv) => sum + inv.cantidadRecibida, 0)
   const porcentajeRecibido = cantidadOrdenada > 0 ? (totalRecibido / cantidadOrdenada) * 100 : 0
 
+  // Calcular balance pendiente (FOB en RD$ - Total Pagado)
+  const tasaCambioPromedio = resumen.tasaCambioPromedio
+  const fobTotalRD = costoFOBTotalUSD * tasaCambioPromedio
+  const balancePendiente = fobTotalRD - totalPagado
+  const porcentajePagado = fobTotalRD > 0 ? (totalPagado / fobTotalRD) * 100 : 0
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -365,18 +371,51 @@ export default function OCDetailPage() {
             <CardTitle className="font-semibold">Resumen Financiero</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total FOB */}
+              <div>
+                <div className="text-sm font-medium text-gray-500">Total Orden (FOB)</div>
+                <div className="text-2xl font-semibold text-gray-900 mt-1">
+                  {formatCurrency(fobTotalRD)}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {formatCurrency(costoFOBTotalUSD, "USD")} × {tasaCambioPromedio.toFixed(2)}
+                </div>
+              </div>
+
+              {/* Total Pagado */}
               <div>
                 <div className="text-sm font-medium text-gray-500">Total Pagado (RD$)</div>
-                <div className="text-2xl font-semibold text-gray-900 mt-1">
+                <div className="text-2xl font-semibold text-blue-600 mt-1">
                   {formatCurrency(totalPagado)}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {oc.pagosChina.length} pagos realizados
+                  {oc.pagosChina.length} pagos · {porcentajePagado.toFixed(1)}%
                 </div>
               </div>
+
+              {/* Balance Pendiente */}
               <div>
-                <div className="text-sm font-medium text-gray-500">Gastos Logísticos (RD$)</div>
+                <div className="text-sm font-medium text-gray-500">Balance Pendiente</div>
+                <div
+                  className={`text-2xl font-semibold mt-1 ${
+                    balancePendiente > 0 ? "text-orange-600" : "text-green-600"
+                  }`}
+                >
+                  {formatCurrency(Math.abs(balancePendiente))}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {balancePendiente > 0
+                    ? `Falta ${(100 - porcentajePagado).toFixed(1)}% por pagar`
+                    : balancePendiente < 0
+                      ? `Sobrepago de ${formatCurrency(Math.abs(balancePendiente))}`
+                      : "Orden pagada completamente"}
+                </div>
+              </div>
+
+              {/* Gastos Logísticos */}
+              <div>
+                <div className="text-sm font-medium text-gray-500">Gastos Logísticos</div>
                 <div className="text-2xl font-semibold text-gray-900 mt-1">
                   {formatCurrency(totalGastos)}
                 </div>
@@ -384,11 +423,33 @@ export default function OCDetailPage() {
                   {oc.gastosLogisticos.length} gastos registrados
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500">Costo Total (RD$)</div>
-                <div className="text-2xl font-semibold text-gray-900 mt-1">
+            </div>
+
+            {/* Barra de progreso de pago */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-medium text-gray-700">Progreso de Pago</span>
+                <span className="font-semibold text-gray-900">{porcentajePagado.toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    porcentajePagado >= 100 ? "bg-green-500" : "bg-blue-500"
+                  }`}
+                  style={{ width: `${Math.min(porcentajePagado, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Resumen final */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500">
+                  Inversión Total (Pagos + Gastos)
+                </span>
+                <span className="text-xl font-bold text-gray-900">
                   {formatCurrency(totalPagado + totalGastos)}
-                </div>
+                </span>
               </div>
             </div>
           </CardContent>
