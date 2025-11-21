@@ -17,21 +17,21 @@ export function RealtimeNotificationToast() {
 
   useEffect(() => {
     if (!pusher) {
-      console.log("📡 [RealtimeToast] Pusher not available, skipping toast notifications")
+      // console.log("📡 [RealtimeToast] Pusher not available, skipping toast notifications")
       return
     }
 
-    console.log("🚀 [RealtimeToast] Setting up realtime notification toasts")
+    // console.log("🚀 [RealtimeToast] Setting up realtime notification toasts")
 
     // Suscribirse al canal de notificaciones global
     const channel = pusher.subscribe("notifications")
 
     const handleNewNotification = (data: any) => {
-      console.log("📬 [RealtimeToast] New notification received:", data)
+      // console.log("📬 [RealtimeToast] New notification received:", data)
 
       // Prevenir duplicados (por si acaso)
       if (lastNotificationIdRef.current === data.id) {
-        console.log("⚠️ [RealtimeToast] Duplicate notification, skipping")
+        // console.log("⚠️ [RealtimeToast] Duplicate notification, skipping")
         return
       }
 
@@ -57,23 +57,23 @@ export function RealtimeNotificationToast() {
           ? {
               label: "Ver",
               onClick: () => {
-                console.log("🔗 [RealtimeToast] Navigating to:", data.url)
+                // console.log("🔗 [RealtimeToast] Navigating to:", data.url)
                 router.push(data.url)
               },
             }
           : undefined,
       })
 
-      console.log("✅ [RealtimeToast] Toast displayed successfully")
+      // console.log("✅ [RealtimeToast] Toast displayed successfully")
     }
 
     // Escuchar evento de nueva notificación
     channel.bind("new-notification", handleNewNotification)
-    console.log("✅ [RealtimeToast] Bound to 'new-notification' event")
+    // console.log("✅ [RealtimeToast] Bound to 'new-notification' event")
 
     // Cleanup
     return () => {
-      console.log("📤 [RealtimeToast] Cleaning up realtime notification toasts")
+      // console.log("📤 [RealtimeToast] Cleaning up realtime notification toasts")
       channel.unbind("new-notification", handleNewNotification)
       pusher.unsubscribe("notifications")
     }

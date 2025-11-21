@@ -134,10 +134,10 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
    * Handle new notification from Pusher
    */
   const handleNewNotification = useCallback((data: any) => {
-    console.log("📬 [PUSHER HOOK] New notification received via Pusher:", data)
+    // console.log("📬 [PUSHER HOOK] New notification received via Pusher:", data)
 
     if (!isMountedRef.current) {
-      console.warn("⚠️ [PUSHER HOOK] Component unmounted, ignoring notification")
+      // console.warn("⚠️ [PUSHER HOOK] Component unmounted, ignoring notification")
       return
     }
 
@@ -158,16 +158,16 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
     setNotifications(prev => {
       const updated = [newNotification, ...prev]
-      console.log("📋 [PUSHER HOOK] Notifications updated. Count:", updated.length)
+      // console.log("📋 [PUSHER HOOK] Notifications updated. Count:", updated.length)
       return updated
     })
     setUnreadCount(prev => {
       const newCount = prev + 1
-      console.log("🔔 [PUSHER HOOK] Unread count updated:", newCount)
+      // console.log("🔔 [PUSHER HOOK] Unread count updated:", newCount)
       return newCount
     })
 
-    console.log("✅ [PUSHER HOOK] Notification processed successfully:", newNotification.titulo)
+    // console.log("✅ [PUSHER HOOK] Notification processed successfully:", newNotification.titulo)
   }, [])
 
   /**
@@ -175,16 +175,16 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
    */
   useEffect(() => {
     if (!isRealtimeEnabled) {
-      console.log("⚠️ [PUSHER HOOK] Realtime disabled, using polling fallback")
+      // console.log("⚠️ [PUSHER HOOK] Realtime disabled, using polling fallback")
       return
     }
 
-    console.log("🚀 [PUSHER HOOK] Setting up Pusher subscription...")
+    // console.log("🚀 [PUSHER HOOK] Setting up Pusher subscription...")
 
     try {
       // Canal: por usuario o global
       const channelName = userId ? `private-notifications-${userId}` : "notifications"
-      console.log(`📡 [PUSHER HOOK] Channel name: ${channelName}`)
+      // console.log(`📡 [PUSHER HOOK] Channel name: ${channelName}`)
 
       // Suscribirse al canal
       const channel = subscribeToChannel(channelName)
@@ -192,17 +192,19 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
       // Escuchar evento de nueva notificación
       channel.bind("new-notification", handleNewNotification)
-      console.log(`✅ [PUSHER HOOK] Bound to 'new-notification' event on channel: ${channelName}`)
+      // console.log(`✅ [PUSHER HOOK] Bound to 'new-notification' event on channel: ${channelName}`)
 
       // Cleanup
       return () => {
-        console.log(`📤 [PUSHER HOOK] Cleaning up subscription to: ${channelName}`)
+        // console.log(`📤 [PUSHER HOOK] Cleaning up subscription to: ${channelName}`)
         channel.unbind("new-notification", handleNewNotification)
         unsubscribeFromChannel(channelName)
         channelRef.current = null
       }
     } catch (err) {
-      console.error("❌ [PUSHER HOOK] Error setting up Pusher:", err)
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ [PUSHER HOOK] Error setting up Pusher:", err)
+      }
       // Si Pusher falla, caer back a polling (se maneja abajo)
     }
   }, [isRealtimeEnabled, userId, handleNewNotification])

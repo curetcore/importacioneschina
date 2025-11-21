@@ -62,7 +62,7 @@ export function getPusherClient(): PusherClient {
                 return res.json()
               })
               .then(data => {
-                console.log("✅ [Pusher Auth] Authorization successful for:", channel.name)
+                // console.log("✅ [Pusher Auth] Authorization successful for:", channel.name)
                 callback(null, data)
               })
               .catch(err => {
@@ -78,42 +78,33 @@ export function getPusherClient(): PusherClient {
       }) as any,
     })
 
-    // Eventos de conexión (PRODUCCION - DEBUG TEMPORAL)
-    pusherClientInstance.connection.bind("connected", () => {
-      console.log("✅ [PUSHER CLIENT] Connected successfully")
-    })
+    // Eventos de conexión - Logs comentados para producción
+    // pusherClientInstance.connection.bind("connected", () => {
+    //   console.log("✅ [PUSHER CLIENT] Connected successfully")
+    // })
 
-    pusherClientInstance.connection.bind("disconnected", () => {
-      console.log("⚠️ [PUSHER CLIENT] Disconnected")
-    })
+    // pusherClientInstance.connection.bind("disconnected", () => {
+    //   console.log("⚠️ [PUSHER CLIENT] Disconnected")
+    // })
 
     pusherClientInstance.connection.bind("error", (error: any) => {
-      console.error("❌ [PUSHER CLIENT] Connection error:", error)
-      console.error("❌ [PUSHER CLIENT] Error details:", {
-        type: error?.type,
-        error: error?.error,
-        data: error?.data,
-        message: error?.message,
-      })
-      // Try to stringify the full error for better visibility
-      try {
-        console.error("❌ [PUSHER CLIENT] Full error JSON:", JSON.stringify(error, null, 2))
-      } catch (e) {
-        console.error("❌ [PUSHER CLIENT] Could not stringify error")
+      // Solo log de errores críticos
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ [PUSHER CLIENT] Connection error:", error)
       }
     })
 
-    pusherClientInstance.connection.bind("connecting", () => {
-      console.log("🔄 [PUSHER CLIENT] Attempting to connect...")
-    })
+    // pusherClientInstance.connection.bind("connecting", () => {
+    //   console.log("🔄 [PUSHER CLIENT] Attempting to connect...")
+    // })
 
-    pusherClientInstance.connection.bind("unavailable", () => {
-      console.error("❌ [PUSHER CLIENT] Connection unavailable")
-    })
+    // pusherClientInstance.connection.bind("unavailable", () => {
+    //   console.error("❌ [PUSHER CLIENT] Connection unavailable")
+    // })
 
-    pusherClientInstance.connection.bind("failed", () => {
-      console.error("❌ [PUSHER CLIENT] Connection failed")
-    })
+    // pusherClientInstance.connection.bind("failed", () => {
+    //   console.error("❌ [PUSHER CLIENT] Connection failed")
+    // })
   }
 
   return pusherClientInstance
@@ -141,16 +132,18 @@ export function disconnectPusher(): void {
  */
 export function subscribeToChannel(channelName: string) {
   const pusher = getPusherClient()
-  console.log(`📡 [PUSHER CLIENT] Subscribing to channel: ${channelName}`)
+  // console.log(`📡 [PUSHER CLIENT] Subscribing to channel: ${channelName}`)
   const channel = pusher.subscribe(channelName)
 
-  // Log subscription events (PRODUCCION - DEBUG TEMPORAL)
-  channel.bind("pusher:subscription_succeeded", () => {
-    console.log(`✅ [PUSHER CLIENT] Successfully subscribed to: ${channelName}`)
-  })
+  // Log subscription events - Solo en desarrollo
+  // channel.bind("pusher:subscription_succeeded", () => {
+  //   console.log(`✅ [PUSHER CLIENT] Successfully subscribed to: ${channelName}`)
+  // })
 
   channel.bind("pusher:subscription_error", (error: any) => {
-    console.error(`❌ [PUSHER CLIENT] Subscription error for ${channelName}:`, error)
+    if (process.env.NODE_ENV === "development") {
+      console.error(`❌ [PUSHER CLIENT] Subscription error for ${channelName}:`, error)
+    }
   })
 
   return channel
