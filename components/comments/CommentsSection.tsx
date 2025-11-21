@@ -5,12 +5,13 @@ import { useSession } from "next-auth/react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/toast"
 import { MessageSquare, Send, Edit2, Trash2, X, Check } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import Image from "next/image"
+import { MarkdownEditor } from "@/components/markdown/MarkdownEditor"
+import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer"
 
 interface Comment {
   id: string
@@ -214,13 +215,13 @@ export function CommentsSection({
       <CardContent className="space-y-4">
         {/* New Comment Form */}
         {session?.user && (
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <Textarea
-              placeholder="Escribe un comentario..."
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <MarkdownEditor
               value={newComment}
-              onChange={e => setNewComment(e.target.value)}
-              className="min-h-[80px] resize-none"
+              onChange={setNewComment}
+              placeholder="Escribe un comentario... (Markdown soportado)"
               disabled={createMutation.isPending}
+              minRows={3}
             />
             <div className="flex justify-end">
               <Button
@@ -290,11 +291,11 @@ export function CommentsSection({
                   {/* Content */}
                   {editingId === comment.id ? (
                     <div className="space-y-2">
-                      <Textarea
+                      <MarkdownEditor
                         value={editContent}
-                        onChange={e => setEditContent(e.target.value)}
-                        className="min-h-[60px] text-sm"
+                        onChange={setEditContent}
                         disabled={updateMutation.isPending}
+                        minRows={3}
                       />
                       <div className="flex gap-2">
                         <Button
@@ -319,7 +320,9 @@ export function CommentsSection({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                    <div className="text-sm text-gray-700">
+                      <MarkdownRenderer content={comment.content} />
+                    </div>
                   )}
 
                   {/* Actions (only for comment author) */}
