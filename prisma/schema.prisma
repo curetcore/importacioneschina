@@ -453,6 +453,10 @@ model Comment {
   // Cada objeto: { url: string, name: string, type: string, size: number }
   attachments Json? @default("[]")
 
+  // Menciones de usuarios (array de user IDs mencionados con @)
+  // Ejemplo: ["user_id_1", "user_id_2"]
+  mentions String[] @default([])
+
   // Edición
   editedAt DateTime? @map("edited_at") // Si fue editado, cuándo
 

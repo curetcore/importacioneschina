@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/prisma"
 import { auditCreate } from "@/lib/audit-logger"
 import { triggerPusherEvent } from "@/lib/pusher-server"
+import { extractMentionedUserIds } from "@/lib/mentions"
 import { z } from "zod"
 
 // Force dynamic rendering
@@ -111,6 +112,9 @@ export async function POST(request: NextRequest) {
 
     const { entityType, entityId, content, attachments } = validation.data
 
+    // Extract mentioned user IDs from content
+    const mentions = extractMentionedUserIds(content)
+
     // Create comment
     const comment = await prisma.comment.create({
       data: {
@@ -119,6 +123,7 @@ export async function POST(request: NextRequest) {
         entityId,
         content,
         attachments: attachments || [],
+        mentions: mentions,
       },
       include: {
         user: {
@@ -145,6 +150,36 @@ export async function POST(request: NextRequest) {
       request,
       session.user.email || ""
     )
+
+    // Create notifications for mentioned users
+    if (mentions.length > 0) {
+      try {
+        const mentionNotifications = mentions
+          .filter(mentionedUserId => mentionedUserId !== session.user.id) // Don't notify yourself
+          .map(mentionedUserId => ({
+            tipo: "mention",
+            titulo: `${comment.user.name} te mencionó en un comentario`,
+            descripcion: content.slice(0, 200), // First 200 chars
+            icono: "💬",
+            entidad: entityType,
+            entidadId: entityId,
+            url: `/${entityType.toLowerCase()}/${entityId}`,
+            usuarioId: mentionedUserId,
+            leida: false,
+          }))
+
+        if (mentionNotifications.length > 0) {
+          await prisma.notificacion.createMany({
+            data: mentionNotifications,
+          })
+          console.log(
+            `✅ [Comments] Created ${mentionNotifications.length} mention notification(s)`
+          )
+        }
+      } catch (notifError) {
+        console.error("⚠️ [Comments] Failed to create mention notifications:", notifError)
+      }
+    }
 
     // Trigger Pusher event for real-time updates
     try {

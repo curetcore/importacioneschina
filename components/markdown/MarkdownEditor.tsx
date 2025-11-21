@@ -1,10 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { MarkdownRenderer } from "./MarkdownRenderer"
+import { MentionAutocomplete } from "@/components/mentions/MentionAutocomplete"
 import { Eye, EyeOff, HelpCircle } from "lucide-react"
+import {
+  getMentionQuery,
+  insertMention,
+  setCursorPosition,
+  getCursorPosition,
+} from "@/lib/mentions"
 
 interface MarkdownEditorProps {
   value: string
@@ -27,6 +34,66 @@ export function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [showPreview, setShowPreview] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 })
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Handle textarea input to detect mentions
+  const handleInput = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value
+      onChange(newValue)
+
+      // Check if we're in a mention context
+      const cursorPos = getCursorPosition(e.target)
+      const query = getMentionQuery(newValue, cursorPos)
+
+      if (query !== null) {
+        // Calculate position for autocomplete dropdown
+        const textarea = e.target
+        const { offsetTop, offsetLeft, offsetHeight } = textarea
+        setMentionPosition({
+          top: offsetTop + offsetHeight + 5,
+          left: offsetLeft + 10,
+        })
+        setMentionQuery(query)
+      } else {
+        setMentionQuery(null)
+      }
+    },
+    [onChange]
+  )
+
+  // Handle mention selection from autocomplete
+  const handleMentionSelect = useCallback(
+    (user: { id: string; displayName: string }) => {
+      if (!textareaRef.current) return
+
+      const cursorPos = getCursorPosition(textareaRef.current)
+      const { newText, newCursorPosition } = insertMention(
+        value,
+        cursorPos,
+        user.id,
+        user.displayName
+      )
+
+      onChange(newText)
+      setMentionQuery(null)
+
+      // Set cursor position after React re-renders
+      setTimeout(() => {
+        if (textareaRef.current) {
+          setCursorPosition(textareaRef.current, newCursorPosition)
+        }
+      }, 0)
+    },
+    [value, onChange]
+  )
+
+  // Close mention autocomplete
+  const handleMentionClose = useCallback(() => {
+    setMentionQuery(null)
+  }, [])
 
   return (
     <div className="space-y-2">
@@ -98,15 +165,26 @@ export function MarkdownEditor({
       {/* Editor + Preview */}
       <div className={showPreview ? "grid grid-cols-2 gap-4" : ""}>
         {/* Textarea de edición */}
-        <div>
+        <div className="relative">
           <Textarea
+            ref={textareaRef}
             value={value}
-            onChange={e => onChange(e.target.value)}
+            onChange={handleInput}
             placeholder={placeholder}
             disabled={disabled}
             className="min-h-[120px] resize-y font-mono text-sm"
             rows={minRows}
           />
+
+          {/* Mention Autocomplete */}
+          {mentionQuery !== null && (
+            <MentionAutocomplete
+              query={mentionQuery}
+              onSelect={handleMentionSelect}
+              onClose={handleMentionClose}
+              position={mentionPosition}
+            />
+          )}
         </div>
 
         {/* Preview de Markdown */}

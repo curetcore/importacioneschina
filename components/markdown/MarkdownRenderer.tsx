@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
 import rehypeRaw from "rehype-raw"
 import "highlight.js/styles/github-dark.css"
+import { convertMentionsToHTML } from "@/lib/mentions"
 
 interface MarkdownRendererProps {
   content: string
@@ -17,8 +18,12 @@ interface MarkdownRendererProps {
  * - Syntax highlighting para bloques de código
  * - HTML sanitizado (seguro)
  * - Links automáticos
+ * - Menciones de usuarios (@usuario)
  */
 export function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
+  // Convert mentions to HTML before rendering
+  const processedContent = convertMentionsToHTML(content)
+
   return (
     <div className={`prose prose-sm max-w-none ${className}`}>
       <ReactMarkdown
@@ -73,7 +78,7 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   )
