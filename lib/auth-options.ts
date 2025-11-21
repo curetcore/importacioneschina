@@ -88,6 +88,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           lastName: user.lastName,
           role: user.role,
+          profilePhoto: user.profilePhoto,
         }
       },
     }),
@@ -98,6 +99,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.lastName = user.lastName
+        token.profilePhoto = user.profilePhoto
       }
       return token
     },
@@ -106,6 +108,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.lastName = token.lastName as string | null
+        session.user.profilePhoto = token.profilePhoto as string | null
       }
       return session
     },
