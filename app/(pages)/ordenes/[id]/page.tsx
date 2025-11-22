@@ -18,6 +18,7 @@ import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 import { showToast } from "@/lib/toast"
 import { CommentsSection } from "@/components/comments/CommentsSection"
+import { DetailNavigation } from "@/components/ui/detail-navigation"
 
 interface FileAttachment {
   nombre: string
@@ -219,6 +220,12 @@ export default function OCDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DetailNavigation
+              currentId={oc.id}
+              apiEndpoint="/api/oc-china"
+              basePath="/ordenes"
+              className="mr-2"
+            />
             <Button
               variant="secondary"
               size="sm"

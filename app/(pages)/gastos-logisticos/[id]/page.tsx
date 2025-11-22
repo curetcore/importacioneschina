@@ -17,6 +17,7 @@ import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Paperclip, Edit, Trash2 } from "lucide-react"
 import { showToast } from "@/lib/toast"
 import { CommentsSection } from "@/components/comments/CommentsSection"
+import { DetailNavigation } from "@/components/ui/detail-navigation"
 
 interface FileAttachment {
   nombre: string
@@ -166,6 +167,12 @@ export default function GastoDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DetailNavigation
+              currentId={gasto.id}
+              apiEndpoint="/api/gastos-logisticos"
+              basePath="/gastos-logisticos"
+              className="mr-2"
+            />
             <Button
               variant="secondary"
               size="sm"

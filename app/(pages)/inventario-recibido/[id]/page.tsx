@@ -13,6 +13,7 @@ import { useEditingPresence } from "@/hooks/useEditingPresence"
 import { EditingBanner } from "@/components/ui/editing-banner"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import { CommentsSection } from "@/components/comments/CommentsSection"
+import { DetailNavigation } from "@/components/ui/detail-navigation"
 
 interface InventarioDetail {
   id: string
@@ -117,6 +118,12 @@ export default function InventarioRecibidoDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DetailNavigation
+              currentId={inventario.id}
+              apiEndpoint="/api/inventario-recibido"
+              basePath="/inventario-recibido"
+              className="mr-2"
+            />
             <Button
               variant="secondary"
               size="sm"
