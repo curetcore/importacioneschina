@@ -66,11 +66,14 @@ function NotificationIcon({
 }) {
   const [imageError, setImageError] = useState(false)
 
-  // IMPORTANTE: Hooks siempre al inicio, antes de cualquier return condicional
+  // RENDER ÚNICO - sin early returns para evitar React error #425
 
-  // Si hay un actor con foto de perfil y no ha fallado, mostrar la foto
+  // Determinar qué renderizar
+  let content
+
   if (actor?.profilePhoto && !imageError) {
-    return (
+    // Foto de perfil del actor
+    content = (
       <div className="relative w-10 h-10 flex-shrink-0">
         <img
           src={actor.profilePhoto}
@@ -80,37 +83,30 @@ function NotificationIcon({
         />
       </div>
     )
-  }
-
-  // Si hay un actor sin foto o la foto falló, mostrar iniciales
-  if (actor) {
+  } else if (actor) {
+    // Iniciales del actor
     const initials = `${actor.name[0]}${actor.lastName?.[0] || ""}`.toUpperCase()
-    return (
+    content = (
       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold border border-gray-200">
         {initials}
       </div>
     )
+  } else if (!iconName) {
+    // Ícono por defecto
+    content = <Bell size={20} className="text-gray-400" />
+  } else {
+    // Intentar mapear por nombre de ícono (lucide-react)
+    const IconComponent = ICON_MAP[iconName] || EMOJI_TO_ICON_MAP[iconName]
+
+    if (IconComponent) {
+      content = <IconComponent size={20} className="text-gray-600" />
+    } else {
+      // Fallback
+      content = <FileText size={20} className="text-gray-500" />
+    }
   }
 
-  // Si no hay actor, mostrar ícono como antes
-  if (!iconName) {
-    return <Bell size={20} className="text-gray-400" />
-  }
-
-  // Intentar mapear por nombre de ícono (lucide-react)
-  let IconComponent = ICON_MAP[iconName]
-
-  // Si no se encuentra, intentar mapear desde emoji
-  if (!IconComponent) {
-    IconComponent = EMOJI_TO_ICON_MAP[iconName]
-  }
-
-  if (IconComponent) {
-    return <IconComponent size={20} className="text-gray-600" />
-  }
-
-  // Fallback: Si el ícono no está en ningún mapa, mostrar ícono por defecto
-  return <FileText size={20} className="text-gray-500" />
+  return content
 }
 
 export default function NotificationDropdown() {
