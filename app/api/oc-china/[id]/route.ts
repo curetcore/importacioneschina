@@ -6,6 +6,7 @@ import { getPrismaClient } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
 import { handleApiError, Errors } from "@/lib/api-error-handler"
 import { triggerRecordUpdated, triggerRecordDeleted, CHANNELS } from "@/lib/pusher-events"
+import { getDistributionMethodForExpense } from "@/lib/distribution-config-helper"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -154,19 +155,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
           if (allOCsForGasto.length > 1) {
             // Determine distribution method based on expense type
-            let method: "cajas" | "valor_fob" | "unidades" = "unidades"
-
-            if (
-              gl.gasto.tipoGasto?.toLowerCase().includes("flete") ||
-              gl.gasto.tipoGasto?.toLowerCase().includes("transporte")
-            ) {
-              method = "cajas"
-            } else if (
-              gl.gasto.tipoGasto?.toLowerCase().includes("aduana") ||
-              gl.gasto.tipoGasto?.toLowerCase().includes("impuesto")
-            ) {
-              method = "valor_fob"
-            }
+            // NUEVO: Usa configuración de BD con fallbacks automáticos
+            // Si USE_CONFIG_DISTRIBUTION=false o hay error, usa comportamiento hardcodeado original
+            const method = await getDistributionMethodForExpense(gl.gasto.tipoGasto || "Otros")
 
             // Use distributeExpenseAcrossOCs to calculate proportional distribution
             const ocsData = allOCsForGasto.map(gloc => ({

@@ -5,6 +5,7 @@ import { calcularOC, distributeExpenseAcrossOCs } from "@/lib/calculations"
 import { handleApiError } from "@/lib/api-error-handler"
 import { QueryCache } from "@/lib/cache-helpers"
 import { CacheKeys, CacheTTL } from "@/lib/redis"
+import { getDistributionMethodForExpense } from "@/lib/distribution-config-helper"
 
 // Force dynamic rendering - this route uses headers() for auth and rate limiting
 export const dynamic = "force-dynamic"
@@ -109,7 +110,7 @@ async function generateDashboardData() {
   // Calcular distribución proporcional de gastos entre OCs
   const gastosDistribuidos = new Map<string, Map<string, number>>()
 
-  todosGastos.forEach(gasto => {
+  for (const gasto of todosGastos) {
     if (gasto.ocIds.length === 1) {
       const distribucion = new Map<string, number>()
       distribucion.set(gasto.ocIds[0], parseFloat(gasto.montoRD.toString()))
@@ -117,24 +118,14 @@ async function generateDashboardData() {
     } else {
       const ocsAsociadas = ocs.filter(oc => gasto.ocIds.includes(oc.id))
 
-      let method: "cajas" | "valor_fob" | "unidades" = "unidades"
-
-      if (
-        gasto.tipoGasto?.toLowerCase().includes("flete") ||
-        gasto.tipoGasto?.toLowerCase().includes("transporte")
-      ) {
-        method = "cajas"
-      } else if (
-        gasto.tipoGasto?.toLowerCase().includes("aduana") ||
-        gasto.tipoGasto?.toLowerCase().includes("impuesto")
-      ) {
-        method = "valor_fob"
-      }
+      // NUEVO: Usa configuración de BD con fallbacks automáticos
+      // Si USE_CONFIG_DISTRIBUTION=false o hay error, usa comportamiento hardcodeado original
+      const method = await getDistributionMethodForExpense(gasto.tipoGasto || "Otros")
 
       const distribucion = distributeExpenseAcrossOCs(gasto, ocsAsociadas, method)
       gastosDistribuidos.set(gasto.id, distribucion)
     }
-  })
+  }
 
   // PASO 2: Calcular OCs usando montos distribuidos
   const ocsCalculadas = ocs.map(oc => {
