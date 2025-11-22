@@ -68,6 +68,10 @@ npm start
 - **[SHOPIFY-DESIGN-SYSTEM-AUDIT.md](./docs/SHOPIFY-DESIGN-SYSTEM-AUDIT.md)** - Componentes Shopify Admin
 - **[FEEDBACK-VISUAL-PLAN.md](./docs/FEEDBACK-VISUAL-PLAN.md)** - Plan de mejoras visuales con análisis de riesgo
 
+### 🔐 Seguridad
+
+- **[SEGURIDAD-API-AUTHENTICATION.md](./docs/SEGURIDAD-API-AUTHENTICATION.md)** - 🆕 Implementación de autenticación en APIs (2025-11-22)
+
 ### 📖 Guías Técnicas
 
 - **[DISTRIBUCION-GASTOS-PROPORCIONAL.md](./DISTRIBUCION-GASTOS-PROPORCIONAL.md)** - 🆕 Sistema de distribución proporcional de gastos
