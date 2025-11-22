@@ -22,6 +22,18 @@ interface DashboardData {
     totalComisiones: number
     ocsActivas: number
     ocsCompletadas: number
+    // Nuevas métricas
+    totalFOB: number
+    totalPagado: number
+    totalGastosLogisticos: number
+    balancePendiente: number
+    porcentajePagado: number
+    gastosComoPercent: number
+    comisionesComoPercent: number
+    costoRealUnitario: number
+    unidadesPendientes: number
+    porcentajeRecepcion: number
+    valorInventarioBodega: number
   }
   financiero: {
     pagosPorMetodo: Array<{ name: string; value: number; cantidad: number }>
@@ -63,6 +75,33 @@ interface DashboardData {
       descripcion: string
     }>
   }
+  // Nuevas secciones
+  distribucion: {
+    distribucionCostos: Array<{ name: string; value: number; porcentaje: number }>
+    balancePorOC: Array<{ name: string; balance: number; pagado: number; total: number }>
+  }
+  alertas: {
+    ocsConBalancePendiente: Array<{
+      oc: string
+      proveedor: string
+      fobTotal: number
+      pagado: number
+      balance: number
+      porcentajeBalance: number
+    }>
+    ocsSinRecepcion: Array<{
+      oc: string
+      proveedor: string
+      unidadesOrdenadas: number
+      fechaOC: Date
+    }>
+  }
+  topProductosPorValor: Array<{
+    sku: string
+    nombre: string
+    unidades: number
+    valorUSD: number
+  }>
 }
 
 const kpiCards = [
@@ -70,7 +109,32 @@ const kpiCards = [
     key: "inversionTotal",
     label: "Inversión Total",
     format: "currency",
-    subtitle: "Inversión completa en RD$",
+    subtitle: "FOB + Logística + Comisiones",
+  },
+  {
+    key: "totalFOB",
+    label: "Total FOB",
+    format: "currency",
+    subtitle: "Costo base de productos",
+  },
+  {
+    key: "totalPagado",
+    label: "Total Pagado",
+    format: "currency",
+    subtitle: "Pagos realizados en RD$",
+  },
+  {
+    key: "balancePendiente",
+    label: "Balance Pendiente",
+    format: "currency",
+    subtitle: "Falta por pagar",
+    color: "text-orange-600",
+  },
+  {
+    key: "porcentajePagado",
+    label: "% Pago Completado",
+    format: "percent",
+    subtitle: "Progreso de pagos",
   },
   {
     key: "unidadesOrdenadas",
@@ -85,16 +149,36 @@ const kpiCards = [
     subtitle: "Ya en bodega",
   },
   {
-    key: "costoPromedioUnitario",
-    label: "Costo Promedio Unitario",
+    key: "porcentajeRecepcion",
+    label: "% Recepción",
+    format: "percent",
+    subtitle: "Progreso de recepción",
+  },
+  {
+    key: "valorInventarioBodega",
+    label: "Valor en Bodega",
     format: "currency",
-    subtitle: "Por unidad recibida",
+    subtitle: "Inventario recibido (RD$)",
+  },
+  {
+    key: "costoRealUnitario",
+    label: "Costo Real Unitario",
+    format: "currency",
+    subtitle: "Incluye FOB + Logística + Comisiones",
+  },
+  {
+    key: "totalGastosLogisticos",
+    label: "Gastos Logísticos",
+    format: "currency",
+    subtitle: `${0}% de inversión total`,
+    dynamic: true,
   },
   {
     key: "totalComisiones",
     label: "Comisiones Bancarias",
     format: "currency",
-    subtitle: "Total pagado en comisiones",
+    subtitle: `${0}% de total pagado`,
+    dynamic: true,
   },
 ]
 
@@ -137,19 +221,34 @@ export default function DashboardPage() {
         </div>
 
         {/* KPIs Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpiCards.map(kpi => {
             const value = data.kpis[kpi.key as keyof typeof data.kpis]
+            let displayValue = ""
+            if (kpi.format === "currency") {
+              displayValue = formatCurrency(Number(value))
+            } else if (kpi.format === "percent") {
+              displayValue = `${Number(value).toFixed(1)}%`
+            } else {
+              displayValue = Number(value).toLocaleString()
+            }
+
+            // Subtitle dinámico para gastos y comisiones
+            let subtitle = kpi.subtitle
+            if (kpi.key === "totalGastosLogisticos" && "dynamic" in kpi) {
+              subtitle = `${data.kpis.gastosComoPercent.toFixed(1)}% de inversión total`
+            } else if (kpi.key === "totalComisiones" && "dynamic" in kpi) {
+              subtitle = `${data.kpis.comisionesComoPercent.toFixed(1)}% de total pagado`
+            }
+
+            const textColor = ("color" in kpi ? kpi.color : undefined) || "text-gray-900"
+
             return (
               <Card key={kpi.key}>
                 <CardContent className="pt-6">
                   <div className="text-sm font-medium text-gray-500 mb-1">{kpi.label}</div>
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {kpi.format === "currency"
-                      ? formatCurrency(Number(value))
-                      : Number(value).toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">{kpi.subtitle}</div>
+                  <div className={`text-2xl font-semibold ${textColor}`}>{displayValue}</div>
+                  <div className="text-xs text-gray-400 mt-1">{subtitle}</div>
                 </CardContent>
               </Card>
             )
@@ -393,6 +492,176 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Distribución de Costos y Balance */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Distribución de Costos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-medium">Distribución de Costos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={data.distribucion.distribucionCostos}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, porcentaje }) => `${name} (${porcentaje.toFixed(1)}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.distribucion.distribucionCostos.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ fontSize: 12 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Balance Pendiente por OC */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-medium">
+                Balance Pendiente por OC (Top 10)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data.distribucion.balancePorOC}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={value => `RD$${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [formatCurrency(value), "Balance"]}
+                    contentStyle={{ fontSize: 12 }}
+                  />
+                  <Bar dataKey="balance" fill="#f97316" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Alertas */}
+        {(data.alertas.ocsConBalancePendiente.length > 0 ||
+          data.alertas.ocsSinRecepcion.length > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-medium text-red-600">
+                Alertas y Pendientes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* OCs con Balance Pendiente > 50% */}
+                {data.alertas.ocsConBalancePendiente.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      OCs con Balance Pendiente Alto (&gt;50%)
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-red-50 border-b-2 border-red-100">
+                          <tr>
+                            <th className="text-left py-2 px-3 font-semibold text-gray-700">OC</th>
+                            <th className="text-left py-2 px-3 font-semibold text-gray-700">
+                              Proveedor
+                            </th>
+                            <th className="text-right py-2 px-3 font-semibold text-gray-700">
+                              Total
+                            </th>
+                            <th className="text-right py-2 px-3 font-semibold text-gray-700">
+                              Pagado
+                            </th>
+                            <th className="text-right py-2 px-3 font-semibold text-gray-700">
+                              Pendiente
+                            </th>
+                            <th className="text-right py-2 px-3 font-semibold text-gray-700">%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.alertas.ocsConBalancePendiente.map(oc => (
+                            <tr key={oc.oc} className="border-b border-gray-200">
+                              <td className="py-2 px-3 font-medium text-gray-900">{oc.oc}</td>
+                              <td className="py-2 px-3 text-gray-600">{oc.proveedor}</td>
+                              <td className="py-2 px-3 text-right text-gray-900">
+                                {formatCurrency(oc.fobTotal)}
+                              </td>
+                              <td className="py-2 px-3 text-right text-green-600">
+                                {formatCurrency(oc.pagado)}
+                              </td>
+                              <td className="py-2 px-3 text-right text-orange-600 font-semibold">
+                                {formatCurrency(oc.balance)}
+                              </td>
+                              <td className="py-2 px-3 text-right text-red-600 font-semibold">
+                                {oc.porcentajeBalance.toFixed(1)}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* OCs sin Recepción */}
+                {data.alertas.ocsSinRecepcion.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      OCs sin Recepción de Inventario
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-amber-50 border-b-2 border-amber-100">
+                          <tr>
+                            <th className="text-left py-2 px-3 font-semibold text-gray-700">OC</th>
+                            <th className="text-left py-2 px-3 font-semibold text-gray-700">
+                              Proveedor
+                            </th>
+                            <th className="text-right py-2 px-3 font-semibold text-gray-700">
+                              Unidades Ordenadas
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.alertas.ocsSinRecepcion.map(oc => (
+                            <tr key={oc.oc} className="border-b border-gray-200">
+                              <td className="py-2 px-3 font-medium text-gray-900">{oc.oc}</td>
+                              <td className="py-2 px-3 text-gray-600">{oc.proveedor}</td>
+                              <td className="py-2 px-3 text-right text-gray-900">
+                                {oc.unidadesOrdenadas.toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Actividad Reciente - Audit Log */}
         <div>

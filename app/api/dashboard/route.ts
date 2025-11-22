@@ -478,6 +478,113 @@ async function generateDashboardData() {
     .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())
     .slice(0, 10)
 
+  // Nuevas métricas financieras
+  const totalPagado = todosPagos.reduce(
+    (sum, pago) => sum + parseFloat(pago.montoRDNeto?.toString() || "0"),
+    0
+  )
+
+  const totalFOB = ocsCalculadas.reduce((sum, oc) => sum + Number(oc.costoFOBTotalRD || 0), 0)
+
+  const totalGastosLogisticos = todosGastos.reduce((sum, gasto) => {
+    const monto = parseFloat(gasto.montoRD.toString())
+    const numOrdenes = gasto.numOrdenes || 1
+    return sum + monto / numOrdenes
+  }, 0)
+
+  const balancePendiente = totalFOB - totalPagado
+  const porcentajePagado = totalFOB > 0 ? (totalPagado / totalFOB) * 100 : 0
+  const gastosComoPercent = inversionTotal > 0 ? (totalGastosLogisticos / inversionTotal) * 100 : 0
+  const comisionesComoPercent = totalPagado > 0 ? (totalComisiones / totalPagado) * 100 : 0
+
+  // Costo real por unidad (incluye FOB + Logística + Comisiones)
+  const costoRealUnitario =
+    unidadesRecibidas > 0
+      ? (totalFOB + totalGastosLogisticos + totalComisiones) / unidadesRecibidas
+      : 0
+
+  // Nuevas métricas de inventario
+  const unidadesPendientes = unidadesOrdenadas - unidadesRecibidas
+  const porcentajeRecepcion =
+    unidadesOrdenadas > 0 ? (unidadesRecibidas / unidadesOrdenadas) * 100 : 0
+
+  // Valor total del inventario en bodega
+  const valorInventarioBodega = ocsCalculadas.reduce((sum, oc) => {
+    return (
+      sum +
+      oc.inventarioRecibido.reduce((invSum, inv) => {
+        const costo = inv.costoUnitarioFinalRD || 0
+        return invSum + costo * inv.cantidadRecibida
+      }, 0)
+    )
+  }, 0)
+
+  // Top productos por VALOR (no solo unidades)
+  const topProductosPorValor = [...productosPorSKU]
+    .sort((a, b) => b.valorUSD - a.valorUSD)
+    .slice(0, 10)
+
+  // Alertas: OCs con balance pendiente > 50%
+  const ocsConBalancePendiente = ocsCalculadas
+    .map(oc => {
+      const fobTotalRD = Number(oc.costoFOBTotalRD || 0)
+      const pagado = oc.totalPagadoRD || 0
+      const balance = fobTotalRD - pagado
+      const porcentajeBalance = fobTotalRD > 0 ? (balance / fobTotalRD) * 100 : 0
+
+      return {
+        oc: oc.oc,
+        proveedor: oc.proveedor,
+        fobTotal: fobTotalRD,
+        pagado,
+        balance,
+        porcentajeBalance,
+      }
+    })
+    .filter(oc => oc.porcentajeBalance > 50)
+    .sort((a, b) => b.balance - a.balance)
+
+  // Alertas: OCs con 0% de recepción
+  const ocsSinRecepcion = ocsCalculadas
+    .filter(oc => oc.cantidadRecibida === 0 && oc.cantidadOrdenada > 0)
+    .map(oc => ({
+      oc: oc.oc,
+      proveedor: oc.proveedor,
+      unidadesOrdenadas: oc.cantidadOrdenada,
+      fechaOC: oc.fechaOC,
+    }))
+
+  // Distribución de costos (FOB vs Logística vs Comisiones)
+  const distribucionCostos = [
+    {
+      name: "FOB",
+      value: Math.round(totalFOB * 100) / 100,
+      porcentaje: inversionTotal > 0 ? (totalFOB / inversionTotal) * 100 : 0,
+    },
+    {
+      name: "Gastos Logísticos",
+      value: Math.round(totalGastosLogisticos * 100) / 100,
+      porcentaje: inversionTotal > 0 ? (totalGastosLogisticos / inversionTotal) * 100 : 0,
+    },
+    {
+      name: "Comisiones",
+      value: Math.round(totalComisiones * 100) / 100,
+      porcentaje: inversionTotal > 0 ? (totalComisiones / inversionTotal) * 100 : 0,
+    },
+  ]
+
+  // Balance pendiente por OC (para gráfico)
+  const balancePorOC = ocsCalculadas
+    .map(oc => ({
+      name: oc.oc,
+      balance: Number(oc.costoFOBTotalRD || 0) - (oc.totalPagadoRD || 0),
+      pagado: oc.totalPagadoRD || 0,
+      total: Number(oc.costoFOBTotalRD || 0),
+    }))
+    .filter(oc => oc.balance > 0)
+    .sort((a, b) => b.balance - a.balance)
+    .slice(0, 10)
+
   return {
     kpis: {
       inversionTotal: Math.round(inversionTotal * 100) / 100,
@@ -488,6 +595,18 @@ async function generateDashboardData() {
       totalComisiones: Math.round(totalComisiones * 100) / 100,
       ocsActivas,
       ocsCompletadas,
+      // Nuevas métricas
+      totalFOB: Math.round(totalFOB * 100) / 100,
+      totalPagado: Math.round(totalPagado * 100) / 100,
+      totalGastosLogisticos: Math.round(totalGastosLogisticos * 100) / 100,
+      balancePendiente: Math.round(balancePendiente * 100) / 100,
+      porcentajePagado: Math.round(porcentajePagado * 100) / 100,
+      gastosComoPercent: Math.round(gastosComoPercent * 100) / 100,
+      comisionesComoPercent: Math.round(comisionesComoPercent * 100) / 100,
+      costoRealUnitario: Math.round(costoRealUnitario * 100) / 100,
+      unidadesPendientes,
+      porcentajeRecepcion: Math.round(porcentajeRecepcion * 100) / 100,
+      valorInventarioBodega: Math.round(valorInventarioBodega * 100) / 100,
     },
     // NUEVO: Metadata para indicar si los datos están limitados
     metadata: {
@@ -577,5 +696,22 @@ async function generateDashboardData() {
       topOCs,
       transacciones,
     },
+    // Nuevas secciones
+    distribucion: {
+      distribucionCostos,
+      balancePorOC,
+    },
+    alertas: {
+      ocsConBalancePendiente,
+      ocsSinRecepcion,
+    },
+    topProductosPorValor: topProductosPorValor.map(
+      (item: { sku: string; nombre: string; unidades: number; valorUSD: number }) => ({
+        sku: item.sku,
+        nombre: item.nombre,
+        unidades: item.unidades,
+        valorUSD: Math.round(item.valorUSD * 100) / 100,
+      })
+    ),
   }
 }
