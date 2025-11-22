@@ -148,15 +148,18 @@ export async function createNotificationFromAudit(
 
     const titulo = `${entityName} ${actionVerb}`
 
-    // Obtener el nombre del usuario si existe
+    // Obtener el usuario que realizó la acción (para mostrar su foto/avatar)
     let descripcion = "Hace un momento"
+    let actorId: string | undefined = undefined
+
     if (usuarioEmail) {
       const user = await db.user.findUnique({
         where: { email: usuarioEmail },
-        select: { name: true, lastName: true },
+        select: { id: true, name: true, lastName: true },
       })
 
       if (user) {
+        actorId = user.id // Guardar ID para asociar el actor a la notificación
         const userName = [user.name, user.lastName].filter(Boolean).join(" ")
         descripcion = `Por ${userName} hace un momento`
       } else {
@@ -202,6 +205,7 @@ export async function createNotificationFromAudit(
         url,
         auditLogId,
         usuarioId: null, // NULL = notificación global solo para superadmin
+        actorId, // Usuario que realizó la acción (para mostrar su foto/avatar)
         prioridad: accion === "DELETE" ? "high" : "normal",
       },
     })
