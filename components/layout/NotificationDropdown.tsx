@@ -132,10 +132,12 @@ export default function NotificationDropdown() {
   const handleNotificationClick = async (id: string, url: string | null) => {
     await markAsReadHook(id)
 
+    // Cerrar dropdown siempre (incluso sin URL)
+    setIsOpen(false)
+
     // Navegar si hay URL
     if (url) {
       router.push(url)
-      setIsOpen(false)
     }
   }
 

@@ -143,13 +143,13 @@ export async function createNotificationFromAudit(
     const db = await getPrismaClient()
 
     // Generar título basado en la acción y entidad
-    const actionVerb = getActionVerb(accion)
+    const actionVerb = getActionVerb(accion, entidad)
     const entityName = getEntityDisplayName(entidad)
 
     const titulo = `${entityName} ${actionVerb}`
 
     // Obtener el usuario que realizó la acción (para mostrar su foto/avatar)
-    let descripcion = "Hace un momento"
+    let descripcion: string | undefined = undefined
     let actorId: string | undefined = undefined
 
     if (usuarioEmail) {
@@ -161,9 +161,9 @@ export async function createNotificationFromAudit(
       if (user) {
         actorId = user.id // Guardar ID para asociar el actor a la notificación
         const userName = [user.name, user.lastName].filter(Boolean).join(" ")
-        descripcion = `Por ${userName} hace un momento`
+        descripcion = `Por ${userName}` // Sin "hace un momento" - el timestamp se muestra dinámicamente en UI
       } else {
-        descripcion = `Por ${usuarioEmail} hace un momento`
+        descripcion = `Por ${usuarioEmail}`
       }
     }
 
@@ -365,14 +365,25 @@ export async function cleanupOldNotifications(daysOld = 30): Promise<void> {
 // HELPERS INTERNOS
 // ============================================
 
-function getActionVerb(accion: string): string {
-  const verbs: Record<string, string> = {
-    CREATE: "creada",
-    UPDATE: "modificada",
-    DELETE: "eliminada",
-    RESTORE: "restaurada",
+function getActionVerb(accion: string, entidad: string): string {
+  // Determinar si la entidad es masculina o femenina
+  const masculineEntities = ["PagosChina", "GastosLogisticos", "Proveedor", "InventarioRecibido"]
+  const isMasculine = masculineEntities.includes(entidad)
+
+  // Verbos según género
+  const verbs: Record<string, { masculine: string; feminine: string }> = {
+    CREATE: { masculine: "creado", feminine: "creada" },
+    UPDATE: { masculine: "modificado", feminine: "modificada" },
+    DELETE: { masculine: "eliminado", feminine: "eliminada" },
+    RESTORE: { masculine: "restaurado", feminine: "restaurada" },
   }
-  return verbs[accion] || "actualizada"
+
+  const verb = verbs[accion]
+  if (!verb) {
+    return isMasculine ? "actualizado" : "actualizada"
+  }
+
+  return isMasculine ? verb.masculine : verb.feminine
 }
 
 function getEntityDisplayName(entidad: string): string {
