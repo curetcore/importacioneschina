@@ -137,6 +137,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             include: {
               ocChina: {
                 select: {
+                  id: true,
                   oc: true,
                   proveedor: true,
                 },

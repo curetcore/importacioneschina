@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
                 include: {
                   ocChina: {
                     select: {
+                      id: true,
                       oc: true,
                       proveedor: true,
                     },
@@ -160,6 +161,7 @@ export async function POST(request: NextRequest) {
           include: {
             ocChina: {
               select: {
+                id: true,
                 oc: true,
                 proveedor: true,
               },
