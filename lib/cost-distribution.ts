@@ -1,7 +1,7 @@
 // lib/cost-distribution.ts
 // Professional cost distribution methods for import management
 
-export type DistributionMethod = "peso" | "volumen" | "valor_fob" | "unidades"
+export type DistributionMethod = "peso" | "volumen" | "valor_fob" | "unidades" | "cajas"
 
 export interface ProductDistributionData {
   id: string
@@ -167,6 +167,52 @@ export function distributeByUnit(
 }
 
 /**
+ * Distribute costs by number of boxes/packages
+ * Used for: Freight costs, local transport (when charged by volume/space)
+ * Formula: (ocBoxes / totalBoxes) × totalCost
+ *
+ * Note: This works at OC level, not product level, since boxes are associated with entire orders
+ */
+export interface OCDistributionData {
+  id: string
+  cantidadCajas: number | null
+}
+
+export function distributeByBoxes(
+  ocs: OCDistributionData[],
+  totalCost: number
+): DistributionResult[] {
+  // Calculate total boxes across all OCs (only those with box data)
+  const ocsWithBoxes = ocs.filter(oc => oc.cantidadCajas && oc.cantidadCajas > 0)
+  const totalBoxes = ocsWithBoxes.reduce((sum, oc) => sum + (oc.cantidadCajas || 0), 0)
+
+  // If no box data, return empty/zero distribution
+  if (totalBoxes === 0 || ocsWithBoxes.length === 0) {
+    console.warn("⚠️ No hay datos de cajas, distribución por cajas no posible")
+    return ocs.map(oc => ({
+      productId: oc.id,
+      porcentaje: 0,
+      costoDistribuido: 0,
+      costoUnitario: 0,
+    }))
+  }
+
+  // Distribute cost proportionally by boxes
+  return ocs.map(oc => {
+    const cajas = oc.cantidadCajas || 0
+    const porcentaje = cajas / totalBoxes
+    const costoDistribuido = totalCost * porcentaje
+
+    return {
+      productId: oc.id,
+      porcentaje,
+      costoDistribuido,
+      costoUnitario: 0, // Not applicable at OC level
+    }
+  })
+}
+
+/**
  * Check if distribution results are valid (not all zeros)
  */
 function isValidDistribution(results: DistributionResult[]): boolean {
@@ -256,6 +302,7 @@ export function getDistributionMethodLabel(method: DistributionMethod): string {
     volumen: "Por Volumen (CBM)",
     valor_fob: "Por Valor FOB",
     unidades: "Por Unidades",
+    cajas: "Por Cantidad de Cajas",
   }
   return labels[method] || method
 }
@@ -266,9 +313,9 @@ export function getDistributionMethodLabel(method: DistributionMethod): string {
 export function getRecommendedMethod(costType: string): DistributionMethod {
   const recommendations: Record<string, DistributionMethod> = {
     pagos: "valor_fob",
-    gastos_flete: "peso",
+    gastos_flete: "cajas", // Cambio: flete se cobra por espacio/cajas
     gastos_aduana: "valor_fob",
-    gastos_transporte_local: "peso",
+    gastos_transporte_local: "cajas", // Cambio: transporte local se cobra por bultos
     comisiones: "valor_fob",
   }
   return recommendations[costType] || "unidades"

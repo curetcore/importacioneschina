@@ -651,3 +651,98 @@ export function calcularCostosCompletos(
     }
   })
 }
+
+// =====================================================
+// DISTRIBUCIÓN DE GASTOS ENTRE MÚLTIPLES OCS
+// =====================================================
+
+/**
+ * Distribuye un gasto entre múltiples OCs usando el método configurado
+ *
+ * Esta función REEMPLAZA la división igual (monto / numOrdenes) con distribución
+ * proporcional basada en cajas, valor FOB, o unidades.
+ *
+ * @param gasto - Gasto a distribuir con su monto total
+ * @param ocs - Array de OCs asociadas con datos necesarios para distribución
+ * @param method - Método de distribución ("cajas", "valor_fob", "unidades")
+ * @returns Map de ocId → monto distribuido a esa OC
+ *
+ * @example
+ * ```typescript
+ * const distribucion = distributeExpenseAcrossOCs(
+ *   { id: "gasto1", montoRD: new Prisma.Decimal(10000) },
+ *   [
+ *     { id: "oc1", cantidadCajas: 5, items: [...] },
+ *     { id: "oc2", cantidadCajas: 20, items: [...] }
+ *   ],
+ *   "cajas"
+ * )
+ * // Result: { "oc1" => 2000, "oc2" => 8000 }
+ * ```
+ */
+export function distributeExpenseAcrossOCs(
+  gasto: { id: string; montoRD: Prisma.Decimal },
+  ocs: Array<{
+    id: string
+    cantidadCajas?: number | null
+    items: Array<{
+      cantidadTotal: number
+      precioUnitarioUSD: Prisma.Decimal
+    }>
+  }>,
+  method: "cajas" | "valor_fob" | "unidades" = "cajas"
+): Map<string, number> {
+  const totalMonto = parseFloat(gasto.montoRD.toString())
+
+  // Caso especial: si solo hay 1 OC, todo el gasto va a esa OC
+  if (ocs.length === 1) {
+    return new Map([[ocs[0].id, totalMonto]])
+  }
+
+  let distribucionBase: Array<{ id: string; valor: number }>
+
+  if (method === "cajas") {
+    // Distribuir por cantidad de cajas
+    distribucionBase = ocs.map(oc => ({
+      id: oc.id,
+      valor: oc.cantidadCajas || 0,
+    }))
+  } else if (method === "valor_fob") {
+    // Distribuir por valor FOB total de la OC
+    distribucionBase = ocs.map(oc => ({
+      id: oc.id,
+      valor: oc.items.reduce(
+        (sum, item) => sum + item.cantidadTotal * parseFloat(item.precioUnitarioUSD.toString()),
+        0
+      ),
+    }))
+  } else {
+    // Distribuir por cantidad de unidades (default/fallback)
+    distribucionBase = ocs.map(oc => ({
+      id: oc.id,
+      valor: oc.items.reduce((sum, item) => sum + item.cantidadTotal, 0),
+    }))
+  }
+
+  // Calcular total
+  const totalValor = distribucionBase.reduce((sum, oc) => sum + oc.valor, 0)
+
+  // Si total es 0, dividir igual como último fallback
+  if (totalValor === 0) {
+    console.warn(
+      `⚠️ Total es 0 para método ${method} en gasto ${gasto.id}, dividiendo igual como fallback`
+    )
+    const montoPorOC = totalMonto / ocs.length
+    return new Map(ocs.map(oc => [oc.id, montoPorOC]))
+  }
+
+  // Distribuir proporcionalmente
+  const resultado = new Map<string, number>()
+  distribucionBase.forEach(oc => {
+    const porcentaje = oc.valor / totalValor
+    const montoDistribuido = totalMonto * porcentaje
+    resultado.set(oc.id, montoDistribuido)
+  })
+
+  return resultado
+}

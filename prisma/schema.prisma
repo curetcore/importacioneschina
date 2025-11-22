@@ -22,6 +22,9 @@ model OCChina {
   // cantidadOrdenada = suma de items.cantidadTotal
   // costoFOBTotalUSD = suma de items.subtotalUSD
 
+  // Logística y distribución de costos
+  cantidadCajas Int? @map("cantidad_cajas") // Número total de cajas/bultos (para distribución de gastos de flete)
+
   // Adjuntos (fotos y PDFs)
   adjuntos Json? // [{nombre, url, tipo, size, uploadedAt}]
 
@@ -40,6 +43,7 @@ model OCChina {
   @@index([fechaOC])
   @@index([categoriaPrincipal])
   @@index([deletedAt])
+  @@index([cantidadCajas]) // Índice para queries de distribución de costos
   @@index([deletedAt, fechaOC]) // Índice compuesto para queries comunes: filtrar activos y ordenar por fecha
   @@index([proveedor, deletedAt]) // Índice compuesto para buscar por proveedor excluyendo eliminados
   @@map("oc_china")
