@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { calcularOC, distributeExpenseAcrossOCs } from "@/lib/calculations"
 import { handleApiError } from "@/lib/api-error-handler"
@@ -153,10 +154,10 @@ async function generateDashboardData() {
           const distribucion = gastosDistribuidos.get(gasto.id)
           const montoDistribuido = distribucion?.get(oc.id) || 0
 
-          // Retornar gasto con monto distribuido
+          // Retornar gasto con monto distribuido (convertido a Prisma.Decimal)
           return {
             ...gasto,
-            montoRD: montoDistribuido, // Usar monto distribuido en lugar del monto completo
+            montoRD: new Prisma.Decimal(montoDistribuido), // Usar monto distribuido en lugar del monto completo
           }
         }) || []
 
