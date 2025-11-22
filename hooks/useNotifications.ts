@@ -70,7 +70,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
    */
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await fetch("/api/notificaciones")
+      const response = await fetch("/api/notificaciones?unread=true")
       if (!response.ok) {
         throw new Error("Error fetching notifications")
       }
