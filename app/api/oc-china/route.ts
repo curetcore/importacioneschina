@@ -165,7 +165,15 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
-    const { proveedor, fechaOC, descripcionLote, categoriaPrincipal, items, adjuntos } = body
+    const {
+      proveedor,
+      fechaOC,
+      descripcionLote,
+      categoriaPrincipal,
+      cantidadCajas,
+      items,
+      adjuntos,
+    } = body
 
     // Validaciones básicas
     if (!proveedor || !fechaOC || !categoriaPrincipal) {
@@ -262,6 +270,10 @@ export async function POST(request: NextRequest) {
             fechaOC: new Date(fechaOC),
             descripcionLote,
             categoriaPrincipal,
+            cantidadCajas:
+              cantidadCajas !== undefined && cantidadCajas !== null && cantidadCajas !== ""
+                ? parseInt(String(cantidadCajas))
+                : null,
             adjuntos: adjuntos || null,
             items: {
               create: itemsValidados,
