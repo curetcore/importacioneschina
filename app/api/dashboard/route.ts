@@ -97,6 +97,15 @@ async function generateDashboardData() {
       inventario: oc.inventarioRecibido,
     })
 
+    // Calcular tasa de cambio promedio para convertir FOB a RD$
+    const tasaCambioPromedio =
+      oc.pagosChina.length > 0
+        ? oc.pagosChina.reduce((sum, pago) => sum + parseFloat(pago.tasaCambio.toString()), 0) /
+          oc.pagosChina.length
+        : 58 // Tasa default si no hay pagos
+
+    const costoFOBTotalRD = costoFOBTotalUSD * tasaCambioPromedio
+
     return {
       id: oc.id,
       oc: oc.oc,
@@ -104,6 +113,7 @@ async function generateDashboardData() {
       fechaOC: oc.fechaOC,
       categoriaPrincipal: oc.categoriaPrincipal,
       cantidadOrdenada,
+      costoFOBTotalRD, // Agregar FOB en RD$
       items: oc.items,
       inventarioRecibido: oc.inventarioRecibido,
       ...calculos,
@@ -513,7 +523,7 @@ async function generateDashboardData() {
     return (
       sum +
       oc.inventarioRecibido.reduce((invSum, inv) => {
-        const costo = inv.costoUnitarioFinalRD || 0
+        const costo = inv.costoUnitarioFinalRD ? parseFloat(inv.costoUnitarioFinalRD.toString()) : 0
         return invSum + costo * inv.cantidadRecibida
       }, 0)
     )
@@ -528,7 +538,7 @@ async function generateDashboardData() {
   const ocsConBalancePendiente = ocsCalculadas
     .map(oc => {
       const fobTotalRD = Number(oc.costoFOBTotalRD || 0)
-      const pagado = oc.totalPagadoRD || 0
+      const pagado = oc.totalPagosRD || 0
       const balance = fobTotalRD - pagado
       const porcentajeBalance = fobTotalRD > 0 ? (balance / fobTotalRD) * 100 : 0
 
@@ -577,8 +587,8 @@ async function generateDashboardData() {
   const balancePorOC = ocsCalculadas
     .map(oc => ({
       name: oc.oc,
-      balance: Number(oc.costoFOBTotalRD || 0) - (oc.totalPagadoRD || 0),
-      pagado: oc.totalPagadoRD || 0,
+      balance: Number(oc.costoFOBTotalRD || 0) - (oc.totalPagosRD || 0),
+      pagado: oc.totalPagosRD || 0,
       total: Number(oc.costoFOBTotalRD || 0),
     }))
     .filter(oc => oc.balance > 0)
