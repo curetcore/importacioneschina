@@ -1,145 +1,241 @@
 "use client"
 
 import MainLayout from "@/components/layout/MainLayout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Calculator, TrendingUp, Package, DollarSign, Truck } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  BookOpen,
+  Calculator,
+  TrendingUp,
+  Package,
+  DollarSign,
+  Truck,
+  Scale,
+  CheckCircle2,
+  AlertTriangle,
+  Info,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export default function AyudaPage() {
   return (
     <MainLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white">
-          <div className="flex items-center gap-3 mb-3">
-            <BookOpen className="w-8 h-8" />
-            <h1 className="text-3xl font-bold">Centro de Ayuda</h1>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BookOpen className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Centro de Ayuda</h1>
+              <p className="text-muted-foreground">
+                Aprende cómo funciona el sistema de costos de importación
+              </p>
+            </div>
           </div>
-          <p className="text-blue-100">
-            Aprende cómo funciona el sistema de costos de importación paso a paso
-          </p>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border-l-4 border-l-primary">
+            <CardHeader className="pb-3">
+              <CardDescription className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                Costo FOB
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Precio que pagas al proveedor por la mercancía
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-orange-500">
+            <CardHeader className="pb-3">
+              <CardDescription className="flex items-center gap-2">
+                <Truck className="w-4 h-4" />
+                Gastos Logísticos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Flete, aduana, transporte y almacenaje
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-indigo-500">
+            <CardHeader className="pb-3">
+              <CardDescription className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Comisiones
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Cobros bancarios por transferencias internacionales
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Introducción */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Calculator className="w-5 h-5" />
               ¿Qué Calcula Este Sistema?
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 leading-relaxed">
-              Este sistema calcula el <strong>costo real</strong> de cada producto importado, desde
-              que lo compras en el extranjero hasta que llega a tu bodega. Te ayuda a saber
-              exactamente cuánto te costó cada unidad para que puedas establecer precios de venta
-              con márgenes de ganancia precisos.
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground leading-relaxed">
+              Este sistema calcula el <strong className="text-foreground">costo real</strong> de
+              cada producto importado, desde que lo compras en el extranjero hasta que llega a tu
+              bodega. Te ayuda a saber exactamente cuánto te costó cada unidad para establecer
+              precios con márgenes precisos.
             </p>
           </CardContent>
         </Card>
 
-        {/* Los 3 Componentes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Los 3 Componentes del Costo</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        {/* Los 3 Componentes del Costo */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Componentes del Costo Total</h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* FOB */}
-            <div className="border-l-4 border-blue-500 pl-4">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  1. FOB (Free On Board) - Costo de la Mercancía
-                </h3>
-              </div>
-              <p className="text-gray-700 mb-3">
-                Es el precio que pagas al proveedor por los productos.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                <p className="text-sm font-medium text-blue-900 mb-1">Ejemplo:</p>
-                <p className="text-sm text-blue-800">
-                  • Compraste 1,000 zapatos a $10 USD cada uno
-                  <br />• <strong>FOB Total = $10,000 USD</strong>
+            <Card className="group hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                  </div>
+                  <Badge variant="outline">Componente 1</Badge>
+                </div>
+                <CardTitle className="text-lg mt-4">FOB (Free On Board)</CardTitle>
+                <CardDescription>Costo de la Mercancía</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Es el precio que pagas al proveedor por los productos.
                 </p>
-              </div>
-            </div>
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <p className="text-xs font-medium">Ejemplo:</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-muted-foreground">1,000 zapatos × $10 USD</p>
+                    <p className="font-semibold">FOB Total: $10,000 USD</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Gastos Logísticos */}
-            <div className="border-l-4 border-green-500 pl-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Truck className="w-5 h-5 text-green-600" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  2. Gastos Logísticos - Costos de Traer la Mercancía
-                </h3>
-              </div>
-              <p className="text-gray-700 mb-3">
-                Todo lo que pagas para que la mercancía llegue a tu país:
-              </p>
-              <ul className="list-disc list-inside text-gray-700 space-y-1 mb-3">
-                <li>Flete marítimo/aéreo</li>
-                <li>Agente de aduanas</li>
-                <li>Impuestos de importación</li>
-                <li>Almacenaje</li>
-                <li>Transporte local</li>
-              </ul>
-              <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                <p className="text-sm font-medium text-green-900 mb-1">Ejemplo:</p>
-                <p className="text-sm text-green-800">
-                  • Flete: $300
-                  <br />• Aduana: $200
-                  <br />• Transporte: $50
-                  <br />• <strong>Total Gastos = $550 USD</strong>
+            <Card className="group hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <Truck className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <Badge variant="outline">Componente 2</Badge>
+                </div>
+                <CardTitle className="text-lg mt-4">Gastos Logísticos</CardTitle>
+                <CardDescription>Costos de Traer la Mercancía</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Todo lo que pagas para que la mercancía llegue:
                 </p>
-              </div>
-            </div>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    Flete marítimo/aéreo
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    Agente de aduanas
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    Impuestos de importación
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    Almacenaje y transporte
+                  </li>
+                </ul>
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <p className="text-xs font-medium">Ejemplo:</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-muted-foreground">Flete + Aduana + Transporte</p>
+                    <p className="font-semibold">Total: $550 USD</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Comisiones */}
-            <div className="border-l-4 border-purple-500 pl-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
-                <h3 className="text-lg font-semibold text-gray-900">3. Comisiones Bancarias</h3>
-              </div>
-              <p className="text-gray-700 mb-3">
-                Lo que cobra el banco por hacer las transferencias internacionales.
-              </p>
-              <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                <p className="text-sm font-medium text-purple-900 mb-1">Ejemplo:</p>
-                <p className="text-sm text-purple-800">
-                  • <strong>Comisión = $20 USD</strong>
+            <Card className="group hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <Badge variant="outline">Componente 3</Badge>
+                </div>
+                <CardTitle className="text-lg mt-4">Comisiones Bancarias</CardTitle>
+                <CardDescription>Costos de Transferencias</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Lo que cobra el banco por hacer transferencias internacionales.
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <p className="text-xs font-medium">Ejemplo:</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-muted-foreground">Por transferencia bancaria</p>
+                    <p className="font-semibold">Comisión: $20 USD</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* La Fórmula */}
-        <Card>
+        <Card className="border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-blue-600" />
+              <Calculator className="w-5 h-5" />
               La Fórmula del Costo Total
             </CardTitle>
+            <CardDescription>Cómo se calcula el costo final en RD$</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-300">
-              <div className="space-y-3 font-mono text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Costo Total =</span>
-                  <span className="font-semibold text-gray-900">
-                    FOB + Gastos Logísticos + Comisiones
-                  </span>
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted p-6 space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Paso 1: Sumar componentes</span>
+                  <code className="px-3 py-1 bg-background rounded border text-xs">
+                    FOB + Gastos + Comisiones
+                  </code>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Costo Total =</span>
-                  <span className="font-semibold text-gray-900">
-                    $10,000 + $550 + $20 = $10,570 USD
-                  </span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">En USD</span>
+                  <code className="px-3 py-1 bg-background rounded border">
+                    $10,000 + $550 + $20 = $10,570
+                  </code>
                 </div>
-                <div className="border-t border-gray-300 pt-3 mt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Convertir a RD$ (tasa 58):</span>
-                    <span className="font-bold text-lg text-blue-600">
-                      $10,570 × 58 = RD$ 613,060
-                    </span>
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Paso 2: Convertir a RD$</span>
+                    <code className="px-3 py-1 bg-background rounded border text-xs">
+                      Total USD × Tasa
+                    </code>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm text-muted-foreground">Tasa promedio: 58.00</span>
+                    <div className="text-right">
+                      <p className="font-mono text-lg font-bold text-primary">RD$ 613,060</p>
+                      <p className="text-xs text-muted-foreground">Costo total invertido</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -148,183 +244,213 @@ export default function AyudaPage() {
         </Card>
 
         {/* Distribución de Gastos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>¿Cómo se Dividen los Gastos Compartidos?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-gray-700">
-              <strong>Situación común:</strong> Haces varias órdenes de compra que viajan juntas en
-              el mismo contenedor. Los gastos de flete, aduana y transporte se comparten entre todas
-              las órdenes.
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">Distribución de Gastos Compartidos</h2>
+            <p className="text-muted-foreground mt-1">
+              Cómo se dividen los gastos cuando múltiples órdenes viajan juntas
             </p>
+          </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Método Incorrecto */}
-            <div className="bg-red-50 rounded-lg p-5 border border-red-200">
-              <h4 className="font-semibold text-red-900 mb-3 flex items-center gap-2">
-                ❌ Forma INCORRECTA (División Igual)
-              </h4>
-              <p className="text-sm text-red-800 mb-3">
-                Si divides los gastos por igual entre las órdenes, <strong>no es justo</strong>.
-              </p>
-              <div className="bg-white rounded p-3 mb-3">
-                <p className="text-xs text-gray-600 mb-2">Ejemplo:</p>
-                <p className="text-sm text-gray-800">
-                  • <strong>OC-001:</strong> 50 cajas de zapatos (FOB $10,000)
-                  <br />• <strong>OC-002:</strong> 25 cajas de carteras (FOB $5,000)
-                  <br />• <strong>Flete compartido:</strong> $600
-                </p>
-              </div>
-              <div className="bg-red-100 rounded p-3">
-                <p className="text-sm text-red-900">
-                  División igual: $600 ÷ 2 = <strong>$300 por orden</strong>
-                  <br />
-                  <span className="text-xs mt-1 block">
-                    ❌ Problema: OC-001 tiene el doble de cajas pero paga lo mismo que OC-002
-                  </span>
-                </p>
-              </div>
-            </div>
+            <Card className="border-destructive/50">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5" />
+                  <div>
+                    <CardTitle className="text-destructive">División Igual (Incorrecto)</CardTitle>
+                    <CardDescription>No es justo ni proporcional</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-muted p-4 space-y-3">
+                  <p className="text-sm font-medium">Escenario:</p>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>OC-001: 50 cajas</span>
+                      <span className="font-mono">$10,000</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>OC-002: 25 cajas</span>
+                      <span className="font-mono">$5,000</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2">
+                      <span>Flete compartido:</span>
+                      <span className="font-mono">$600</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
+                  <p className="text-sm font-medium text-destructive mb-2">Problema:</p>
+                  <p className="text-sm text-muted-foreground">
+                    División igual: $600 ÷ 2 = <strong>$300 por orden</strong>
+                  </p>
+                  <p className="text-xs text-destructive mt-2">
+                    ❌ OC-001 tiene el doble de cajas pero paga lo mismo
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Método Correcto */}
-            <div className="bg-green-50 rounded-lg p-5 border border-green-200">
-              <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
-                ✅ Forma CORRECTA (Distribución Proporcional)
-              </h4>
-              <p className="text-sm text-green-800 mb-4">
-                Los gastos se dividen según criterios justos:
-              </p>
-
-              {/* Por Cajas */}
-              <div className="bg-white rounded-lg p-4 mb-4">
-                <h5 className="font-semibold text-gray-900 mb-2 text-sm">
-                  Flete y Transporte → Por cantidad de cajas/volumen
-                </h5>
-                <div className="bg-gray-50 rounded p-3 font-mono text-xs space-y-1">
-                  <p>Total: 75 cajas (50 + 25)</p>
-                  <p>Costo por caja: $600 ÷ 75 = $8/caja</p>
-                  <p className="text-green-700 font-semibold">
-                    OC-001: 50 cajas × $8 = $400 (66.7%)
-                  </p>
-                  <p className="text-green-700 font-semibold">
-                    OC-002: 25 cajas × $8 = $200 (33.3%)
-                  </p>
+            <Card className="border-green-500/50 bg-green-500/5">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                  <div>
+                    <CardTitle className="text-green-700">
+                      Distribución Proporcional (Correcto)
+                    </CardTitle>
+                    <CardDescription>Justo y basado en criterios objetivos</CardDescription>
+                  </div>
                 </div>
-                <p className="text-xs text-green-700 mt-2">
-                  ✅ Justo: Quien ocupa más espacio, paga más
-                </p>
-              </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-background border p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Scale className="w-4 h-4 text-green-600" />
+                      <p className="text-sm font-medium">Por Cajas/Volumen (Flete)</p>
+                    </div>
+                    <div className="space-y-1 text-sm font-mono text-muted-foreground">
+                      <p>Total: 75 cajas</p>
+                      <p>Costo: $600 ÷ 75 = $8/caja</p>
+                    </div>
+                    <div className="space-y-1 text-sm pt-2 border-t">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">OC-001 (50 cajas):</span>
+                        <span className="font-semibold text-green-700">$400</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">OC-002 (25 cajas):</span>
+                        <span className="font-semibold text-green-700">$200</span>
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Por Valor FOB */}
-              <div className="bg-white rounded-lg p-4">
-                <h5 className="font-semibold text-gray-900 mb-2 text-sm">
-                  Impuestos y Aduana → Por valor FOB
-                </h5>
-                <div className="bg-gray-50 rounded p-3 font-mono text-xs space-y-1">
-                  <p>Total FOB: $15,000 ($10,000 + $5,000)</p>
-                  <p>Impuesto: $900</p>
-                  <p className="text-green-700 font-semibold">
-                    OC-001: ($10,000 ÷ $15,000) × $900 = $600 (66.7%)
-                  </p>
-                  <p className="text-green-700 font-semibold">
-                    OC-002: ($5,000 ÷ $15,000) × $900 = $300 (33.3%)
-                  </p>
+                  <div className="rounded-lg bg-background border p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <p className="text-sm font-medium">Por Valor FOB (Impuestos)</p>
+                    </div>
+                    <div className="space-y-1 text-sm font-mono text-muted-foreground">
+                      <p>Total FOB: $15,000</p>
+                      <p>Impuesto: $900</p>
+                    </div>
+                    <div className="space-y-1 text-sm pt-2 border-t">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">OC-001 (66.7%):</span>
+                        <span className="font-semibold text-green-700">$600</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">OC-002 (33.3%):</span>
+                        <span className="font-semibold text-green-700">$300</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-green-700 mt-2">
-                  ✅ Justo: Quien importa más valor, paga más impuestos
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Cálculo del Costo Unitario */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-blue-600" />
-              Cálculo del Costo Unitario (Paso a Paso)
+              <Package className="w-5 h-5" />
+              Cálculo del Costo Unitario
             </CardTitle>
+            <CardDescription>Tres pasos para obtener el costo por unidad</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
+          <CardContent>
+            <div className="space-y-6">
               {/* Paso 1 */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-sm font-bold">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     1
-                  </span>
-                  <h4 className="font-semibold text-gray-900">
-                    Sumar todos los costos de la orden
-                  </h4>
+                  </div>
                 </div>
-                <div className="ml-8 bg-gray-50 rounded p-4 font-mono text-sm">
-                  <div className="space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">FOB:</span>
-                      <span>$10,000</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Gastos distribuidos:</span>
-                      <span>$1,000 (flete + impuestos)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Comisiones:</span>
-                      <span>$50</span>
-                    </div>
-                    <div className="border-t border-gray-300 pt-2 mt-2 flex justify-between font-bold">
-                      <span>Total invertido:</span>
-                      <span className="text-blue-600">$11,050 USD</span>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-semibold mb-1">Sumar todos los costos</h4>
+                    <p className="text-sm text-muted-foreground">
+                      FOB + Gastos distribuidos + Comisiones
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted p-4 space-y-2">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-muted-foreground">FOB:</span>
+                      <span className="text-right font-mono">$10,000</span>
+                      <span className="text-muted-foreground">Gastos:</span>
+                      <span className="text-right font-mono">$1,000</span>
+                      <span className="text-muted-foreground">Comisiones:</span>
+                      <span className="text-right font-mono">$50</span>
+                      <div className="col-span-2 border-t pt-2 flex justify-between font-semibold">
+                        <span>Total invertido:</span>
+                        <span className="text-primary">$11,050 USD</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Paso 2 */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-sm font-bold">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     2
-                  </span>
-                  <h4 className="font-semibold text-gray-900">Convertir a moneda local</h4>
+                  </div>
                 </div>
-                <div className="ml-8 bg-gray-50 rounded p-4 font-mono text-sm">
-                  <div className="space-y-1">
-                    <p className="text-gray-600">Tasa de cambio promedio: 58.50</p>
-                    <p className="font-bold text-blue-600">$11,050 × 58.50 = RD$ 646,425</p>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-semibold mb-1">Convertir a moneda local</h4>
+                    <p className="text-sm text-muted-foreground">Usar tasa de cambio promedio</p>
+                  </div>
+                  <div className="rounded-lg bg-muted p-4">
+                    <div className="space-y-2 text-sm">
+                      <p className="text-muted-foreground">Tasa promedio: 58.50</p>
+                      <p className="font-mono font-semibold text-primary">
+                        $11,050 × 58.50 = RD$ 646,425
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Paso 3 */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-sm font-bold">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     3
-                  </span>
-                  <h4 className="font-semibold text-gray-900">Dividir entre unidades recibidas</h4>
-                </div>
-                <div className="ml-8 space-y-3">
-                  <div className="bg-gray-50 rounded p-4 font-mono text-sm">
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Unidades ordenadas:</span>
-                        <span>1,000 zapatos</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Unidades recibidas:</span>
-                        <span>980 zapatos</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">(20 se dañaron en tránsito)</p>
-                    </div>
                   </div>
-                  <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-4">
-                    <p className="font-mono text-sm mb-2">Costo unitario = RD$ 646,425 ÷ 980</p>
-                    <p className="font-bold text-xl text-blue-700">
-                      Costo unitario = RD$ 659.61 por zapato
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-semibold mb-1">Dividir entre unidades recibidas</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Importante: usar unidades recibidas, no ordenadas
                     </p>
-                    <p className="text-xs text-blue-700 mt-2">
-                      📌 Este es tu costo REAL por unidad
+                  </div>
+                  <div className="rounded-lg bg-muted p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-muted-foreground">Ordenadas:</span>
+                      <span className="text-right font-mono">1,000</span>
+                      <span className="text-muted-foreground">Recibidas:</span>
+                      <span className="text-right font-mono">980</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      (20 unidades dañadas en tránsito)
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-primary/10 border-2 border-primary p-4">
+                    <p className="text-sm text-muted-foreground mb-2">Costo unitario final:</p>
+                    <p className="font-mono text-2xl font-bold text-primary">RD$ 659.61</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Este es tu costo REAL por unidad
                     </p>
                   </div>
                 </div>
@@ -336,58 +462,71 @@ export default function AyudaPage() {
         {/* Puntos Clave */}
         <Card>
           <CardHeader>
-            <CardTitle>Puntos Clave a Recordar</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="w-5 h-5" />
+              Puntos Clave a Recordar
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl">✓</span>
-                <div>
-                  <p className="font-semibold text-gray-900">FOB</p>
-                  <p className="text-sm text-gray-600">Costo de la mercancía</p>
+              {[
+                {
+                  icon: DollarSign,
+                  title: "FOB",
+                  description: "Costo de la mercancía del proveedor",
+                },
+                {
+                  icon: Scale,
+                  title: "Gastos",
+                  description: "Se distribuyen proporcionalmente, no por igual",
+                },
+                {
+                  icon: Truck,
+                  title: "Flete",
+                  description: "Distribución por cajas o volumen",
+                },
+                {
+                  icon: DollarSign,
+                  title: "Aduana",
+                  description: "Distribución por valor FOB",
+                },
+                {
+                  icon: Package,
+                  title: "Costo unitario",
+                  description: "Total invertido ÷ Unidades recibidas",
+                },
+                {
+                  icon: TrendingUp,
+                  title: "Comisiones",
+                  description: "Incluir en el costo total para precisión",
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <item.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl">✓</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Gastos</p>
-                  <p className="text-sm text-gray-600">
-                    Se distribuyen proporcionalmente (no por igual)
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl">✓</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Flete</p>
-                  <p className="text-sm text-gray-600">Por cajas/volumen</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl">✓</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Aduana</p>
-                  <p className="text-sm text-gray-600">Por valor FOB</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-green-600 text-xl">✓</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Costo unitario</p>
-                  <p className="text-sm text-gray-600">Todo ÷ Unidades recibidas (no ordenadas)</p>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Footer */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <p className="text-sm text-blue-800">
-            ¿Tienes más preguntas? Contacta al administrador del sistema para obtener ayuda
-            adicional.
-          </p>
-        </div>
+        <Card className="bg-muted/50">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              ¿Tienes más preguntas? Contacta al administrador del sistema para obtener ayuda
+              adicional.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   )
