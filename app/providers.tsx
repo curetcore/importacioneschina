@@ -35,7 +35,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SessionProvider refetchInterval={0} refetchOnWindowFocus={true} refetchWhenOffline={false}>
         {children}
-        <Toaster position="top-right" expand={false} richColors closeButton />
+        <Toaster position="bottom-right" expand={false} richColors closeButton />
         <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
       </SessionProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom" />

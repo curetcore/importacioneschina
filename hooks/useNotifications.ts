@@ -99,7 +99,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const markAsRead = useCallback(async (id: string) => {
     try {
       const response = await fetch(`/api/notificaciones/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leida: true }),
       })

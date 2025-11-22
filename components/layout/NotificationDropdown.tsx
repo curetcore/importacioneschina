@@ -64,20 +64,25 @@ function NotificationIcon({
     profilePhoto?: string | null
   } | null
 }) {
-  // Si hay un actor con foto de perfil, mostrar la foto
-  if (actor?.profilePhoto) {
+  const [imageError, setImageError] = useState(false)
+
+  // IMPORTANTE: Hooks siempre al inicio, antes de cualquier return condicional
+
+  // Si hay un actor con foto de perfil y no ha fallado, mostrar la foto
+  if (actor?.profilePhoto && !imageError) {
     return (
       <div className="relative w-10 h-10 flex-shrink-0">
         <img
           src={actor.profilePhoto}
           alt={actor.name}
           className="w-10 h-10 rounded-full object-cover border border-gray-200"
+          onError={() => setImageError(true)}
         />
       </div>
     )
   }
 
-  // Si hay un actor sin foto, mostrar iniciales
+  // Si hay un actor sin foto o la foto falló, mostrar iniciales
   if (actor) {
     const initials = `${actor.name[0]}${actor.lastName?.[0] || ""}`.toUpperCase()
     return (
