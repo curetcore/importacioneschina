@@ -14,6 +14,8 @@ import {
   TrendingUp,
   Bell,
   Globe,
+  Edit,
+  Plus,
   type LucideIcon,
 } from "lucide-react"
 
@@ -29,6 +31,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   TrendingUp,
   Bell,
   Globe,
+  Edit,
+  Plus,
 }
 
 interface UserPresenceItemProps {
@@ -91,51 +95,49 @@ export function UserPresenceItem({ user, isOnline, isSelf = false }: UserPresenc
     return () => clearInterval(interval)
   }, [])
 
-  // Obtener actividad del usuario (Fase 2 + Fase 4 + Fase 5 + Fase 6)
+  // Obtener actividad del usuario (simplificado - tiempo real sin timestamps)
   const getActivityText = (): { text: string; Icon: LucideIcon | null; color: string } | null => {
     if (!isOnline || !user.activity) {
       return null
     }
 
     // ⚠️ NO mostrar actividad si solo está "En línea" (es redundante con "Activo ahora")
-    // Solo mostrar cuando el usuario está HACIENDO ALGO específico
     if (user.activity.pageName === "En línea" && !user.activity.entityName) {
       return null
     }
 
-    // Obtener el ícono correspondiente
-    const Icon = ICON_MAP[user.activity.pageIcon] || Globe
-    const color = user.activity.pageColor || "text-gray-500"
+    // Acortar nombres de páginas
+    const shortPageName = user.activity.pageName
+      .replace("Órdenes de Compra", "Órdenes")
+      .replace("Pagos China", "Pagos")
+      .replace("Gastos Logísticos", "Gastos")
+      .replace("Análisis de Costos", "Análisis")
+      .replace("Configuración", "Config")
+      .replace("Notificaciones", "Notif")
 
+    const action = user.activity.action || ""
+    let Icon = ICON_MAP[user.activity.pageIcon] || Globe
+    let color = user.activity.pageColor || "text-gray-500"
     let baseText = ""
-    const action = user.activity.action || "En"
 
-    // Fase 6 + Fase 4: Combinar acción con entidad o página
+    // Si está viendo/editando una entidad específica
     if (user.activity.entityName) {
-      // Con entidad: "Editando OC-2024-001", "Viendo OC-2024-001", "Creando nueva orden"
-      baseText = action ? `${action} ${user.activity.entityName}` : user.activity.entityName
-    } else if (action === "Creando") {
-      // Creando sin entidad específica: "Creando nueva orden"
-      baseText = `${action} ${user.activity.pageName.toLowerCase()}`
-    } else if (action === "") {
-      // Sin acción: mostrar solo el nombre de la página (ej: "En línea")
-      baseText = user.activity.pageName
-    } else {
-      // Con acción: mostrar acción + página: "En Órdenes de Compra"
-      baseText = `${action} ${user.activity.pageName}`
-    }
-
-    // Fase 5: Agregar timestamp relativo
-    if (user.activity.timestamp) {
-      try {
-        const timeAgo = formatDistanceToNow(new Date(user.activity.timestamp), {
-          addSuffix: true,
-          locale: es,
-        })
-        return { text: `${baseText} · ${timeAgo}`, Icon, color }
-      } catch {
-        return { text: baseText, Icon, color }
+      if (action === "Editando") {
+        baseText = `Editando ${user.activity.entityName}`
+        Icon = Edit
+        color = "text-orange-500"
+      } else {
+        // Solo mostrar el nombre de la entidad
+        baseText = user.activity.entityName
       }
+    } else if (action === "Creando") {
+      // Creando nueva entidad
+      baseText = `Creando ${shortPageName}`
+      Icon = Plus
+      color = "text-green-500"
+    } else {
+      // Navegando en una sección
+      baseText = shortPageName
     }
 
     return { text: baseText, Icon, color }
