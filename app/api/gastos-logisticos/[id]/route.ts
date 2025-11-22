@@ -155,7 +155,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     await auditUpdate("GastosLogisticos", estadoAnterior as any, updatedGasto as any, request)
 
     // Invalidar caché para OCs viejos y nuevos
-    const allOcIds = [...new Set([...oldOcIds, ...validatedData.ocIds])]
+    const allOcIds = Array.from(new Set([...oldOcIds, ...validatedData.ocIds]))
     await CacheInvalidator.invalidateGastosLogisticos(allOcIds)
 
     // Trigger real-time event
