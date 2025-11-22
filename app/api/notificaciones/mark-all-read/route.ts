@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
     if (rateLimitError) return rateLimitError
 
     // Marcar todas las notificaciones del usuario como leídas
-    await markAllNotificationsAsRead(session.user.id)
+    // Pasar el rol para que superadmin también marque las notificaciones globales
+    await markAllNotificationsAsRead(session.user.id, session.user.role)
 
     return NextResponse.json({
       success: true,

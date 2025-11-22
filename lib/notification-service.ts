@@ -261,15 +261,28 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
 /**
  * Marcar todas las notificaciones como leídas
  */
-export async function markAllNotificationsAsRead(usuarioId?: string): Promise<void> {
+export async function markAllNotificationsAsRead(
+  usuarioId?: string,
+  userRole?: string
+): Promise<void> {
   try {
     const db = await getPrismaClient()
 
+    // Si es superadmin, marcar TODAS las no leídas (globales + propias)
+    // Si no es superadmin, solo marcar las del usuario
+    const where =
+      userRole === "superadmin"
+        ? {
+            leida: false,
+            OR: [{ usuarioId: null }, { usuarioId }],
+          }
+        : {
+            leida: false,
+            ...(usuarioId && { usuarioId }),
+          }
+
     await db.notificacion.updateMany({
-      where: {
-        leida: false,
-        ...(usuarioId && { usuarioId }),
-      },
+      where,
       data: {
         leida: true,
         leidaAt: new Date(),
