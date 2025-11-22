@@ -70,7 +70,8 @@ npm start
 
 ### 📖 Guías Técnicas
 
-- **[GUIA-DISTRIBUCION-COSTOS.md](./docs/GUIA-DISTRIBUCION-COSTOS.md)** - Guía de distribución de costos
+- **[DISTRIBUCION-GASTOS-PROPORCIONAL.md](./DISTRIBUCION-GASTOS-PROPORCIONAL.md)** - 🆕 Sistema de distribución proporcional de gastos
+- **[GUIA-DISTRIBUCION-COSTOS.md](./docs/GUIA-DISTRIBUCION-COSTOS.md)** - Guía de distribución de costos (legacy)
 - **[GUIA-MIGRACION.md](./docs/GUIA-MIGRACION.md)** - Guía de migración de base de datos
 - **[BACKUP-LOCAL.md](./docs/BACKUP-LOCAL.md)** - Guía de backups automáticos
 - **[FULL-TEXT-SEARCH.md](./docs/FULL-TEXT-SEARCH.md)** - Búsqueda full-text con PostgreSQL
