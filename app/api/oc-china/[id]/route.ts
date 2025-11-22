@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
-import { TallaDistribucion } from "@/lib/calculations"
+import { TallaDistribucion, distributeExpenseAcrossOCs } from "@/lib/calculations"
 import type { InputJsonValue } from "@prisma/client/runtime/library"
 import { getPrismaClient } from "@/lib/db-helpers"
 import { auditUpdate, auditDelete } from "@/lib/audit-logger"
@@ -118,12 +118,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       throw Errors.notFound("Orden de compra", id)
     }
 
-    // Transform gastosLogisticos to include ordenesCompra array
+    // Transform gastosLogisticos to include ordenesCompra array and distributed amounts
     const transformedOC = {
       ...oc,
       gastosLogisticos: await Promise.all(
         oc.gastosLogisticos.map(async gl => {
-          // For each gasto, fetch all associated OCs (excluding deleted ones)
+          // For each gasto, fetch all associated OCs with full data (excluding deleted ones)
           const allOCsForGasto = await db.gastoLogisticoOC.findMany({
             where: {
               gastoId: gl.gasto.id,
@@ -137,14 +137,54 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
                   id: true,
                   oc: true,
                   proveedor: true,
+                  cantidadCajas: true,
+                  items: {
+                    select: {
+                      cantidadTotal: true,
+                      precioUnitarioUSD: true,
+                    },
+                  },
                 },
               },
             },
           })
 
+          // Calculate proportional distribution
+          let montoDistribuidoRD = parseFloat(gl.gasto.montoRD.toString())
+
+          if (allOCsForGasto.length > 1) {
+            // Determine distribution method based on expense type
+            let method: "cajas" | "valor_fob" | "unidades" = "unidades"
+
+            if (
+              gl.gasto.tipoGasto?.toLowerCase().includes("flete") ||
+              gl.gasto.tipoGasto?.toLowerCase().includes("transporte")
+            ) {
+              method = "cajas"
+            } else if (
+              gl.gasto.tipoGasto?.toLowerCase().includes("aduana") ||
+              gl.gasto.tipoGasto?.toLowerCase().includes("impuesto")
+            ) {
+              method = "valor_fob"
+            }
+
+            // Use distributeExpenseAcrossOCs to calculate proportional distribution
+            const ocsData = allOCsForGasto.map(gloc => ({
+              id: gloc.ocChina.id,
+              cantidadCajas: gloc.ocChina.cantidadCajas,
+              items: gloc.ocChina.items,
+            }))
+
+            const distribucion = distributeExpenseAcrossOCs(gl.gasto, ocsData, method)
+
+            // Get the distributed amount for THIS specific OC
+            montoDistribuidoRD = distribucion.get(oc.id) || 0
+          }
+
           return {
             ...gl.gasto,
             ordenesCompra: allOCsForGasto,
+            montoDistribuidoRD, // Add distributed amount for THIS OC
           }
         })
       ),

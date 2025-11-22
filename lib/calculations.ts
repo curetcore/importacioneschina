@@ -201,6 +201,7 @@ interface OCChinaItem {
 
 interface GastoLogistico {
   montoRD: number | Prisma.Decimal
+  montoDistribuidoRD?: number // Distributed amount for this specific OC (pre-calculated by API)
   ordenesCompra?: Array<{
     ocChina: {
       id: string
@@ -327,11 +328,14 @@ export function distribuirGastosLogisticos(
   // Calcular totales
   const totalFOBUSD = itemsNormalizados.reduce((sum, item) => sum + item.subtotalUSD, 0)
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    // Use pre-calculated distributed amount if available (from API)
+    if (gasto.montoDistribuidoRD !== undefined) {
+      return sum + gasto.montoDistribuidoRD
+    }
+
+    // Fallback: equal distribution (for backward compatibility)
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-
-    // Si el gasto está asociado con múltiples órdenes, dividir el monto
-    // para evitar multiplicación (Bug Fix: gasto de 100 en 3 OCs = 100/3 por OC, no 100*3)
     const numOrdenes = gasto.ordenesCompra?.length || 1
     const montoPorOrden = monto / numOrdenes
 
@@ -407,10 +411,14 @@ export function calcularResumenFinanciero(
   }, 0)
 
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    // Use pre-calculated distributed amount if available (from API)
+    if (gasto.montoDistribuidoRD !== undefined) {
+      return sum + gasto.montoDistribuidoRD
+    }
+
+    // Fallback: equal distribution (for backward compatibility)
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-
-    // Si el gasto está asociado con múltiples órdenes, dividir el monto
     const numOrdenes = gasto.ordenesCompra?.length || 1
     const montoPorOrden = monto / numOrdenes
 
@@ -549,10 +557,14 @@ export function calcularCostosCompletos(
   }, 0)
 
   const totalGastosRD = gastosLogisticos.reduce((sum, gasto) => {
+    // Use pre-calculated distributed amount if available (from API)
+    if (gasto.montoDistribuidoRD !== undefined) {
+      return sum + gasto.montoDistribuidoRD
+    }
+
+    // Fallback: equal distribution (for backward compatibility)
     const monto =
       typeof gasto.montoRD === "number" ? gasto.montoRD : parseFloat(gasto.montoRD.toString())
-
-    // Si el gasto está asociado con múltiples órdenes, dividir el monto
     const numOrdenes = gasto.ordenesCompra?.length || 1
     const montoPorOrden = monto / numOrdenes
 
