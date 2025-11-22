@@ -264,11 +264,11 @@ export default function NotificationDropdown() {
                           <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
                         )}
                       </div>
-                      {notif.descripcion && (
-                        <p className="text-xs text-gray-500 mt-0.5">{notif.descripcion}</p>
-                      )}
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatTimeAgo(new Date(notif.createdAt))}
+                      {/* Descripción + timestamp en una sola línea */}
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {notif.descripcion
+                          ? `${notif.descripcion} ${formatTimeAgo(new Date(notif.createdAt))}`
+                          : formatTimeAgo(new Date(notif.createdAt))}
                       </p>
                     </div>
                   </div>
