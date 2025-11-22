@@ -108,7 +108,7 @@ export default function AyudaPage() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <DollarSign className="w-5 h-5 text-primary" />
                   </div>
-                  <Badge variant="outline">Componente 1</Badge>
+                  <Badge variant="info">Componente 1</Badge>
                 </div>
                 <CardTitle className="text-lg mt-4">FOB (Free On Board)</CardTitle>
                 <CardDescription>Costo de la Mercancía</CardDescription>
@@ -134,7 +134,7 @@ export default function AyudaPage() {
                   <div className="p-2 bg-orange-500/10 rounded-lg">
                     <Truck className="w-5 h-5 text-orange-600" />
                   </div>
-                  <Badge variant="outline">Componente 2</Badge>
+                  <Badge variant="info">Componente 2</Badge>
                 </div>
                 <CardTitle className="text-lg mt-4">Gastos Logísticos</CardTitle>
                 <CardDescription>Costos de Traer la Mercancía</CardDescription>
@@ -178,7 +178,7 @@ export default function AyudaPage() {
                   <div className="p-2 bg-indigo-500/10 rounded-lg">
                     <TrendingUp className="w-5 h-5 text-indigo-600" />
                   </div>
-                  <Badge variant="outline">Componente 3</Badge>
+                  <Badge variant="info">Componente 3</Badge>
                 </div>
                 <CardTitle className="text-lg mt-4">Comisiones Bancarias</CardTitle>
                 <CardDescription>Costos de Transferencias</CardDescription>
