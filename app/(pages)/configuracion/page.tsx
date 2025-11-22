@@ -15,7 +15,17 @@ import { ProveedoresList } from "@/components/registros/ProveedoresList"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Settings, Users, Calculator, UserCircle, History } from "lucide-react"
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Settings,
+  Users,
+  Calculator,
+  UserCircle,
+  History,
+  HelpCircle,
+} from "lucide-react"
 import { apiDelete, getErrorMessage, getErrorDetails } from "@/lib/api-client"
 import { useApiQuery } from "@/lib/hooks/useApiQuery"
 import { DistribucionCostosSettings } from "@/components/configuracion/DistribucionCostosSettings"
@@ -645,6 +655,32 @@ function ConfiguracionPageContent() {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {/* Banner de Ayuda */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-600 rounded-full p-2">
+                <HelpCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-blue-900">
+                  ¿Necesitas ayuda con el sistema?
+                </h3>
+                <p className="text-xs text-blue-700">
+                  Aprende cómo funcionan los costos de importación paso a paso
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => router.push("/ayuda")}
+              className="bg-blue-600 hover:bg-blue-700 gap-2"
+            >
+              <HelpCircle className="w-4 h-4" />
+              Ver Guía Completa
+            </Button>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <Tabs
             defaultValue="configuracion"
