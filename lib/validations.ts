@@ -20,6 +20,11 @@ export const ocChinaSchema = z.object({
     }),
   descripcionLote: z.string().optional(),
   categoriaPrincipal: z.string().min(1, "La categoria es requerida"),
+  cantidadCajas: z.coerce
+    .number()
+    .int()
+    .min(0, "La cantidad de cajas no puede ser negativa")
+    .optional(),
 })
 
 export type OCChinaInput = z.infer<typeof ocChinaSchema>

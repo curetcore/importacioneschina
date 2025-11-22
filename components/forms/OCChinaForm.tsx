@@ -62,6 +62,7 @@ interface OCChina {
   fechaOC: string
   categoriaPrincipal: string
   descripcionLote?: string | null
+  cantidadCajas?: number | null
   items?: OCChinaItem[]
   adjuntos?: FileAttachment[]
 }
@@ -106,6 +107,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
       fechaOC: undefined,
       descripcionLote: "",
       categoriaPrincipal: "",
+      cantidadCajas: undefined,
     },
   })
 
@@ -153,6 +155,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         fechaOC: new Date(ocToEdit.fechaOC),
         descripcionLote: ocToEdit.descripcionLote || "",
         categoriaPrincipal: ocToEdit.categoriaPrincipal,
+        cantidadCajas: ocToEdit.cantidadCajas || undefined,
       })
       setItems(ocToEdit.items || [])
       setAdjuntos(ocToEdit.adjuntos || [])
@@ -164,6 +167,7 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
         fechaOC: undefined,
         descripcionLote: "",
         categoriaPrincipal: "",
+        cantidadCajas: undefined,
       })
       setItems([])
       setAdjuntos([])
@@ -410,6 +414,28 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
                 />
                 {errors.descripcionLote && (
                   <p className="text-xs text-red-600 mt-1">{errors.descripcionLote.message}</p>
+                )}
+              </div>
+
+              {/* Cantidad de Cajas */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cantidad de Cajas 📦
+                </label>
+                <input
+                  type="number"
+                  {...register("cantidadCajas", { valueAsNumber: true })}
+                  placeholder="Ej: 25"
+                  min="0"
+                  step="1"
+                  disabled={isSubmitting}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Número total de cajas/bultos (usado para distribución de gastos de flete)
+                </p>
+                {errors.cantidadCajas && (
+                  <p className="text-xs text-red-600 mt-1">{errors.cantidadCajas.message}</p>
                 )}
               </div>
             </div>
