@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/db-helpers"
-import { calcularOC } from "@/lib/calculations"
+import { calcularOC, distributeExpenseAcrossOCs } from "@/lib/calculations"
 import { handleApiError } from "@/lib/api-error-handler"
 import { QueryCache } from "@/lib/cache-helpers"
 import { CacheKeys, CacheTTL } from "@/lib/redis"
@@ -79,6 +79,63 @@ async function generateDashboardData() {
     )
   }
 
+  // PASO 1: Construir mapa de gastos únicos y calcular distribución proporcional
+  // Esto debe hacerse ANTES de calcular OCs para evitar doble conteo
+  const gastosUnicos = new Map<string, any>()
+
+  ocs.forEach(oc => {
+    oc.gastosLogisticos
+      .filter(gl => gl.gasto.deletedAt === null)
+      .forEach(gl => {
+        const gastoId = gl.gasto.id
+        if (!gastosUnicos.has(gastoId)) {
+          gastosUnicos.set(gastoId, {
+            ...gl.gasto,
+            ocChina: { oc: oc.oc },
+            ocIds: [oc.id],
+            numOrdenes: 1,
+          })
+        } else {
+          const existing = gastosUnicos.get(gastoId)
+          existing.ocIds.push(oc.id)
+          existing.numOrdenes += 1
+        }
+      })
+  })
+
+  const todosGastos = Array.from(gastosUnicos.values())
+
+  // Calcular distribución proporcional de gastos entre OCs
+  const gastosDistribuidos = new Map<string, Map<string, number>>()
+
+  todosGastos.forEach(gasto => {
+    if (gasto.ocIds.length === 1) {
+      const distribucion = new Map<string, number>()
+      distribucion.set(gasto.ocIds[0], parseFloat(gasto.montoRD.toString()))
+      gastosDistribuidos.set(gasto.id, distribucion)
+    } else {
+      const ocsAsociadas = ocs.filter(oc => gasto.ocIds.includes(oc.id))
+
+      let method: "cajas" | "valor_fob" | "unidades" = "unidades"
+
+      if (
+        gasto.tipoGasto?.toLowerCase().includes("flete") ||
+        gasto.tipoGasto?.toLowerCase().includes("transporte")
+      ) {
+        method = "cajas"
+      } else if (
+        gasto.tipoGasto?.toLowerCase().includes("aduana") ||
+        gasto.tipoGasto?.toLowerCase().includes("impuesto")
+      ) {
+        method = "valor_fob"
+      }
+
+      const distribucion = distributeExpenseAcrossOCs(gasto, ocsAsociadas, method)
+      gastosDistribuidos.set(gasto.id, distribucion)
+    }
+  })
+
+  // PASO 2: Calcular OCs usando montos distribuidos
   const ocsCalculadas = ocs.map(oc => {
     // Calcular valores desde items
     const cantidadOrdenada = oc.items?.reduce((sum, item) => sum + item.cantidadTotal, 0) || 0
@@ -86,8 +143,22 @@ async function generateDashboardData() {
       oc.items?.reduce((sum, item) => sum + parseFloat(item.subtotalUSD.toString()), 0) || 0
 
     // Transform gastosLogisticos from junction table to flat gasto objects
+    // Usar montos DISTRIBUIDOS para evitar doble conteo
     const gastosTransformed =
-      oc.gastosLogisticos?.map(gl => gl.gasto).filter(g => g.deletedAt === null) || []
+      oc.gastosLogisticos
+        ?.map(gl => gl.gasto)
+        .filter(g => g.deletedAt === null)
+        .map(gasto => {
+          // Obtener el monto distribuido para esta OC específica
+          const distribucion = gastosDistribuidos.get(gasto.id)
+          const montoDistribuido = distribucion?.get(oc.id) || 0
+
+          // Retornar gasto con monto distribuido
+          return {
+            ...gasto,
+            montoRD: montoDistribuido, // Usar monto distribuido en lugar del monto completo
+          }
+        }) || []
 
     const calculos = calcularOC({
       costoFOBTotalUSD,
@@ -142,36 +213,6 @@ async function generateDashboardData() {
       ocChina: { oc: oc.oc },
     }))
   )
-
-  // IMPORTANTE: Deduplicar gastos compartidos para evitar multiplicación
-  // Si un gasto está asociado con múltiples OCs, solo debe contarse una vez
-  // pero dividiendo el monto por el número de OCs asociadas
-  const gastosUnicos = new Map<string, any>()
-
-  ocs.forEach(oc => {
-    oc.gastosLogisticos
-      .filter(gl => gl.gasto.deletedAt === null)
-      .forEach(gl => {
-        const gastoId = gl.gasto.id
-        if (!gastosUnicos.has(gastoId)) {
-          // Primera vez que vemos este gasto - agregarlo con toda su info
-          gastosUnicos.set(gastoId, {
-            ...gl.gasto,
-            ocChina: { oc: oc.oc }, // AGREGAR relación con primera OC asociada
-            ordenesCompra: oc.gastosLogisticos
-              .filter(g => g.gasto.id === gastoId)
-              .map(() => ({ ocId: oc.id })),
-            numOrdenes: 1, // Contaremos las OCs asociadas
-          })
-        } else {
-          // Ya existe - solo incrementar contador de órdenes
-          const existing = gastosUnicos.get(gastoId)
-          existing.numOrdenes += 1
-        }
-      })
-  })
-
-  const todosGastos = Array.from(gastosUnicos.values())
 
   // Total de comisiones bancarias
   const totalComisiones = todosPagos.reduce(
@@ -289,17 +330,16 @@ async function generateDashboardData() {
       )
       const monto = parseFloat(gasto.montoRD.toString())
 
-      // Si el gasto está asociado con múltiples órdenes, dividir el monto
-      const numOrdenes = gasto.numOrdenes || 1
-      const montoPorOrden = monto / numOrdenes
+      // Para agregaciones globales, usamos el monto completo (representa cash outflow real)
+      // La distribución proporcional solo aplica al calcular costos por OC individual
 
       if (existente) {
-        existente.total += montoPorOrden
+        existente.total += monto
         existente.cantidad += 1
       } else {
         acc.push({
           tipo: gasto.tipoGasto,
-          total: montoPorOrden,
+          total: monto,
           cantidad: 1,
         })
       }
@@ -320,17 +360,15 @@ async function generateDashboardData() {
         )
         const monto = parseFloat(gasto.montoRD.toString())
 
-        // Si el gasto está asociado con múltiples órdenes, dividir el monto
-        const numOrdenes = gasto.numOrdenes || 1
-        const montoPorOrden = monto / numOrdenes
+        // Para agregaciones globales, usamos el monto completo
 
         if (existente) {
-          existente.total += montoPorOrden
+          existente.total += monto
           existente.cantidad += 1
         } else {
           acc.push({
             proveedor,
-            total: montoPorOrden,
+            total: monto,
             cantidad: 1,
           })
         }
@@ -471,16 +509,14 @@ async function generateDashboardData() {
     })),
     ...gastosRecientes.map(g => {
       const monto = parseFloat(g.montoRD.toString())
-      // Si el gasto está asociado con múltiples órdenes, dividir el monto
-      const numOrdenes = g.numOrdenes || 1
-      const montoPorOrden = monto / numOrdenes
+      // Para transacciones recientes, mostramos el monto completo (cash outflow real)
 
       return {
         tipo: "Gasto" as const,
         id: g.idGasto,
         oc: g.ocChina.oc,
         fecha: g.fechaGasto,
-        monto: montoPorOrden,
+        monto: monto,
         descripcion: g.tipoGasto,
       }
     }),
@@ -498,8 +534,8 @@ async function generateDashboardData() {
 
   const totalGastosLogisticos = todosGastos.reduce((sum, gasto) => {
     const monto = parseFloat(gasto.montoRD.toString())
-    const numOrdenes = gasto.numOrdenes || 1
-    return sum + monto / numOrdenes
+    // Para total global, usamos el monto completo (cash outflow real)
+    return sum + monto
   }, 0)
 
   const balancePendiente = totalFOB - totalPagado
