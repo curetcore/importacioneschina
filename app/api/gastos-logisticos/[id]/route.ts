@@ -83,6 +83,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Guardar estado anterior para audit log
     const estadoAnterior = { ...existing }
 
+    // Extraer OC IDs antiguos para invalidación de cache
+    const oldOcIds = existing.ordenesCompra.map(rel => rel.ocId)
+
     const validatedData = gastosLogisticosSchema.parse(body)
 
     // Extraer adjuntos (no validado por Zod)
@@ -150,6 +153,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Audit log
     await auditUpdate("GastosLogisticos", estadoAnterior as any, updatedGasto as any, request)
+
+    // Invalidar caché para OCs viejos y nuevos
+    const allOcIds = [...new Set([...oldOcIds, ...validatedData.ocIds])]
+    await CacheInvalidator.invalidateGastosLogisticos(allOcIds)
 
     // Trigger real-time event
     await triggerRecordUpdated(CHANNELS.EXPENSES, updatedGasto)
