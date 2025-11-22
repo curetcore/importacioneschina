@@ -2,6 +2,7 @@ export { default } from "next-auth/middleware"
 
 export const config = {
   matcher: [
+    // Proteger todas las páginas principales
     "/panel/:path*",
     "/ordenes/:path*",
     "/oc-china/:path*",
@@ -10,5 +11,14 @@ export const config = {
     "/inventario-recibido/:path*",
     "/configuracion/:path*",
     "/dashboard/:path*",
+    "/analisis-costos/:path*",
+    "/documentos/:path*",
+    "/notificaciones/:path*",
+    "/productos/:path*",
+    "/audit-log/:path*",
+    "/ayuda/:path*",
+
+    // Proteger TODAS las APIs EXCEPTO auth y health
+    "/api/((?!auth|health).*)",
   ],
 }
