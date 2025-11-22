@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
     const filepath = path.join(uploadsDir, filename)
     await writeFile(filepath, buffer)
 
-    // Generate URL
-    const photoUrl = `/uploads/profiles/${filename}`
+    // Generate URL (must use /api/uploads/ path for serving)
+    const photoUrl = `/api/uploads/profiles/${filename}`
 
     // Update user in database
     const db = await getPrismaClient()

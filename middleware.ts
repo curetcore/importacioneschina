@@ -18,7 +18,7 @@ export const config = {
     "/audit-log/:path*",
     "/ayuda/:path*",
 
-    // Proteger TODAS las APIs EXCEPTO auth y health
-    "/api/((?!auth|health).*)",
+    // Proteger TODAS las APIs EXCEPTO auth, health y uploads
+    "/api/((?!auth|health|uploads).*)",
   ],
 }
