@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate metodoDistribucion
-    const validMethods = ["peso", "volumen", "valor_fob", "unidades"]
+    const validMethods = ["peso", "volumen", "valor_fob", "unidades", "cajas"]
     if (!validMethods.includes(metodoDistribucion)) {
       throw Errors.badRequest("Método de distribución inválido")
     }

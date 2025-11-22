@@ -28,6 +28,7 @@ import {
   ChevronUp,
   PackagePlus,
   Calculator,
+  Package,
 } from "lucide-react"
 import { CBMCalculator } from "@/components/ui/cbm-calculator"
 import { SizeDistributionInput } from "@/components/ui/size-distribution-input"
@@ -419,8 +420,9 @@ export function OCChinaForm({ open, onOpenChange, onSuccess, ocToEdit }: OCChina
 
               {/* Cantidad de Cajas */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cantidad de Cajas 📦
+                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+                  <Package size={16} className="text-gray-500" />
+                  Cantidad de Cajas
                 </label>
                 <input
                   type="number"

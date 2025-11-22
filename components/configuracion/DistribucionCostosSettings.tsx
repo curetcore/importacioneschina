@@ -46,6 +46,7 @@ const distributionMethodOptions: SelectOption[] = [
   { value: "volumen", label: "Por Volumen (CBM)" },
   { value: "valor_fob", label: "Por Valor FOB" },
   { value: "unidades", label: "Por Unidades (igual)" },
+  { value: "cajas", label: "Por Cantidad de Cajas" },
 ]
 
 export function DistribucionCostosSettings() {
@@ -175,10 +176,14 @@ export function DistribucionCostosSettings() {
               <li>
                 <strong>Por Unidades:</strong> Distribución igualitaria entre todos los productos
               </li>
+              <li>
+                <strong>Por Cantidad de Cajas:</strong> Órdenes con más cajas absorben más costo
+                (ideal para gastos de almacenaje)
+              </li>
             </ul>
             <p className="pt-2 text-xs italic">
-              💡 Tip: El método por volumen es recomendado para gastos de flete internacional,
-              mientras que por valor FOB es ideal para gastos de aduana y comisiones.
+              💡 Tip: Por volumen es ideal para flete, por valor FOB para aduana/comisiones, y por
+              cajas para almacenaje/manipulación.
             </p>
           </CardContent>
         </Card>
